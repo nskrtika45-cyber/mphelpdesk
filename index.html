@@ -232,7 +232,7 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
       <i class="ti ti-login"></i> Sign In
     </button>
     <div style="margin-top:14px;text-align:center">
-      <button onclick="showSetup()" style="background:none;border:none;font-size:12px;color:var(--blue);cursor:pointer;text-decoration:underline">⚙ Firebase Configuration</button>
+      <!-- setup link hidden - config hardcoded -->
     </div>
     <div id="resetSection" style="margin-top:10px;text-align:center;display:none">
       <button onclick="sendReset()" style="background:none;border:none;font-size:12px;color:var(--muted);cursor:pointer">Forgot password? Send reset email</button>
@@ -522,8 +522,15 @@ import { getFirestore, collection, doc,
 import { getFunctions, httpsCallable }            from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js';
 
 // ── CONFIG ────────────────────────────────────────────────────
-function getFirebaseConfig(){
-  try{ return JSON.parse(localStorage.getItem('mpHD_fbConfig')||'null'); }
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyBNxrT0vqi9kcjJMT5Qa286-VB_v_9aBJE",
+  authDomain:        "mp-helpdesk.firebaseapp.com",
+  projectId:         "mp-helpdesk",
+  storageBucket:     "mp-helpdesk.firebasestorage.app",
+  messagingSenderId: "661961999893",
+  appId:             "1:661961999893:web:72db660f96027aebeb301c"
+};
+function getFirebaseConfig(){ return FIREBASE_CONFIG; }
   catch(e){ return null; }
 }
 
@@ -731,7 +738,7 @@ function startApp(){
 }
 
 function showSetupIfNeeded(){
-  if(!getFirebaseConfig()) document.getElementById('setupPage').style.display='block';
+  // Setup page disabled — config is hardcoded
 }
 
 // ── AUTH ──────────────────────────────────────────────────────
