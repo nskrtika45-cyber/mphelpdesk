@@ -709,14 +709,35 @@ async function seedMasterData(){
 
 // ── STARTUP ───────────────────────────────────────────────────
 function startApp(){
-  if(!initFirebase()){ showSetupIfNeeded(); return; }
+  if(!initFirebase()){ 
+    console.error('Firebase init failed');
+    document.getElementById('loadingOverlay').style.display='none';
+    return; 
+  }
   onAuthStateChanged(auth, async user => {
     if(user){
       setLoading(true,'Loading your account…');
       try{
         const profileSnap = await getDoc(doc(db,'users',user.uid));
-        if(!profileSnap.exists()){ await signOut(auth); setLoading(false); return; }
-        const profile = { id: user.uid, ...profileSnap.data() };
+        let profile;
+        if(!profileSnap.exists()){
+          // Auto-create profile for first-time admin
+          const isFirstUser = (await getDocs(collection(db,'users'))).empty;
+          const newProfile = {
+            name: user.displayName || user.email.split('@')[0] || 'Admin',
+            email: user.email,
+            role: isFirstUser ? 'Admin' : 'User',
+            deptId: 'd4',
+            active: true,
+            createdAt: serverTimestamp()
+          };
+          await setDoc(doc(db,'users',user.uid), newProfile);
+          // Seed master data if first user
+          if(isFirstUser){ try{ await seedMasterData(); }catch(e){} }
+          profile = { id: user.uid, ...newProfile };
+        } else {
+          profile = { id: user.uid, ...profileSnap.data() };
+        }
         if(!profile.active){ await signOut(auth); toast('Your account is inactive. Contact admin.','error'); setLoading(false); return; }
         SESSION.user    = user;
         SESSION.profile = profile;
@@ -753,8 +774,16 @@ window.doLogin=async function(){
     await signInWithEmailAndPassword(auth, email, pwd);
     document.getElementById('resetSection').style.display='block';
   } catch(e){
-    const msgs={'auth/invalid-credential':'Invalid email or password.','auth/user-not-found':'No account found.','auth/wrong-password':'Incorrect password.','auth/too-many-requests':'Too many attempts. Try later.'};
-    err.style.display='flex'; document.getElementById('loginErrMsg').textContent=msgs[e.code]||e.message;
+    const msgs={
+      'auth/invalid-credential':'Wrong email or password.',
+      'auth/user-not-found':'No account with this email.',
+      'auth/wrong-password':'Incorrect password.',
+      'auth/too-many-requests':'Too many attempts. Try again later.',
+      'auth/network-request-failed':'Network error. Check internet.',
+      'auth/invalid-email':'Invalid email format.'
+    };
+    const errMsg = msgs[e.code] || ('Login failed: ' + (e.code||e.message));
+    err.style.display='flex'; document.getElementById('loginErrMsg').textContent=errMsg;
     document.getElementById('resetSection').style.display='block';
   } finally{ btn.innerHTML='<i class="ti ti-login"></i> Sign In'; btn.disabled=false; }
 };
