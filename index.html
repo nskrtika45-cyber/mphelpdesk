@@ -328,7 +328,7 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
     </div>
     <div style="overflow-x:auto">
       <table class="table table-hover mb-0">
-        <thead><tr><th>Ticket No</th><th>Subject</th><th id="th-by" style="display:none">Raised By</th><th>Department</th><th>Issue Type</th><th>Priority</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
+        <thead><tr><th>Ticket No</th><th>Subject</th><th id="th-by" style="display:none">Raised By</th><th>Department</th><th>Issue Type</th><th>Priority</th><th>Status</th><th id="th-assigned" style="display:none">Assigned To</th><th>Date</th><th>Action</th></tr></thead>
         <tbody id="ticketBody"></tbody>
       </table>
     </div>
@@ -385,6 +385,7 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
           <div class="meta-row">
             <div class="meta-item"><label>Priority</label><p id="td-pri">—</p></div>
             <div class="meta-item"><label>Status</label><p id="td-stat">—</p></div>
+            <div class="meta-item"><label>Assigned To</label><p id="td-assignedTo">—</p></div>
             <div class="meta-item"><label>Created On</label><p id="td-date">—</p></div>
           </div>
         </div>
@@ -1008,11 +1009,13 @@ window.renderTickets=function(){
   document.getElementById('ticketListTitle').textContent=isAdmin()?'All Tickets':'My Tickets';
   document.getElementById('ticketListSub').textContent  =isAdmin()?'All Tickets':'My Tickets';
   document.getElementById('th-by').style.display        =isAdmin()?'':'none';
+  const thAssigned = document.getElementById('th-assigned');
+  if(thAssigned) thAssigned.style.display = isAdmin()?'':'none';
   const fs=document.getElementById('fStatus').value, fp=document.getElementById('fPriority').value;
   let data=isAdmin()?_tickets:_tickets.filter(t=>t.userId===SESSION.user.uid);
   if(fs) data=data.filter(t=>t.statusId===fs);
   if(fp) data=data.filter(t=>t.priorityId===fp);
-  document.getElementById('ticketBody').innerHTML=data.length===0?emptyRow(9,'No tickets found.'):data.map(t=>`<tr><td><a href="#" onclick="viewTicket('${t.id}');return false" style="color:var(--blue);font-weight:500">${t.ticketNo}</a></td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.subject}</td>${isAdmin()?`<td>${getUser(t.userId)}</td>`:''}<td>${getDept(t.deptId)}</td><td>${getType(t.typeId)}</td><td>${priBadge(t.priorityId)}</td><td>${statBadge(t.statusId)}</td><td>${fmtDate(t.createdAt)}</td><td><button class="btn-icon" onclick="viewTicket('${t.id}')" title="View"><i class="ti ti-eye"></i></button>${isAdmin()?`<button class="btn-icon" onclick="delTicket('${t.id}')" title="Delete" style="color:var(--red)"><i class="ti ti-trash"></i></button>`:''}</td></tr>`).join('');
+  document.getElementById('ticketBody').innerHTML=data.length===0?emptyRow(9,'No tickets found.'):data.map(t=>`<tr><td><a href="#" onclick="viewTicket('${t.id}');return false" style="color:var(--blue);font-weight:500">${t.ticketNo}</a></td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.subject}</td>${isAdmin()?`<td>${getUser(t.userId)}</td>`:''}<td>${getDept(t.deptId)}</td><td>${getType(t.typeId)}</td><td>${priBadge(t.priorityId)}</td><td>${statBadge(t.statusId)}</td>${isAdmin()?`<td>${t.assignedTo?getUser(t.assignedTo):'<span style="color:var(--muted);font-size:12px">Unassigned</span>'}` +'</td>':''}<td>${fmtDate(t.createdAt)}</td><td><button class="btn-icon" onclick="viewTicket('${t.id}')" title="View"><i class="ti ti-eye"></i></button>${isAdmin()?`<button class="btn-icon" onclick="delTicket('${t.id}')" title="Delete" style="color:var(--red)"><i class="ti ti-trash"></i></button>`:''}</td></tr>`).join('');
 };
 
 // ── TICKET DETAIL ─────────────────────────────────────────────
@@ -1034,11 +1037,31 @@ window.viewTicket=async function(id){
   document.getElementById('td-pri').textContent    =getPri(t.priorityId);
   document.getElementById('td-stat').textContent   =getStat(t.statusId);
   document.getElementById('td-date').textContent   =fmtDate(t.createdAt);
+  // Assigned To
+  const assignedEl = document.getElementById('td-assignedTo');
+  if(assignedEl) assignedEl.textContent = t.assignedTo ? getUser(t.assignedTo) : 'Unassigned';
 
   const sw=document.getElementById('td-statusWrap'), ub=document.getElementById('td-userBanner');
   if(isAdmin()){
     ub.style.display='none';
-    sw.innerHTML=`<div style="display:flex;align-items:center;gap:8px"><label style="font-size:12px;color:var(--muted);font-weight:500">Change Status:</label><select class="form-select" id="statSel" style="width:150px;font-size:13px" onchange="changeStatus()">${MASTERS.statuses.map(s=>`<option value="${s.id}" ${s.id===t.statusId?'selected':''}>${s.name}</option>`).join('')}</select></div>`;
+    sw.innerHTML=`<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:6px">
+        <label style="font-size:12px;color:var(--muted);font-weight:500;white-space:nowrap">Assign To:</label>
+        <select class="form-select" id="assignSel" style="width:160px;font-size:12px" onchange="onAssignChange()">
+          <option value="">-- Unassigned --</option>
+          ${_users.map(u=>`<option value="${u.id}" ${t.assignedTo===u.id?'selected':''}>${u.name} (${u.role})</option>`).join('')}
+        </select>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <label style="font-size:12px;color:var(--muted);font-weight:500;white-space:nowrap">Status:</label>
+        <select class="form-select" id="statSel" style="width:150px;font-size:12px" onchange="onStatusChange()">
+          ${MASTERS.statuses.map(s=>`<option value="${s.id}" ${s.id===t.statusId?'selected':''}>${s.name}</option>`).join('')}
+        </select>
+      </div>
+      <button class="btn-teal" id="updateTicketBtn" onclick="saveTicketUpdate()" style="display:none;padding:7px 16px;font-size:12px">
+        <i class="ti ti-device-floppy"></i> Save Changes
+      </button>
+    </div>`;
   } else { ub.style.display='flex'; sw.innerHTML=''; }
 
   renderComments(t); renderActivity(t);
@@ -1056,23 +1079,92 @@ function renderActivity(t){
   document.getElementById('td-activity').innerHTML=acts.length===0?'<div style="color:var(--muted);font-size:13px">No activity yet.</div>':acts.map(a=>`<div class="tl-item"><div class="tl-dot"></div><span>${a.text} · <em>${a.by||'System'}</em> · ${a.date||'—'}</span></div>`).join('');
 }
 
-window.changeStatus=async function(){
-  if(!isAdmin())return;
-  const id=window._viewTicketId;
-  const t=_tickets.find(x=>x.id===id);
-  const ns=document.getElementById('statSel').value;
-  const activity=[...(t.activity||[]),{text:`Status → ${getStat(ns)}`,by:SESSION.profile.name,date:today()}];
-  setSyncStatus('saving');
-  try{
-    await updateDoc(doc(db,'tickets',id),{ statusId:ns, activity, updatedAt:serverTimestamp() });
-    setSyncStatus('synced');
-    document.getElementById('td-sBadge').innerHTML=statBadge(ns);
-    document.getElementById('td-stat').textContent=getStat(ns);
-    // Send email notification
-    try{ await sendEmailNotification(id,'status_changed'); } catch(e){}
-    toast(`Status updated to ${getStat(ns)}`);
-  } catch(e){ setSyncStatus('err'); toast('Update failed: '+e.message,'error'); }
+// Show Save button when status or assign changes — does NOT auto-save
+window.onStatusChange = function(){
+  if(!isAdmin()) return;
+  document.getElementById('updateTicketBtn').style.display = 'inline-flex';
 };
+
+window.onAssignChange = function(){
+  if(!isAdmin()) return;
+  document.getElementById('updateTicketBtn').style.display = 'inline-flex';
+};
+
+// Save both assignment + status together
+window.saveTicketUpdate = async function(){
+  if(!isAdmin()) return;
+  const id = window._viewTicketId;
+  const t  = _tickets.find(x=>x.id===id);
+  if(!t) return;
+
+  const newStatusId  = document.getElementById('statSel').value;
+  const newAssignId  = document.getElementById('assignSel').value || null;
+  const btn          = document.getElementById('updateTicketBtn');
+
+  btn.innerHTML = '<span class="spinner"></span> Saving…'; btn.disabled = true;
+  setSyncStatus('saving');
+
+  try{
+    const activity = [...(t.activity||[])];
+    const updates  = { updatedAt: serverTimestamp() };
+
+    // Status changed?
+    if(newStatusId !== t.statusId){
+      updates.statusId = newStatusId;
+      activity.push({ text:`Status → ${getStat(newStatusId)}`, by:SESSION.profile.name, date:today() });
+    }
+
+    // Assignment changed?
+    const assignedUser = _users.find(u=>u.id===newAssignId);
+    if(newAssignId !== (t.assignedTo||null)){
+      updates.assignedTo  = newAssignId;
+      updates.assignedOn  = newAssignId ? serverTimestamp() : null;
+      // Auto-set status to Assigned if currently Open and assigning someone
+      if(newAssignId && t.statusId === 's1'){
+        updates.statusId = 's2';
+        activity.push({ text:`Status → Assigned`, by:SESSION.profile.name, date:today() });
+        document.getElementById('statSel').value = 's2';
+      }
+      const assignName = assignedUser?.name || 'Unassigned';
+      activity.push({ text:`Assigned to ${assignName}`, by:SESSION.profile.name, date:today() });
+    }
+
+    updates.activity = activity;
+    await updateDoc(doc(db,'tickets',id), updates);
+
+    // Update UI badges
+    const finalStatus = updates.statusId || newStatusId;
+    document.getElementById('td-sBadge').innerHTML   = statBadge(finalStatus);
+    document.getElementById('td-stat').textContent   = getStat(finalStatus);
+    document.getElementById('td-by').textContent     = getUser(t.userId);
+
+    // Update assigned to in meta section
+    const assignedToEl = document.getElementById('td-assignedTo');
+    if(assignedToEl) assignedToEl.textContent = assignedUser?.name || 'Unassigned';
+
+    renderActivity({...t, activity});
+
+    // Hide save button
+    btn.innerHTML = '<i class="ti ti-device-floppy"></i> Save Changes'; btn.disabled = false;
+    btn.style.display = 'none';
+
+    // Email notifications
+    try{
+      if(updates.statusId) await sendEmailNotification(id,'status_changed');
+      if(updates.assignedTo) await sendEmailNotification(id,'ticket_assigned');
+    } catch(e){}
+
+    setSyncStatus('synced');
+    toast('Ticket updated successfully');
+  } catch(e){
+    setSyncStatus('err');
+    btn.innerHTML = '<i class="ti ti-device-floppy"></i> Save Changes'; btn.disabled = false;
+    toast('Update failed: '+e.message,'error');
+  }
+};
+
+// Keep old changeStatus as alias (not used but safe)
+window.changeStatus = window.saveTicketUpdate;
 
 window.addComment=async function(){
   const id=window._viewTicketId;
@@ -1105,19 +1197,25 @@ window.delTicket=async function(id){
 
 // ── EMAIL NOTIFICATIONS ───────────────────────────────────────
 async function sendEmailNotification(ticketId, eventType){
-  // Uses Firestore trigger (Cloud Function) via a notifications collection
-  // The Cloud Function listens to this collection and sends emails
-  const t=_tickets.find(x=>x.id===ticketId);
+  const t = _tickets.find(x=>x.id===ticketId);
   if(!t) return;
-  const adminUser=_users.find(u=>u.role==='Admin');
-  const raiser=_users.find(u=>u.id===t.userId);
+  const adminUser   = _users.find(u=>u.role==='Admin');
+  const raiser      = _users.find(u=>u.id===t.userId);
+  const assignedUser= t.assignedTo ? _users.find(u=>u.id===t.assignedTo) : null;
+
+  let toEmail = '';
+  if(eventType==='ticket_created')   toEmail = adminUser?.email || '';
+  else if(eventType==='ticket_assigned') toEmail = assignedUser?.email || adminUser?.email || '';
+  else toEmail = raiser?.email || '';
+
   await addDoc(collection(db,'emailQueue'),{
     ticketId, ticketNo:t.ticketNo, subject:t.subject,
-    eventType, // 'ticket_created' | 'status_changed' | 'comment_added'
-    toEmail: eventType==='ticket_created' ? (adminUser?.email||'') : raiser?.email||'',
-    raisedBy: raiser?.name||'User',
-    statusName: getStat(t.statusId),
-    createdAt: serverTimestamp(),
+    eventType,
+    toEmail,
+    raisedBy:    raiser?.name||'User',
+    assignedTo:  assignedUser?.name||'',
+    statusName:  getStat(t.statusId),
+    createdAt:   serverTimestamp(),
     sent: false
   });
 }
