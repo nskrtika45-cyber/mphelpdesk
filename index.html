@@ -531,8 +531,6 @@ const FIREBASE_CONFIG = {
   appId:             "1:661961999893:web:72db660f96027aebeb301c"
 };
 function getFirebaseConfig(){ return FIREBASE_CONFIG; }
-  catch(e){ return null; }
-}
 
 let app, auth, db, functions;
 
@@ -715,10 +713,13 @@ function startApp(){
     return; 
   }
   onAuthStateChanged(auth, async user => {
+    console.log('Auth state changed:', user ? 'logged in as '+user.email : 'logged out');
     if(user){
       setLoading(true,'Loading your account…');
       try{
+        console.log('Fetching profile for UID:', user.uid);
         const profileSnap = await getDoc(doc(db,'users',user.uid));
+        console.log('Profile exists:', profileSnap.exists());
         let profile;
         if(!profileSnap.exists()){
           // Auto-create profile for first-time admin
@@ -769,11 +770,15 @@ window.doLogin=async function(){
   const btn  =document.getElementById('loginBtn');
   const err  =document.getElementById('loginErr');
   err.style.display='none';
+  if(!email||!pwd){ err.style.display='flex'; document.getElementById('loginErrMsg').textContent='Enter email and password.'; return; }
   btn.innerHTML='<span class="spinner"></span> Signing in…'; btn.disabled=true;
   try{
-    await signInWithEmailAndPassword(auth, email, pwd);
+    console.log('Attempting login for:', email);
+    const cred = await signInWithEmailAndPassword(auth, email, pwd);
+    console.log('Auth success, UID:', cred.user.uid);
     document.getElementById('resetSection').style.display='block';
   } catch(e){
+    console.error('Login error code:', e.code, 'message:', e.message);
     const msgs={
       'auth/invalid-credential':'Wrong email or password.',
       'auth/user-not-found':'No account with this email.',
