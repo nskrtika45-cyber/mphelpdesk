@@ -430,7 +430,12 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
 
 <!-- USERS -->
 <div class="page" id="page-users">
-  <div class="ph"><h1>User Management</h1><button class="btn-navy" onclick="openUserModal()"><i class="ti ti-user-plus"></i> Add User</button></div>
+  <div class="ph"><h1>User Management</h1>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn-outline" onclick="openBulkModal()"><i class="ti ti-upload"></i> Bulk Upload</button>
+      <button class="btn-navy" onclick="openUserModal()"><i class="ti ti-user-plus"></i> Add User</button>
+    </div>
+  </div>
   <div class="info-panel mb-3"><i class="ti ti-info-circle" style="font-size:16px;flex-shrink:0"></i> New users receive a Firebase Auth email with login credentials. Role is stored in Firestore.</div>
   <div class="card-box"><div style="overflow-x:auto"><table class="table table-hover mb-0"><thead><tr><th>#</th><th>Name</th><th>Email</th><th>Role</th><th>Department</th><th>Active</th><th>Actions</th></tr></thead><tbody id="usersBody"></tbody></table></div></div>
 </div>
@@ -499,6 +504,77 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
       </div>
     </div>
     <div class="mf"><button class="btn-outline" onclick="closeUM()">Cancel</button><button class="btn-teal" id="umSaveBtn" onclick="saveUser()"><i class="ti ti-check"></i> Create User</button></div>
+  </div>
+</div>
+
+
+<!-- BULK USER UPLOAD MODAL -->
+<div class="overlay" id="bulkModal">
+  <div class="modal-box" style="width:min(720px,95vw)">
+    <div class="mh">
+      <h3><i class="ti ti-upload" style="margin-right:6px"></i>Bulk User Upload</h3>
+      <button class="btn-x" onclick="closeBulkModal()">✕</button>
+    </div>
+    <div class="mb-p">
+
+      <!-- STEP 1: Download Template -->
+      <div style="background:var(--gray);border-radius:8px;padding:14px 16px;margin-bottom:16px">
+        <div style="font-size:13px;font-weight:600;margin-bottom:6px"><i class="ti ti-download" style="margin-right:6px;color:var(--teal)"></i>Step 1 — Download the template</div>
+        <div style="font-size:12.5px;color:var(--muted);margin-bottom:10px">Fill in this CSV template with your users. Do not change the column headers.</div>
+        <button class="btn-outline" onclick="downloadTemplate()" style="font-size:12px;padding:6px 14px"><i class="ti ti-file-spreadsheet"></i> Download CSV Template</button>
+        <div style="margin-top:10px;font-size:12px;color:var(--muted)">
+          <strong>Required columns:</strong> name, email, password, role, department<br/>
+          <strong>Role values:</strong> Admin or User<br/>
+          <strong>Department values:</strong> Accounts, HR, Projects, ERP, IT
+        </div>
+      </div>
+
+      <!-- STEP 2: Upload -->
+      <div style="background:var(--gray);border-radius:8px;padding:14px 16px;margin-bottom:16px">
+        <div style="font-size:13px;font-weight:600;margin-bottom:8px"><i class="ti ti-upload" style="margin-right:6px;color:var(--blue)"></i>Step 2 — Upload your filled CSV</div>
+        <input type="file" id="bulkFileInput" accept=".csv" class="form-control" onchange="parseBulkCSV()" style="margin-bottom:10px"/>
+        <div style="font-size:12px;color:var(--muted)">Accepts .csv files only · Max 100 users per upload</div>
+      </div>
+
+      <!-- PREVIEW TABLE -->
+      <div id="bulkPreviewSection" style="display:none">
+        <div style="font-size:13px;font-weight:600;margin-bottom:8px">
+          <i class="ti ti-eye" style="margin-right:6px;color:var(--navy)"></i>Step 3 — Preview &amp; confirm
+          <span id="bulkCount" style="font-size:12px;font-weight:400;color:var(--muted);margin-left:8px"></span>
+        </div>
+        <div style="overflow-x:auto;max-height:280px;border:1px solid var(--border);border-radius:8px">
+          <table class="table table-hover mb-0" id="bulkPreviewTable">
+            <thead style="position:sticky;top:0;background:#fff">
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Department</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="bulkPreviewBody"></tbody>
+          </table>
+        </div>
+        <div id="bulkValidationMsg" style="margin-top:8px;font-size:12.5px"></div>
+      </div>
+
+      <!-- PROGRESS -->
+      <div id="bulkProgressSection" style="display:none;margin-top:14px">
+        <div style="font-size:13px;font-weight:600;margin-bottom:8px">Creating users…</div>
+        <div style="background:var(--border);border-radius:4px;height:8px;overflow:hidden;margin-bottom:8px">
+          <div id="bulkProgressBar" style="height:100%;background:var(--teal);border-radius:4px;width:0%;transition:width .3s"></div>
+        </div>
+        <div id="bulkProgressLabel" style="font-size:12px;color:var(--muted)">0 / 0 users created</div>
+        <div id="bulkLog" style="max-height:120px;overflow-y:auto;background:var(--gray);border-radius:6px;padding:8px;margin-top:8px;font-size:11.5px;font-family:monospace;color:var(--text)"></div>
+      </div>
+
+    </div>
+    <div class="mf">
+      <button class="btn-outline" onclick="closeBulkModal()">Close</button>
+      <button class="btn-teal" id="bulkUploadBtn" onclick="startBulkUpload()" style="display:none"><i class="ti ti-users"></i> Create All Users</button>
+    </div>
   </div>
 </div>
 
@@ -1262,13 +1338,211 @@ window.changePwd=async function(){
   } catch(e){ sh('Error: '+e.message,false); }
 };
 
+
+// ═══════════════════════════════════════════════════════
+// BULK USER UPLOAD
+// ═══════════════════════════════════════════════════════
+let _bulkUsers = [];
+
+window.openBulkModal = function(){
+  _bulkUsers = [];
+  document.getElementById('bulkFileInput').value = '';
+  document.getElementById('bulkPreviewSection').style.display  = 'none';
+  document.getElementById('bulkProgressSection').style.display = 'none';
+  document.getElementById('bulkUploadBtn').style.display       = 'none';
+  document.getElementById('bulkLog').innerHTML                 = '';
+  document.getElementById('bulkModal').classList.add('show');
+};
+
+window.closeBulkModal = function(){
+  document.getElementById('bulkModal').classList.remove('show');
+};
+
+window.downloadTemplate = function(){
+  const csv = [
+    'name,email,password,role,department',
+    'Saravanan K,saravanan@mpdevelopers.com,Welcome@123,User,ERP',
+    'Priya R,priya@mpdevelopers.com,Welcome@123,User,Accounts',
+    'Ravi M,ravi@mpdevelopers.com,Welcome@123,User,HR',
+    'Deepa S,deepa@mpdevelopers.com,Welcome@123,Admin,IT',
+    'Karthik V,karthik@mpdevelopers.com,Welcome@123,User,Projects'
+  ].join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+  a.download = 'MP_HelpDesk_Users_Template.csv';
+  a.click();
+  toast('Template downloaded — fill it and upload');
+};
+
+window.parseBulkCSV = function(){
+  const file = document.getElementById('bulkFileInput').files[0];
+  if(!file){ return; }
+  if(!file.name.endsWith('.csv')){ toast('Please upload a .csv file only','error'); return; }
+
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const text = e.target.result;
+    const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+    if(lines.length < 2){ toast('CSV is empty or has no data rows','error'); return; }
+
+    // Parse header
+    const headers = lines[0].toLowerCase().split(',').map(h => h.trim().replace(/"/g,''));
+    const nameIdx  = headers.indexOf('name');
+    const emailIdx = headers.indexOf('email');
+    const passIdx  = headers.indexOf('password');
+    const roleIdx  = headers.indexOf('role');
+    const deptIdx  = headers.indexOf('department');
+
+    if(nameIdx<0||emailIdx<0||passIdx<0){
+      toast('CSV must have columns: name, email, password','error'); return;
+    }
+
+    _bulkUsers = [];
+    const deptMap = {};
+    MASTERS.departments.forEach(d => deptMap[d.name.toLowerCase()] = d.id);
+
+    for(let i=1; i<lines.length; i++){
+      const cols = lines[i].split(',').map(c => c.trim().replace(/^"|"$/g,''));
+      const name  = cols[nameIdx]  || '';
+      const email = cols[emailIdx] || '';
+      const pass  = cols[passIdx]  || '';
+      const role  = cols[roleIdx]  || 'User';
+      const dept  = cols[deptIdx]  || '';
+
+      let status = 'Ready';
+      let statusClass = 'b-resolved';
+      let errors = [];
+
+      if(!name)  errors.push('Name missing');
+      if(!email || !email.includes('@')) errors.push('Invalid email');
+      if(!pass || pass.length < 6) errors.push('Password min 6 chars');
+      if(role !== 'Admin' && role !== 'User') errors.push('Role must be Admin or User');
+
+      const deptId = deptMap[dept.toLowerCase()] || MASTERS.departments[0]?.id || 'd1';
+      const deptName = MASTERS.departments.find(d=>d.id===deptId)?.name || dept;
+
+      if(errors.length > 0){
+        status = errors.join(', ');
+        statusClass = 'b-critical';
+      }
+
+      _bulkUsers.push({ name, email, pass, role: (role==='Admin'?'Admin':'User'), deptId, deptName, status, statusClass, valid: errors.length===0 });
+    }
+
+    // Render preview
+    const validCount   = _bulkUsers.filter(u=>u.valid).length;
+    const invalidCount = _bulkUsers.length - validCount;
+    document.getElementById('bulkCount').textContent = `${_bulkUsers.length} users found · ${validCount} valid · ${invalidCount} with errors`;
+
+    document.getElementById('bulkPreviewBody').innerHTML = _bulkUsers.map((u,i) => `
+      <tr>
+        <td>${i+1}</td>
+        <td><strong>${u.name||'—'}</strong></td>
+        <td style="font-size:12px">${u.email||'—'}</td>
+        <td><span class="${u.role==='Admin'?'b-admin':'b-user'}">${u.role}</span></td>
+        <td>${u.deptName||'—'}</td>
+        <td><span class="${u.statusClass}" style="font-size:11px">${u.status}</span></td>
+      </tr>`).join('');
+
+    document.getElementById('bulkPreviewSection').style.display = 'block';
+
+    if(validCount > 0){
+      document.getElementById('bulkUploadBtn').style.display = 'inline-flex';
+      document.getElementById('bulkValidationMsg').innerHTML = `<span style="color:var(--teal)"><i class="ti ti-check"></i> ${validCount} users ready to create.</span>${invalidCount>0?` <span style="color:var(--red)">${invalidCount} rows have errors and will be skipped.</span>`:''}`;
+    } else {
+      document.getElementById('bulkUploadBtn').style.display = 'none';
+      document.getElementById('bulkValidationMsg').innerHTML = `<span style="color:var(--red)"><i class="ti ti-alert-circle"></i> No valid users found. Fix the errors and re-upload.</span>`;
+    }
+  };
+  reader.readAsText(file);
+};
+
+window.startBulkUpload = async function(){
+  const validUsers = _bulkUsers.filter(u => u.valid);
+  if(validUsers.length === 0){ toast('No valid users to create','error'); return; }
+
+  const btn = document.getElementById('bulkUploadBtn');
+  btn.innerHTML = '<span class="spinner"></span> Creating…'; btn.disabled = true;
+  document.getElementById('bulkProgressSection').style.display = 'block';
+  document.getElementById('bulkProgressBar').style.width = '0%';
+
+  const log    = document.getElementById('bulkLog');
+  const pBar   = document.getElementById('bulkProgressBar');
+  const pLabel = document.getElementById('bulkProgressLabel');
+  log.innerHTML = '';
+
+  let created = 0, failed = 0;
+
+  for(let i = 0; i < validUsers.length; i++){
+    const u = validUsers[i];
+    const pct = Math.round(((i+1)/validUsers.length)*100);
+    pLabel.textContent = `${i+1} / ${validUsers.length} users processed`;
+    pBar.style.width = pct + '%';
+
+    try{
+      // Create Firebase Auth user
+      const cred = await createUserWithEmailAndPassword(auth, u.email, u.pass);
+
+      // Create Firestore profile
+      await setDoc(doc(db, 'users', cred.user.uid), {
+        name:      u.name,
+        email:     u.email,
+        role:      u.role,
+        deptId:    u.deptId,
+        active:    true,
+        createdAt: serverTimestamp(),
+        createdBy: SESSION.user.uid
+      });
+
+      // Queue welcome email
+      await addDoc(collection(db,'emailQueue'),{
+        eventType:   'user_created',
+        toEmail:     u.email,
+        userName:    u.name,
+        role:        u.role,
+        tempPassword:u.pass,
+        appUrl:      window.location.href,
+        createdAt:   serverTimestamp(),
+        sent:        false
+      });
+
+      created++;
+      log.innerHTML += `<div style="color:#1D9E75">✅ ${u.name} (${u.email}) — created</div>`;
+    } catch(e){
+      failed++;
+      const msg = e.code === 'auth/email-already-in-use'
+        ? 'Email already exists'
+        : e.message;
+      log.innerHTML += `<div style="color:#E24B4A">❌ ${u.name} (${u.email}) — ${msg}</div>`;
+    }
+    log.scrollTop = log.scrollHeight;
+
+    // Small delay to avoid Firebase rate limits
+    await new Promise(r => setTimeout(r, 300));
+  }
+
+  // Refresh user list
+  await loadUsers();
+  renderUsers();
+
+  pBar.style.width = '100%';
+  pBar.style.background = failed === 0 ? 'var(--teal)' : 'var(--amber)';
+  pLabel.textContent = `Done — ${created} created, ${failed} failed`;
+  log.innerHTML += `<div style="margin-top:6px;font-weight:600;color:var(--navy)">── Upload complete: ${created} succeeded, ${failed} failed ──</div>`;
+
+  btn.innerHTML = '<i class="ti ti-check"></i> Done';
+  btn.disabled = false;
+  toast(`${created} users created successfully!`);
+};
+
 // ── KEYBOARD + MODAL ──────────────────────────────────────────
 document.addEventListener('keydown',e=>{
   if(e.key==='Enter'&&document.getElementById('loginPage').style.display!=='none') doLogin();
-  if(e.key==='Escape'){ closeMM(); closeUM(); }
+  if(e.key==='Escape'){ closeMM(); closeUM(); closeBulkModal(); }
 });
 document.getElementById('masterModal').addEventListener('click',function(e){if(e.target===this)closeMM();});
 document.getElementById('userModal').addEventListener('click',function(e){if(e.target===this)closeUM();});
+document.getElementById('bulkModal').addEventListener('click',function(e){if(e.target===this)closeBulkModal();});
 
 // ── START ─────────────────────────────────────────────────────
 startApp();
