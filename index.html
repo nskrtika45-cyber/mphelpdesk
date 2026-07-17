@@ -1282,13 +1282,6 @@ window.viewTicket=async function(id){
     if(editBar) editBar.style.display='flex';
     sw.innerHTML=`<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
       <div style="display:flex;align-items:center;gap:6px">
-        <label style="font-size:12px;color:var(--muted);font-weight:500;white-space:nowrap">Assign To:</label>
-        <select class="form-select" id="assignSel" style="width:160px;font-size:12px" onchange="onAssignChange()">
-          <option value="">-- Unassigned --</option>
-          ${_users.filter(u=>u.role==='Admin').map(u=>`<option value="${u.id}" ${t.assignedTo===u.id?'selected':''}>${u.name}</option>`).join('')}
-        </select>
-      </div>
-      <div style="display:flex;align-items:center;gap:6px">
         <label style="font-size:12px;color:var(--muted);font-weight:500;white-space:nowrap">Status:</label>
         <select class="form-select" id="statSel" style="width:150px;font-size:12px" onchange="onStatusChange()">
           ${MASTERS.statuses.map(s=>`<option value="${s.id}" ${s.id===t.statusId?'selected':''}>${s.name}</option>`).join('')}
@@ -1338,7 +1331,7 @@ window.saveTicketUpdate = async function(){
   if(!t) return;
 
   const newStatusId  = document.getElementById('statSel').value;
-  const newAssignId  = document.getElementById('assignSel').value || null;
+  const newAssignId  = t.assignedTo || null; // assignment handled via Modify Ticket modal
   const btn          = document.getElementById('updateTicketBtn');
 
   btn.innerHTML = '<span class="spinner"></span> Saving…'; btn.disabled = true;
