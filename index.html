@@ -207,7 +207,8 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
 <!-- ══ LOGIN ══ -->
 <div id="loginPage">
   <div style="text-align:center;margin-bottom:26px">
-    <div style="width:52px;height:52px;background:var(--teal);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff;margin:0 auto 12px">HD</div>
+    <img src="https://erp.mpdevelopers.com/images/%7Be0847889-8a54-4363-afdd-966dd480dfbb%7D.jpeg" alt="MP Developers" style="width:80px;height:80px;border-radius:16px;object-fit:contain;background:#fff;padding:6px;margin:0 auto 14px;display:block" onerror="this.style.display='none';document.getElementById('loginLogoFallback').style.display='flex'"/>
+    <div id="loginLogoFallback" style="display:none;width:64px;height:64px;background:var(--teal);border-radius:14px;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:#fff;margin:0 auto 14px">HD</div>
     <div style="font-size:26px;font-weight:800;color:#fff;letter-spacing:-1px">MP HelpDesk</div>
     <div style="font-size:13px;color:rgba(255,255,255,.45);margin-top:4px">MP Developers · Powered by Firebase</div>
   </div>
@@ -243,7 +244,8 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
 <!-- ══ SIDEBAR ══ -->
 <nav id="sidebar" style="display:none">
   <div class="s-logo">
-    <div style="width:32px;height:32px;background:var(--teal);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0">HD</div>
+    <img src="https://erp.mpdevelopers.com/images/%7Be0847889-8a54-4363-afdd-966dd480dfbb%7D.jpeg" alt="MP Developers" style="width:36px;height:36px;border-radius:8px;object-fit:contain;background:#fff;padding:2px;flex-shrink:0" onerror="this.style.display='none';document.getElementById('sidebarLogoFallback').style.display='flex'"/>
+    <div id="sidebarLogoFallback" style="display:none;width:36px;height:36px;background:var(--teal);border-radius:8px;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0">HD</div>
     <div><div class="s-brand">MP HelpDesk</div><div class="s-sub"><i class="ti ti-flame" style="font-size:10px"></i> Firebase</div></div>
   </div>
   <div id="nav-admin" style="display:none">
@@ -282,7 +284,10 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
 
 <!-- ══ TOPBAR ══ -->
 <div id="topbar" style="display:none">
-  <div class="tb-title" id="topbarTitle">Dashboard</div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <img src="https://erp.mpdevelopers.com/images/%7Be0847889-8a54-4363-afdd-966dd480dfbb%7D.jpeg" alt="MP Developers" style="height:32px;width:auto;border-radius:6px;object-fit:contain" onerror="this.style.display='none'"/>
+    <div class="tb-title" id="topbarTitle">Dashboard</div>
+  </div>
   <div class="tb-right">
     <div class="sync-row"><div class="sync-dot" id="syncDot"></div><span id="syncLabel">Synced</span></div>
     <div id="topbarRole"></div>
@@ -297,10 +302,34 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
 <div class="page active" id="page-dashboard">
   <div class="ph"><h1 id="dashTitle">Dashboard</h1><span style="font-size:13px;color:var(--muted)" id="dashDate"></span></div>
   <div class="row g-3 mb-4">
-    <div class="col-md-3 col-6"><div class="stat-card"><div class="stat-icon" style="background:var(--blue-bg);color:var(--blue)"><i class="ti ti-ticket"></i></div><div><div class="stat-val" id="ds-total">—</div><div class="stat-lbl">Total Tickets</div></div></div></div>
-    <div class="col-md-3 col-6"><div class="stat-card"><div class="stat-icon" style="background:var(--teal-bg);color:var(--teal)"><i class="ti ti-circle-dot"></i></div><div><div class="stat-val" id="ds-open">—</div><div class="stat-lbl">Open</div></div></div></div>
-    <div class="col-md-3 col-6"><div class="stat-card"><div class="stat-icon" style="background:var(--amber-bg);color:#633806"><i class="ti ti-clock"></i></div><div><div class="stat-val" id="ds-progress">—</div><div class="stat-lbl">In Progress</div></div></div></div>
-    <div class="col-md-3 col-6"><div class="stat-card"><div class="stat-icon" style="background:var(--red-bg);color:var(--red)"><i class="ti ti-alert-circle"></i></div><div><div class="stat-val" id="ds-4th">—</div><div class="stat-lbl" id="ds-4thLbl">Critical</div></div></div></div>
+    <div class="col-md-3 col-6">
+      <div class="stat-card" onclick="filterTicketsFromDash('all')" style="cursor:pointer;transition:.15s" onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,.1)'" onmouseout="this.style.boxShadow=''">
+        <div class="stat-icon" style="background:var(--blue-bg);color:var(--blue)"><i class="ti ti-ticket"></i></div>
+        <div><div class="stat-val" id="ds-total">—</div><div class="stat-lbl">Total Tickets</div></div>
+        <i class="ti ti-arrow-right" style="margin-left:auto;color:var(--muted);font-size:14px"></i>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="stat-card" onclick="filterTicketsFromDash('open')" style="cursor:pointer;transition:.15s" onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,.1)'" onmouseout="this.style.boxShadow=''">
+        <div class="stat-icon" style="background:var(--teal-bg);color:var(--teal)"><i class="ti ti-circle-dot"></i></div>
+        <div><div class="stat-val" id="ds-open">—</div><div class="stat-lbl">Open</div></div>
+        <i class="ti ti-arrow-right" style="margin-left:auto;color:var(--muted);font-size:14px"></i>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="stat-card" onclick="filterTicketsFromDash('inprogress')" style="cursor:pointer;transition:.15s" onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,.1)'" onmouseout="this.style.boxShadow=''">
+        <div class="stat-icon" style="background:var(--amber-bg);color:#633806"><i class="ti ti-clock"></i></div>
+        <div><div class="stat-val" id="ds-progress">—</div><div class="stat-lbl" id="ds-progressLbl">In Progress</div></div>
+        <i class="ti ti-arrow-right" style="margin-left:auto;color:var(--muted);font-size:14px"></i>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="stat-card" onclick="filterTicketsFromDash('critical')" style="cursor:pointer;transition:.15s" onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,.1)'" onmouseout="this.style.boxShadow=''">
+        <div class="stat-icon" style="background:var(--red-bg);color:var(--red)"><i class="ti ti-alert-circle"></i></div>
+        <div><div class="stat-val" id="ds-4th">—</div><div class="stat-lbl" id="ds-4thLbl">Critical</div></div>
+        <i class="ti ti-arrow-right" style="margin-left:auto;color:var(--muted);font-size:14px"></i>
+      </div>
+    </div>
   </div>
   <div class="row g-3 mb-4" id="adminCharts" style="display:none">
     <div class="col-md-6"><div class="card-box"><div class="cbh"><h2><i class="ti ti-building" style="margin-right:6px"></i>Department-wise</h2></div><div class="cbb" id="deptChart"></div></div></div>
@@ -345,8 +374,26 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
       <div class="row g-3">
         <div class="col-md-4"><label class="form-label">Raised By</label><div id="raisedByWrap"></div></div>
         <div class="col-md-4"><label class="form-label">Department</label><select class="form-select" id="ct-dept"></select></div>
-        <div class="col-md-4"><label class="form-label">Issue Type</label><select class="form-select" id="ct-type" onchange="loadSubTypes()"></select></div>
-        <div class="col-md-4"><label class="form-label">Issue Sub-Type</label><select class="form-select" id="ct-subtype"></select></div>
+        <div class="col-md-4" id="ct-typeWrap">
+          <label class="form-label">
+            Issue Type
+            <span id="ct-typeAdminBadge" style="display:none;font-size:10px;background:var(--navy);color:#fff;padding:1px 7px;border-radius:10px;margin-left:6px;font-weight:600">ADMIN ONLY</span>
+          </label>
+          <select class="form-select" id="ct-type" onchange="loadSubTypes()"></select>
+        </div>
+        <div class="col-md-4" id="ct-subtypeWrap">
+          <label class="form-label">
+            Issue Sub-Type
+            <span id="ct-subtypeAdminBadge" style="display:none;font-size:10px;background:var(--navy);color:#fff;padding:1px 7px;border-radius:10px;margin-left:6px;font-weight:600">ADMIN ONLY</span>
+          </label>
+          <select class="form-select" id="ct-subtype"></select>
+        </div>
+        <div id="ct-typeNote" class="col-12" style="display:none">
+          <div class="warn-panel" style="font-size:12.5px">
+            <i class="ti ti-lock" style="font-size:15px;flex-shrink:0"></i>
+            <span>Issue Type and Sub-Type are set by the support team. If your issue doesn't match the selected type, add a note in the description and the admin will update it.</span>
+          </div>
+        </div>
         <div class="col-md-4"><label class="form-label">Priority</label><select class="form-select" id="ct-priority"></select></div>
         <div class="col-md-4"><label class="form-label">Ticket No</label><input class="form-control" id="ct-no" readonly/></div>
         <div class="col-12"><label class="form-label">Subject <span style="color:var(--red)">*</span></label><input class="form-control" id="ct-subject" placeholder="Brief summary of the issue"/></div>
@@ -369,7 +416,10 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
     </div>
     <div id="td-statusWrap"></div>
   </div>
-  <div id="td-userBanner" class="info-panel mb-3" style="display:none"><i class="ti ti-eye" style="font-size:16px;flex-shrink:0"></i> You can view and comment on your ticket. Contact support to update the status.</div>
+  <div id="td-userBanner" class="info-panel mb-3" style="display:none">
+    <i class="ti ti-info-circle" style="font-size:16px;flex-shrink:0"></i>
+    <span>Your ticket is being handled by our support team. You can add comments below to communicate with them.</span>
+  </div>
   <div class="row g-3">
     <div class="col-md-8">
       <div class="card-box mb-3">
@@ -385,7 +435,7 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
           <div class="meta-row">
             <div class="meta-item"><label>Priority</label><p id="td-pri">—</p></div>
             <div class="meta-item"><label>Status</label><p id="td-stat">—</p></div>
-            <div class="meta-item"><label>Assigned To</label><p id="td-assignedTo">—</p></div>
+            <div class="meta-item" id="td-assignedToWrap"><label>Assigned To</label><p id="td-assignedTo">—</p></div>
             <div class="meta-item"><label>Created On</label><p id="td-date">—</p></div>
           </div>
         </div>
@@ -577,6 +627,16 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
       <button class="btn-teal" id="bulkUploadBtn" onclick="startBulkUpload()" style="display:none"><i class="ti ti-users"></i> Create All Users</button>
     </div>
   </div>
+</div>
+
+<!-- AUTO LOGOUT WARNING BANNER -->
+<div id="logoutWarnBanner" style="display:none;position:fixed;bottom:80px;right:22px;background:#fff;border:1.5px solid var(--amber);border-radius:10px;padding:14px 18px;z-index:9998;box-shadow:0 8px 24px rgba(0,0,0,.15);max-width:320px;align-items:center;gap:12px">
+  <i class="ti ti-clock" style="font-size:20px;color:var(--amber);flex-shrink:0"></i>
+  <div style="flex:1">
+    <div style="font-size:13px;font-weight:600;color:var(--text)">Session expiring soon</div>
+    <div style="font-size:12px;color:var(--muted);margin-top:2px">You will be logged out in 1 minute due to inactivity.</div>
+  </div>
+  <button onclick="resetAutoLogout()" style="background:var(--navy);color:#fff;border:none;border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;flex-shrink:0">Stay logged in</button>
 </div>
 
 <!-- TOAST -->
@@ -827,6 +887,7 @@ function startApp(){
       } catch(e){ setLoading(false); toast('Error loading profile: '+e.message,'error'); }
     } else {
       SESSION.user=null; SESSION.profile=null;
+      stopAutoLogout();
       document.getElementById('loginPage').style.display='flex';
       document.getElementById('sidebar').style.display='none';
       document.getElementById('topbar').style.display='none';
@@ -923,6 +984,7 @@ function initAppUI(){
 
   populateFilters();
   subscribeTickets();
+  startAutoLogout();
   showPage('dashboard', document.querySelector(isAdmin()?'#nav-admin .nav-item':'#nav-user .nav-item'));
 }
 
@@ -941,9 +1003,23 @@ function subscribeTickets(){
     updateBadges();
     // Refresh current page if it's a ticket-related page
     const activePage = document.querySelector('.page.active')?.id;
-    if(activePage==='page-dashboard') renderDashboard();
-    else if(activePage==='page-tickets') renderTickets();
-    else if(activePage==='page-reports') runReport();
+    if(activePage==='page-dashboard')      renderDashboard();
+    else if(activePage==='page-tickets')   renderTickets();
+    else if(activePage==='page-reports')   runReport();
+    else if(activePage==='page-ticketDetail' && window._viewTicketId){
+      // Re-render ticket detail silently to reflect latest status/assignment
+      const t = _tickets.find(x=>x.id===window._viewTicketId);
+      if(t){
+        document.getElementById('td-sBadge').innerHTML  = statBadge(t.statusId);
+        document.getElementById('td-stat').textContent  = getStat(t.statusId);
+        const assignEl = document.getElementById('td-assignedTo');
+        if(assignEl) assignEl.textContent = t.assignedTo ? getUser(t.assignedTo) : 'Unassigned';
+        // Assigned To only shown to admin
+        const assignedWrapRT = document.getElementById('td-assignedToWrap');
+        if(assignedWrapRT) assignedWrapRT.style.display = isAdmin() ? '' : 'none';
+        renderActivity(t);
+      }
+    }
   }, err => { toast('Firestore error: '+err.message,'error'); });
 }
 
@@ -962,20 +1038,41 @@ window.showPage=function(id,el){
 
 // ── BADGES ────────────────────────────────────────────────────
 function updateBadges(){
-  const allOpen=_tickets.filter(t=>t.statusId==='s1'||t.statusId==='s6').length;
-  document.getElementById('openBadge').textContent=allOpen;
-  const myOpen=_tickets.filter(t=>t.userId===SESSION.user?.uid&&(t.statusId==='s1'||t.statusId==='s6')).length;
-  document.getElementById('openBadgeU').textContent=myOpen;
+  // Admin badge = all non-closed tickets
+  const allActive = _tickets.filter(t=>!['s5'].includes(t.statusId)).length;
+  document.getElementById('openBadge').textContent = allActive;
+  // User badge = their own non-closed tickets
+  const myActive  = _tickets.filter(t=>t.userId===SESSION.user?.uid && !['s5'].includes(t.statusId)).length;
+  document.getElementById('openBadgeU').textContent = myActive;
 }
 
 // ── DASHBOARD ─────────────────────────────────────────────────
 function renderDashboard(){
-  const myT=isAdmin()?_tickets:_tickets.filter(t=>t.userId===SESSION.user.uid);
-  document.getElementById('ds-total').textContent   =myT.length;
-  document.getElementById('ds-open').textContent    =myT.filter(t=>t.statusId==='s1'||t.statusId==='s6').length;
-  document.getElementById('ds-progress').textContent=myT.filter(t=>t.statusId==='s3').length;
-  document.getElementById('ds-4th').textContent     =isAdmin()?myT.filter(t=>t.priorityId==='p4').length:myT.filter(t=>t.statusId==='s5').length;
-  document.getElementById('ds-4thLbl').textContent  =isAdmin()?'Critical':'Closed';
+  const myT = isAdmin() ? _tickets : _tickets.filter(t=>t.userId===SESSION.user.uid);
+  const activeT = myT.filter(t=>!['s5'].includes(t.statusId));
+
+  document.getElementById('ds-total').textContent    = myT.length;
+  document.getElementById('ds-open').textContent     = myT.filter(t=>['s1','s6'].includes(t.statusId)).length;
+  document.getElementById('ds-progress').textContent = myT.filter(t=>['s2','s3'].includes(t.statusId)).length;
+  document.getElementById('ds-4th').textContent     = isAdmin()
+    ? myT.filter(t=>t.priorityId==='p4').length
+    : myT.filter(t=>t.statusId==='s5').length;
+  document.getElementById('ds-4thLbl').textContent  = isAdmin() ? 'Critical' : 'Closed';
+
+  // Update label for 3rd stat card
+  const progLbl = document.getElementById('ds-progressLbl');
+  if(progLbl) progLbl.textContent = isAdmin() ? 'In Progress' : 'Assigned / In Progress';
+
+  // User welcome message on dashboard
+  if(!isAdmin()){
+    const openC   = myT.filter(t=>['s1','s6'].includes(t.statusId)).length;
+    const inProgC = myT.filter(t=>['s2','s3'].includes(t.statusId)).length;
+    const resolvedC = myT.filter(t=>t.statusId==='s4').length;
+    const closedC = myT.filter(t=>t.statusId==='s5').length;
+    // Update labels to be user-friendly
+    document.getElementById('ds-open').textContent     = openC;
+    document.getElementById('ds-progress').textContent = inProgC;
+  }
   document.getElementById('adminCharts').style.display=isAdmin()?'flex':'none';
   document.getElementById('th-recBy').style.display=isAdmin()?'':'none';
 
@@ -989,7 +1086,16 @@ function renderDashboard(){
   }
 
   const recent=myT.slice(0,5);
-  document.getElementById('recentBody').innerHTML=recent.length===0?emptyRow(6,'No tickets yet.'):recent.map(t=>`<tr style="cursor:pointer" onclick="viewTicket('${t.id}')"><td><a href="#" onclick="return false" style="color:var(--blue);font-weight:500">${t.ticketNo}</a></td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.subject}</td>${isAdmin()?`<td>${getUser(t.userId)}</td>`:''}<td>${priBadge(t.priorityId)}</td><td>${statBadge(t.statusId)}</td><td>${fmtDate(t.createdAt)}</td></tr>`).join('');
+  document.getElementById('recentBody').innerHTML = recent.length===0
+    ? emptyRow(6,'No tickets yet. <a href="#" onclick="showPage(\'newTicket\',null);return false" style="color:var(--blue)">Raise your first ticket →</a>')
+    : recent.map(t=>`<tr style="cursor:pointer" onclick="viewTicket('${t.id}')">
+        <td><a href="#" onclick="return false" style="color:var(--blue);font-weight:500">${t.ticketNo}</a></td>
+        <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.subject}</td>
+        ${isAdmin()?`<td>${getUser(t.userId)}</td>`:''}
+        <td>${priBadge(t.priorityId)}</td>
+        <td>${statBadge(t.statusId)}</td>
+        <td>${fmtDate(t.createdAt)}</td>
+      </tr>`).join('');
 }
 
 // ── TICKET LIST ───────────────────────────────────────────────
@@ -1005,17 +1111,43 @@ function populateFilters(){
   });
 }
 
+// ── Dashboard card click → navigate to ticket list with filter ──
+window.filterTicketsFromDash = function(type){
+  // Reset filters first
+  const fStatus   = document.getElementById('fStatus');
+  const fPriority = document.getElementById('fPriority');
+  fStatus.value   = '';
+  fPriority.value = '';
+
+  if(type === 'open'){
+    // Show Open + Reopened
+    fStatus.value = 's1';
+  } else if(type === 'inprogress'){
+    // Show Assigned + In Progress
+    fStatus.value = 's3';
+  } else if(type === 'critical'){
+    // Show Critical priority
+    fPriority.value = 'p4';
+  }
+  // 'all' = no filter, show everything
+
+  // Navigate to tickets page
+  showPage('tickets', document.querySelector('.nav-item[data-p="tickets"]'));
+};
+
 window.renderTickets=function(){
-  document.getElementById('ticketListTitle').textContent=isAdmin()?'All Tickets':'My Tickets';
-  document.getElementById('ticketListSub').textContent  =isAdmin()?'All Tickets':'My Tickets';
-  document.getElementById('th-by').style.display        =isAdmin()?'':'none';
+  const admin = isAdmin();
+  document.getElementById('ticketListTitle').textContent = admin ? 'All Tickets' : 'My Tickets';
+  document.getElementById('ticketListSub').textContent   = admin ? 'All Tickets' : 'My Tickets';
+  document.getElementById('th-by').style.display         = admin ? '' : 'none';
   const thAssigned = document.getElementById('th-assigned');
-  if(thAssigned) thAssigned.style.display = isAdmin()?'':'none';
-  const fs=document.getElementById('fStatus').value, fp=document.getElementById('fPriority').value;
-  let data=isAdmin()?_tickets:_tickets.filter(t=>t.userId===SESSION.user.uid);
-  if(fs) data=data.filter(t=>t.statusId===fs);
-  if(fp) data=data.filter(t=>t.priorityId===fp);
-  document.getElementById('ticketBody').innerHTML=data.length===0?emptyRow(9,'No tickets found.'):data.map(t=>`<tr><td><a href="#" onclick="viewTicket('${t.id}');return false" style="color:var(--blue);font-weight:500">${t.ticketNo}</a></td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.subject}</td>${isAdmin()?`<td>${getUser(t.userId)}</td>`:''}<td>${getDept(t.deptId)}</td><td>${getType(t.typeId)}</td><td>${priBadge(t.priorityId)}</td><td>${statBadge(t.statusId)}</td>${isAdmin()?`<td>${t.assignedTo?getUser(t.assignedTo):'<span style="color:var(--muted);font-size:12px">Unassigned</span>'}` +'</td>':''}<td>${fmtDate(t.createdAt)}</td><td><button class="btn-icon" onclick="viewTicket('${t.id}')" title="View"><i class="ti ti-eye"></i></button>${isAdmin()?`<button class="btn-icon" onclick="delTicket('${t.id}')" title="Delete" style="color:var(--red)"><i class="ti ti-trash"></i></button>`:''}</td></tr>`).join('');
+  if(thAssigned) thAssigned.style.display = admin ? '' : 'none';
+  const fs = document.getElementById('fStatus').value;
+  const fp = document.getElementById('fPriority').value;
+  let data = admin ? _tickets : _tickets.filter(t=>t.userId===SESSION.user.uid);
+  if(fs) data = data.filter(t=>t.statusId===fs);
+  if(fp) data = data.filter(t=>t.priorityId===fp);
+  document.getElementById('ticketBody').innerHTML=data.length===0?emptyRow(9,'No tickets found.'):data.map(t=>`<tr><td><a href="#" onclick="viewTicket('${t.id}');return false" style="color:var(--blue);font-weight:500">${t.ticketNo}</a></td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.subject}</td>${isAdmin()?`<td>${getUser(t.userId)}</td>`:''}<td>${getDept(t.deptId)}</td><td>${getType(t.typeId)}</td><td>${priBadge(t.priorityId)}</td><td>${statBadge(t.statusId)}</td>${isAdmin()?`<td style="font-size:12px">${t.assignedTo?`<span style="font-weight:500">${getUser(t.assignedTo)}</span>`:'<span style="color:var(--muted)">Unassigned</span>'}</td>`:''}<td>${fmtDate(t.createdAt)}</td><td><button class="btn-icon" onclick="viewTicket('${t.id}')" title="View"><i class="ti ti-eye"></i></button>${isAdmin()?`<button class="btn-icon" onclick="delTicket('${t.id}')" title="Delete" style="color:var(--red)"><i class="ti ti-trash"></i></button>`:''}</td></tr>`).join('');
 };
 
 // ── TICKET DETAIL ─────────────────────────────────────────────
@@ -1037,9 +1169,11 @@ window.viewTicket=async function(id){
   document.getElementById('td-pri').textContent    =getPri(t.priorityId);
   document.getElementById('td-stat').textContent   =getStat(t.statusId);
   document.getElementById('td-date').textContent   =fmtDate(t.createdAt);
-  // Assigned To
-  const assignedEl = document.getElementById('td-assignedTo');
-  if(assignedEl) assignedEl.textContent = t.assignedTo ? getUser(t.assignedTo) : 'Unassigned';
+  // Assigned To — only visible to Admin
+  const assignedWrap = document.getElementById('td-assignedToWrap');
+  const assignedEl   = document.getElementById('td-assignedTo');
+  if(assignedWrap) assignedWrap.style.display = isAdmin() ? '' : 'none';
+  if(assignedEl)   assignedEl.textContent = t.assignedTo ? getUser(t.assignedTo) : 'Unassigned';
 
   const sw=document.getElementById('td-statusWrap'), ub=document.getElementById('td-userBanner');
   if(isAdmin()){
@@ -1226,11 +1360,54 @@ function initNewTicketForm(){
   document.getElementById('ct-no').value=no;
   document.getElementById('ctNoDisplay').textContent=no;
   document.getElementById('ct-dept').innerHTML=MASTERS.departments.map(d=>`<option value="${d.id}">${d.name}</option>`).join('');
-  document.getElementById('ct-type').innerHTML=MASTERS.issueTypes.map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
   document.getElementById('ct-priority').innerHTML=MASTERS.priorities.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
   const med=MASTERS.priorities.find(p=>p.level===2);
   if(med) document.getElementById('ct-priority').value=med.id;
-  loadSubTypes();
+
+  // Issue Type & Sub-Type — Admin: editable dropdown | User: locked read-only display
+  const ctType    = document.getElementById('ct-type');
+  const ctSubtype = document.getElementById('ct-subtype');
+  const typeWrap  = document.getElementById('ct-typeWrap');
+  const subWrap   = document.getElementById('ct-subtypeWrap');
+
+  if(isAdmin()){
+    // Admin gets full editable dropdowns
+    ctType.innerHTML   = MASTERS.issueTypes.map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
+    ctType.disabled    = false;
+    ctType.style.background = '';
+    ctType.style.color      = '';
+    ctType.style.cursor     = '';
+    ctSubtype.disabled = false;
+    ctSubtype.style.background = '';
+    ctSubtype.style.color      = '';
+    ctSubtype.style.cursor     = '';
+    // Show ADMIN ONLY badges
+    const ab1 = document.getElementById('ct-typeAdminBadge');
+    const ab2 = document.getElementById('ct-subtypeAdminBadge');
+    if(ab1) ab1.style.display = 'inline';
+    if(ab2) ab2.style.display = 'inline';
+    const typeNote = document.getElementById('ct-typeNote');
+    if(typeNote) typeNote.style.display = 'none';
+    loadSubTypes();
+  } else {
+    // User gets locked dropdowns — pre-filled but cannot change
+    ctType.innerHTML    = MASTERS.issueTypes.map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
+    ctType.disabled     = true;
+    ctType.style.background   = '#F8F9FB';
+    ctType.style.color        = 'var(--muted)';
+    ctType.style.cursor       = 'not-allowed';
+    loadSubTypes();
+    ctSubtype.disabled  = true;
+    ctSubtype.style.background= '#F8F9FB';
+    ctSubtype.style.color     = 'var(--muted)';
+    ctSubtype.style.cursor    = 'not-allowed';
+    // Add lock badge to labels
+    const typeLbl = document.querySelector('label[for="ct-type"]') || typeWrap?.querySelector('.form-label');
+    const subLbl  = document.querySelector('label[for="ct-subtype"]') || subWrap?.querySelector('.form-label');
+    // Show info note
+    const typeNote = document.getElementById('ct-typeNote');
+    if(typeNote) typeNote.style.display = 'flex';
+  }
   if(isAdmin()){
     document.getElementById('raisedByWrap').innerHTML=`<select class="form-select" id="ct-userId">${_users.map(u=>`<option value="${u.id}">${u.name}</option>`).join('')}</select>`;
     document.getElementById('ct-userId').value=SESSION.user.uid;
@@ -1248,8 +1425,17 @@ function initNewTicketForm(){
 window.initNewTicketForm=initNewTicketForm;
 
 window.loadSubTypes=function(){
-  const tid=document.getElementById('ct-type').value;
-  document.getElementById('ct-subtype').innerHTML=MASTERS.subTypes.filter(s=>s.typeId===tid&&s.active).map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+  const tid     = document.getElementById('ct-type').value;
+  const ctSub   = document.getElementById('ct-subtype');
+  const wasDisabled = ctSub.disabled;
+  ctSub.innerHTML = MASTERS.subTypes.filter(s=>s.typeId===tid&&s.active).map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+  // Preserve disabled state after reload
+  if(wasDisabled){
+    ctSub.disabled         = true;
+    ctSub.style.background = '#F8F9FB';
+    ctSub.style.color      = 'var(--muted)';
+    ctSub.style.cursor     = 'not-allowed';
+  }
 };
 
 window.submitTicket=async function(){
@@ -1257,6 +1443,13 @@ window.submitTicket=async function(){
   if(!subject){toast('Subject is required','error');return;}
   const uid=document.getElementById('ct-userId').value;
   if(!isAdmin()&&uid!==SESSION.user.uid){toast('Access denied','error');return;}
+  // Extra safety: if user, ensure type/subtype dropdowns are set
+  if(!isAdmin()){
+    const typeEl = document.getElementById('ct-type');
+    const subEl  = document.getElementById('ct-subtype');
+    if(!typeEl.value){ toast('Please select an Issue Type','error'); return; }
+    if(!subEl.value)  { toast('Please select an Issue Sub-Type','error'); return; }
+  }
   const btn=document.getElementById('submitBtn');
   btn.innerHTML='<span class="spinner"></span> Submitting…'; btn.disabled=true;
   setSyncStatus('saving');
@@ -1632,6 +1825,58 @@ window.startBulkUpload = async function(){
   btn.disabled = false;
   toast(`${created} users created successfully!`);
 };
+
+
+// ═══════════════════════════════════════════════════════
+// AUTO LOGOUT — 20 minutes inactivity
+// ═══════════════════════════════════════════════════════
+const AUTO_LOGOUT_MS   = 20 * 60 * 1000; // 20 minutes
+const WARN_BEFORE_MS   = 60 * 1000;       // warn 1 min before
+let   _autoLogoutTimer = null;
+let   _warnTimer       = null;
+let   _warnShown       = false;
+
+function resetAutoLogout(){
+  clearTimeout(_autoLogoutTimer);
+  clearTimeout(_warnTimer);
+  _warnShown = false;
+  // Hide warning if visible
+  const wb = document.getElementById('logoutWarnBanner');
+  if(wb) wb.style.display = 'none';
+
+  if(!SESSION.user) return; // not logged in
+
+  // Warn 1 minute before logout
+  _warnTimer = setTimeout(()=>{
+    _warnShown = true;
+    const wb2 = document.getElementById('logoutWarnBanner');
+    if(wb2) wb2.style.display = 'flex';
+  }, AUTO_LOGOUT_MS - WARN_BEFORE_MS);
+
+  // Auto logout
+  _autoLogoutTimer = setTimeout(async ()=>{
+    if(SESSION.user){
+      toast('Session expired — logging out automatically', 'error');
+      setTimeout(async ()=>{ await signOut(auth); }, 1500);
+    }
+  }, AUTO_LOGOUT_MS);
+}
+
+function startAutoLogout(){
+  // Reset on any mouse/keyboard/touch activity
+  ['mousemove','mousedown','keydown','touchstart','click','scroll'].forEach(ev=>{
+    document.addEventListener(ev, resetAutoLogout, { passive:true });
+  });
+  resetAutoLogout();
+}
+
+function stopAutoLogout(){
+  clearTimeout(_autoLogoutTimer);
+  clearTimeout(_warnTimer);
+  ['mousemove','mousedown','keydown','touchstart','click','scroll'].forEach(ev=>{
+    document.removeEventListener(ev, resetAutoLogout);
+  });
+}
 
 // ── KEYBOARD + MODAL ──────────────────────────────────────────
 document.addEventListener('keydown',e=>{
