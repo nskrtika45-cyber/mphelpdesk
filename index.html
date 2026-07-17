@@ -416,6 +416,11 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
     </div>
     <div id="td-statusWrap"></div>
   </div>
+  <!-- EDIT TICKET MODAL TRIGGER (admin only) -->
+  <div id="td-editBtnWrap" style="display:none;margin-bottom:12px;padding:10px 14px;background:#fff;border:1px solid var(--border);border-radius:8px;display:none;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+    <span style="font-size:13px;color:var(--muted)"><i class="ti ti-edit" style="margin-right:4px"></i>Edit ticket details — change subject, description, type, priority</span>
+    <button class="btn-outline" onclick="openEditTicketModal()" style="font-size:12px;padding:6px 14px"><i class="ti ti-edit"></i> Modify Ticket</button>
+  </div>
   <div id="td-userBanner" class="info-panel mb-3" style="display:none">
     <i class="ti ti-info-circle" style="font-size:16px;flex-shrink:0"></i>
     <span>Your ticket is being handled by our support team. You can add comments below to communicate with them.</span>
@@ -551,13 +556,77 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
         <div class="col-md-6"><label class="form-label">Department</label><select class="form-select" id="u-dept"></select></div>
         <div class="col-md-6" id="u-passWrap"><label class="form-label">Temporary Password <span style="color:var(--red)">*</span></label><input class="form-control" type="password" id="u-pass" placeholder="Min 6 characters"/></div>
         <div class="col-md-6" style="display:flex;align-items:flex-end"><label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox" id="u-active" checked/> Active</label></div>
-        <div class="col-12"><div class="info-panel"><i class="ti ti-mail" style="font-size:15px;flex-shrink:0"></i> A welcome email with login details will be sent to the user automatically.</div></div>
+        <div class="col-12" id="umEmailNote"><div class="info-panel"><i class="ti ti-mail" style="font-size:15px;flex-shrink:0"></i> A welcome email with login details will be sent to the user automatically.</div></div>
       </div>
     </div>
     <div class="mf"><button class="btn-outline" onclick="closeUM()">Cancel</button><button class="btn-teal" id="umSaveBtn" onclick="saveUser()"><i class="ti ti-check"></i> Create User</button></div>
   </div>
 </div>
 
+
+
+
+<!-- DEPARTMENT DELETE BLOCKED POPUP -->
+<div class="overlay" id="deptBlockModal">
+  <div class="modal-box" style="width:min(440px,95vw)">
+    <div class="mb-p" id="deptBlockMsg"></div>
+    <div class="mf" style="justify-content:center">
+      <button class="btn-navy" onclick="closeDeptBlockModal()" style="padding:9px 28px"><i class="ti ti-check"></i> OK, Got It</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT TICKET MODAL (Admin only) -->
+<div class="overlay" id="editTicketModal">
+  <div class="modal-box" style="width:min(680px,95vw)">
+    <div class="mh">
+      <h3><i class="ti ti-edit" style="margin-right:6px"></i>Modify Ticket</h3>
+      <button class="btn-x" onclick="closeEditTicketModal()">✕</button>
+    </div>
+    <div class="mb-p">
+      <div class="row g-3">
+        <div class="col-12">
+          <label class="form-label">Subject <span style="color:var(--red)">*</span></label>
+          <input class="form-control" id="et-subject" placeholder="Brief summary of the issue"/>
+        </div>
+        <div class="col-12">
+          <label class="form-label">Description</label>
+          <textarea class="form-control" id="et-desc" rows="4" placeholder="Detailed description..."></textarea>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Issue Type</label>
+          <select class="form-select" id="et-type" onchange="loadEditSubTypes()"></select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Issue Sub-Type</label>
+          <select class="form-select" id="et-subtype"></select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Priority</label>
+          <select class="form-select" id="et-priority"></select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Department</label>
+          <select class="form-select" id="et-dept"></select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Status</label>
+          <select class="form-select" id="et-status"></select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Assign To</label>
+          <select class="form-select" id="et-assign">
+            <option value="">-- Unassigned --</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn-outline" onclick="closeEditTicketModal()">Cancel</button>
+      <button class="btn-teal" id="etSaveBtn" onclick="saveEditTicket()"><i class="ti ti-device-floppy"></i> Save Changes</button>
+    </div>
+  </div>
+</div>
 
 <!-- BULK USER UPLOAD MODAL -->
 <div class="overlay" id="bulkModal">
@@ -985,7 +1054,9 @@ function initAppUI(){
   populateFilters();
   subscribeTickets();
   startAutoLogout();
-  showPage('dashboard', document.querySelector(isAdmin()?'#nav-admin .nav-item':'#nav-user .nav-item'));
+  // Set base history state so browser back doesn't leave the app
+  history.replaceState({ page:'dashboard', ticketId:null }, '', '#dashboard');
+  showPage('dashboard', document.querySelector(isAdmin()?'#nav-admin .nav-item':'#nav-user .nav-item'), true);
 }
 
 // ── REAL-TIME TICKET SUBSCRIPTION ─────────────────────────────
@@ -1025,16 +1096,45 @@ function subscribeTickets(){
 
 // ── NAVIGATION ────────────────────────────────────────────────
 const PAGE_TITLES={dashboard:'Dashboard',tickets:'Tickets',newTicket:'New Ticket',ticketDetail:'Ticket Detail',mIssueType:'Issue Type',mSubType:'Issue Sub-Type',mPriority:'Priority',mDept:'Department',mStatus:'Status',users:'User Management',reports:'Reports',changePwd:'Change Password'};
-window.showPage=function(id,el){
+window.showPage=function(id,el,skipHistory){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-'+id)?.classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   if(el) el.classList.add('active');
   else{ const m=document.querySelector(`.nav-item[data-p="${id}"]`); if(m) m.classList.add('active'); }
   document.getElementById('topbarTitle').textContent=PAGE_TITLES[id]||id;
+
+  // Browser history — back button navigates between pages instead of leaving the app
+  if(!skipHistory && SESSION.user){
+    const newState = { page:id, ticketId: id==='ticketDetail' ? window._viewTicketId : null };
+    const cur = history.state;
+    // Avoid pushing duplicate consecutive states
+    if(!cur || cur.page !== newState.page || cur.ticketId !== newState.ticketId){
+      history.pushState(newState, '', '#'+id);
+    }
+  }
+
   const fn={dashboard:renderDashboard,tickets:renderTickets,newTicket:initNewTicketForm,mIssueType:renderIssueTypes,mSubType:renderSubTypes,mPriority:renderPriorities,mDept:renderDepts,mStatus:renderStatuses,users:renderUsers,reports:runReport};
   fn[id]?.();
 };
+
+// ── BROWSER BACK/FORWARD BUTTON SUPPORT ──
+window.addEventListener('popstate', function(ev){
+  if(!SESSION.user){ return; } // not logged in — let browser handle it
+  const state = ev.state;
+  if(state && state.page){
+    if(state.page === 'ticketDetail' && state.ticketId){
+      window._viewTicketId = state.ticketId;
+      viewTicket(state.ticketId);
+      // viewTicket calls showPage which would push again — the skipHistory in re-render handles it
+    } else {
+      showPage(state.page, null, true); // skipHistory=true, don't push again
+    }
+  } else {
+    // No state — go to dashboard instead of leaving/logging out
+    showPage('dashboard', null, true);
+  }
+});
 
 // ── BADGES ────────────────────────────────────────────────────
 function updateBadges(){
@@ -1176,14 +1276,16 @@ window.viewTicket=async function(id){
   if(assignedEl)   assignedEl.textContent = t.assignedTo ? getUser(t.assignedTo) : 'Unassigned';
 
   const sw=document.getElementById('td-statusWrap'), ub=document.getElementById('td-userBanner');
+  const editBar = document.getElementById('td-editBtnWrap');
   if(isAdmin()){
     ub.style.display='none';
+    if(editBar) editBar.style.display='flex';
     sw.innerHTML=`<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
       <div style="display:flex;align-items:center;gap:6px">
         <label style="font-size:12px;color:var(--muted);font-weight:500;white-space:nowrap">Assign To:</label>
         <select class="form-select" id="assignSel" style="width:160px;font-size:12px" onchange="onAssignChange()">
           <option value="">-- Unassigned --</option>
-          ${_users.map(u=>`<option value="${u.id}" ${t.assignedTo===u.id?'selected':''}>${u.name} (${u.role})</option>`).join('')}
+          ${_users.filter(u=>u.role==='Admin').map(u=>`<option value="${u.id}" ${t.assignedTo===u.id?'selected':''}>${u.name}</option>`).join('')}
         </select>
       </div>
       <div style="display:flex;align-items:center;gap:6px">
@@ -1196,7 +1298,11 @@ window.viewTicket=async function(id){
         <i class="ti ti-device-floppy"></i> Save Changes
       </button>
     </div>`;
-  } else { ub.style.display='flex'; sw.innerHTML=''; }
+  } else {
+    ub.style.display='flex';
+    sw.innerHTML='';
+    if(editBar) editBar.style.display='none';
+  }
 
   renderComments(t); renderActivity(t);
   showPage('ticketDetail',null);
@@ -1482,7 +1588,71 @@ window.submitTicket=async function(){
 window.renderIssueTypes =function(){ document.getElementById('itBody').innerHTML=MASTERS.issueTypes.map((r,i)=>`<tr><td>${i+1}</td><td><strong>${r.name}</strong></td><td>${r.active?'<span class="b-resolved">Active</span>':'<span class="b-closed">Inactive</span>'}</td><td><button class="btn-icon" onclick='openMM("issueType",${JSON.stringify(r)})'><i class="ti ti-edit"></i></button></td></tr>`).join(''); };
 window.renderSubTypes   =function(){ document.getElementById('stBody').innerHTML=MASTERS.subTypes.map((r,i)=>`<tr><td>${i+1}</td><td>${getType(r.typeId)}</td><td>${r.name}</td><td>${r.active?'<span class="b-resolved">Active</span>':'<span class="b-closed">Inactive</span>'}</td><td><button class="btn-icon" onclick='openMM("subType",${JSON.stringify(r)})'><i class="ti ti-edit"></i></button></td></tr>`).join(''); };
 window.renderPriorities =function(){ const m={1:'b-low',2:'b-medium',3:'b-high',4:'b-critical'}; document.getElementById('priBody').innerHTML=MASTERS.priorities.map((r,i)=>`<tr><td>${i+1}</td><td>${r.name}</td><td><span class="${m[r.level]||'b-low'}">${r.name}</span></td><td><button class="btn-icon" onclick='openMM("priority",${JSON.stringify(r)})'><i class="ti ti-edit"></i></button></td></tr>`).join(''); };
-window.renderDepts      =function(){ document.getElementById('deptBody').innerHTML=MASTERS.departments.map((r,i)=>`<tr><td>${i+1}</td><td>${r.name}</td><td>${r.active?'<span class="b-resolved">Active</span>':'<span class="b-closed">Inactive</span>'}</td><td><button class="btn-icon" onclick='openMM("dept",${JSON.stringify(r)})'><i class="ti ti-edit"></i></button></td></tr>`).join(''); };
+window.renderDepts      =function(){ document.getElementById('deptBody').innerHTML=MASTERS.departments.map((r,i)=>`<tr><td>${i+1}</td><td>${r.name}</td><td>${r.active?'<span class="b-resolved">Active</span>':'<span class="b-closed">Inactive</span>'}</td><td><button class="btn-icon" onclick='openMM("dept",${JSON.stringify(r)})' title="Edit"><i class="ti ti-edit"></i></button> <button class="btn-icon" onclick='deleteDept("${r.id}","${r.name.replace(/"/g,'')}")' title="Delete" style="color:var(--red)"><i class="ti ti-trash"></i></button></td></tr>`).join(''); };
+
+// ── DELETE DEPARTMENT (with ticket validation) ──
+window.deleteDept = async function(deptId, deptName){
+  if(!isAdmin()) return;
+
+  // Check if any tickets exist for this department
+  const ticketsInDept = _tickets.filter(t => t.deptId === deptId);
+  // Check if any users belong to this department
+  const usersInDept = _users.filter(u => u.deptId === deptId);
+
+  if(ticketsInDept.length > 0){
+    showDeptBlockPopup(deptName, ticketsInDept.length, 'ticket');
+    return;
+  }
+  if(usersInDept.length > 0){
+    showDeptBlockPopup(deptName, usersInDept.length, 'user');
+    return;
+  }
+
+  // Safe to delete — confirm first
+  if(!confirm(`Delete department "${deptName}"?\n\nThis cannot be undone.`)) return;
+
+  setSyncStatus('saving');
+  try{
+    await deleteDoc(doc(db,'departments', deptId));
+    await loadMasters();
+    populateFilters();
+    renderDepts();
+    setSyncStatus('synced');
+    toast(`Department "${deptName}" deleted`);
+  } catch(e){
+    setSyncStatus('err');
+    toast('Delete failed: '+e.message,'error');
+  }
+};
+
+// ── BLOCKED DELETE POPUP ──
+window.showDeptBlockPopup = function(deptName, count, type){
+  const reason = type === 'ticket'
+    ? `<strong>${count} ticket${count>1?'s are':' is'}</strong> raised under this department.`
+    : `<strong>${count} user${count>1?'s belong':' belongs'}</strong> to this department.`;
+  const advice = type === 'ticket'
+    ? 'Close or reassign those tickets to another department first, or mark this department as <strong>Inactive</strong> instead.'
+    : 'Move those users to another department first, or mark this department as <strong>Inactive</strong> instead.';
+
+  document.getElementById('deptBlockMsg').innerHTML = `
+    <div style="text-align:center;margin-bottom:14px">
+      <div style="width:56px;height:56px;background:var(--red-bg);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
+        <i class="ti ti-alert-triangle" style="font-size:26px;color:var(--red)"></i>
+      </div>
+      <div style="font-size:16px;font-weight:700">Cannot delete "${deptName}"</div>
+    </div>
+    <div style="font-size:13.5px;line-height:1.7;color:var(--text);background:var(--red-bg);border-radius:8px;padding:12px 16px;margin-bottom:12px">
+      ${reason}
+    </div>
+    <div style="font-size:13px;line-height:1.7;color:var(--muted)">
+      <i class="ti ti-bulb" style="color:var(--amber)"></i> ${advice}
+    </div>`;
+  document.getElementById('deptBlockModal').classList.add('show');
+};
+
+window.closeDeptBlockModal = function(){
+  document.getElementById('deptBlockModal').classList.remove('show');
+};
 window.renderStatuses   =function(){ document.getElementById('statBody').innerHTML=MASTERS.statuses.map((r,i)=>`<tr><td>${i+1}</td><td>${statBadge(r.id)}</td><td>${r.order}</td><td><button class="btn-icon" onclick='openMM("status",${JSON.stringify(r)})'><i class="ti ti-edit"></i></button></td></tr>`).join(''); };
 
 window.openMM=function(type,rec=null){
@@ -1537,14 +1707,28 @@ window.renderUsers=function(){
 
 window.openUserModal=function(user=null){
   window._editUserId=user?.id||null;
-  document.getElementById('umTitle').textContent=user?'Edit User':'Add User';
-  document.getElementById('u-name').value=user?.name||'';
-  document.getElementById('u-email').value=user?.email||'';
-  document.getElementById('u-role').value=user?.role||'User';
-  document.getElementById('u-active').checked=user?.active!==false;
-  document.getElementById('u-pass').value='';
-  document.getElementById('u-passWrap').style.display=user?'none':'block';
-  document.getElementById('u-dept').innerHTML=MASTERS.departments.map(d=>`<option value="${d.id}" ${user&&user.deptId===d.id?'selected':''}>${d.name}</option>`).join('');
+  const isEdit = !!user;
+  document.getElementById('umTitle').textContent = isEdit ? 'Edit User' : 'Add User';
+  document.getElementById('u-name').value  = user?.name||'';
+  document.getElementById('u-email').value = user?.email||'';
+  document.getElementById('u-email').readOnly = isEdit; // email can't change (Firebase Auth)
+  document.getElementById('u-email').style.background = isEdit ? '#F8F9FB' : '';
+  document.getElementById('u-role').value  = user?.role||'User';
+  document.getElementById('u-active').checked = user?.active!==false;
+  document.getElementById('u-pass').value  = '';
+  document.getElementById('u-passWrap').style.display = isEdit ? 'none' : 'block';
+  document.getElementById('u-dept').innerHTML = MASTERS.departments.map(d=>`<option value="${d.id}" ${user&&user.deptId===d.id?'selected':''}>${d.name}</option>`).join('');
+
+  // Button label: Update vs Create
+  const saveBtn = document.getElementById('umSaveBtn');
+  saveBtn.innerHTML = isEdit
+    ? '<i class="ti ti-check"></i> Update User'
+    : '<i class="ti ti-check"></i> Create User';
+
+  // Welcome email note: only relevant for new users
+  const emailNote = document.getElementById('umEmailNote');
+  if(emailNote) emailNote.style.display = isEdit ? 'none' : 'block';
+
   document.getElementById('userModal').classList.add('show');
 };
 window.closeUM=function(){ document.getElementById('userModal').classList.remove('show'); window._editUserId=null; };
@@ -1566,7 +1750,7 @@ window.saveUser=async function(){
     if(window._editUserId){
       // Edit existing user profile in Firestore
       await updateDoc(doc(db,'users',window._editUserId),{name,role,deptId,active});
-      toast('User updated');
+      toast('User details updated successfully');
     } else {
       // Create new Firebase Auth user + Firestore profile
       if(!pwd||pwd.length<6){toast('Password must be at least 6 characters','error');btn.innerHTML='<i class="ti ti-check"></i> Create User';btn.disabled=false;return;}
@@ -1585,7 +1769,12 @@ window.saveUser=async function(){
     const msgs={'auth/email-already-in-use':'Email already exists.','auth/weak-password':'Password too weak.'};
     toast((msgs[e.code]||e.message),'error');
   }
-  finally{ btn.innerHTML='<i class="ti ti-check"></i> Create User'; btn.disabled=false; }
+  finally{
+    btn.innerHTML = window._editUserId
+      ? '<i class="ti ti-check"></i> Update User'
+      : '<i class="ti ti-check"></i> Create User';
+    btn.disabled = false;
+  }
 };
 
 // ── REPORTS ───────────────────────────────────────────────────
@@ -1878,14 +2067,140 @@ function stopAutoLogout(){
   });
 }
 
+
+// ═══════════════════════════════════════════════════════
+// EDIT / MODIFY TICKET (Admin only)
+// ═══════════════════════════════════════════════════════
+window.openEditTicketModal = function(){
+  const id = window._viewTicketId;
+  const t  = _tickets.find(x=>x.id===id);
+  if(!t || !isAdmin()) return;
+
+  // Populate fields
+  document.getElementById('et-subject').value = t.subject || '';
+  document.getElementById('et-desc').value    = t.description || '';
+
+  // Issue Types
+  document.getElementById('et-type').innerHTML =
+    MASTERS.issueTypes.map(x=>`<option value="${x.id}" ${x.id===t.typeId?'selected':''}>${x.name}</option>`).join('');
+  loadEditSubTypes(t.subTypeId);
+
+  // Priority
+  document.getElementById('et-priority').innerHTML =
+    MASTERS.priorities.map(p=>`<option value="${p.id}" ${p.id===t.priorityId?'selected':''}>${p.name}</option>`).join('');
+
+  // Department
+  document.getElementById('et-dept').innerHTML =
+    MASTERS.departments.map(d=>`<option value="${d.id}" ${d.id===t.deptId?'selected':''}>${d.name}</option>`).join('');
+
+  // Status
+  document.getElementById('et-status').innerHTML =
+    MASTERS.statuses.map(s=>`<option value="${s.id}" ${s.id===t.statusId?'selected':''}>${s.name}</option>`).join('');
+
+  // Assign To — Admin users only
+  document.getElementById('et-assign').innerHTML =
+    '<option value="">-- Unassigned --</option>' +
+    _users.filter(u=>u.role==='Admin').map(u=>`<option value="${u.id}" ${u.id===t.assignedTo?'selected':''}>${u.name}</option>`).join('');
+
+  document.getElementById('editTicketModal').classList.add('show');
+};
+
+window.loadEditSubTypes = function(selectedId=null){
+  const tid = document.getElementById('et-type').value;
+  const subs = MASTERS.subTypes.filter(s=>s.typeId===tid && s.active);
+  document.getElementById('et-subtype').innerHTML =
+    subs.map(s=>`<option value="${s.id}" ${s.id===(selectedId||'') ?'selected':''}>${s.name}</option>`).join('');
+};
+
+window.closeEditTicketModal = function(){
+  document.getElementById('editTicketModal').classList.remove('show');
+};
+
+window.saveEditTicket = async function(){
+  if(!isAdmin()) return;
+  const id      = window._viewTicketId;
+  const t       = _tickets.find(x=>x.id===id);
+  if(!t) return;
+
+  const subject    = document.getElementById('et-subject').value.trim();
+  const desc       = document.getElementById('et-desc').value.trim();
+  const typeId     = document.getElementById('et-type').value;
+  const subTypeId  = document.getElementById('et-subtype').value || null;
+  const priorityId = document.getElementById('et-priority').value;
+  const deptId     = document.getElementById('et-dept').value;
+  const statusId   = document.getElementById('et-status').value;
+  const assignedTo = document.getElementById('et-assign').value || null;
+
+  if(!subject){ toast('Subject is required','error'); return; }
+
+  const btn = document.getElementById('etSaveBtn');
+  btn.innerHTML = '<span class="spinner"></span> Saving…'; btn.disabled = true;
+  setSyncStatus('saving');
+
+  try{
+    const activity = [...(t.activity||[])];
+
+    // Log what changed
+    if(subject    !== t.subject)    activity.push({ text:`Subject updated`,          by:SESSION.profile.name, date:today() });
+    if(typeId     !== t.typeId)     activity.push({ text:`Issue Type → ${getType(typeId)}`, by:SESSION.profile.name, date:today() });
+    if(priorityId !== t.priorityId) activity.push({ text:`Priority → ${getPri(priorityId)}`, by:SESSION.profile.name, date:today() });
+    if(statusId   !== t.statusId)   activity.push({ text:`Status → ${getStat(statusId)}`,  by:SESSION.profile.name, date:today() });
+    if(assignedTo !== (t.assignedTo||null)){
+      const aName = _users.find(u=>u.id===assignedTo)?.name || 'Unassigned';
+      activity.push({ text:`Assigned to ${aName}`, by:SESSION.profile.name, date:today() });
+    }
+
+    await updateDoc(doc(db,'tickets',id), {
+      subject, description:desc,
+      typeId, subTypeId, priorityId, deptId, statusId,
+      assignedTo, activity,
+      updatedAt:   serverTimestamp(),
+      updatedBy:   SESSION.user.uid
+    });
+
+    setSyncStatus('synced');
+
+    // Update ticket detail UI immediately
+    document.getElementById('td-subject').textContent  = subject;
+    document.getElementById('td-desc').textContent     = desc;
+    document.getElementById('td-type').textContent     = getType(typeId);
+    document.getElementById('td-sub').textContent      = getSub(subTypeId) || '—';
+    document.getElementById('td-pri').textContent      = getPri(priorityId);
+    document.getElementById('td-stat').textContent     = getStat(statusId);
+    document.getElementById('td-dept').textContent     = getDept(deptId);
+    document.getElementById('td-pBadge').innerHTML     = priBadge(priorityId);
+    document.getElementById('td-sBadge').innerHTML     = statBadge(statusId);
+    const aEl = document.getElementById('td-assignedTo');
+    if(aEl) aEl.textContent = assignedTo ? (_users.find(u=>u.id===assignedTo)?.name||'—') : 'Unassigned';
+    renderActivity({...t, activity});
+
+    // Send notifications
+    try{
+      if(statusId   !== t.statusId)              await sendEmailNotification(id,'status_changed');
+      if(assignedTo !== (t.assignedTo||null))    await sendEmailNotification(id,'ticket_assigned');
+    } catch(e){}
+
+    closeEditTicketModal();
+    toast('Ticket updated successfully');
+  } catch(e){
+    setSyncStatus('err');
+    toast('Save failed: '+e.message,'error');
+  } finally {
+    btn.innerHTML = '<i class="ti ti-device-floppy"></i> Save Changes';
+    btn.disabled  = false;
+  }
+};
+
 // ── KEYBOARD + MODAL ──────────────────────────────────────────
 document.addEventListener('keydown',e=>{
   if(e.key==='Enter'&&document.getElementById('loginPage').style.display!=='none') doLogin();
-  if(e.key==='Escape'){ closeMM(); closeUM(); closeBulkModal(); }
+  if(e.key==='Escape'){ closeMM(); closeUM(); closeBulkModal(); closeEditTicketModal(); closeDeptBlockModal(); }
 });
 document.getElementById('masterModal').addEventListener('click',function(e){if(e.target===this)closeMM();});
 document.getElementById('userModal').addEventListener('click',function(e){if(e.target===this)closeUM();});
 document.getElementById('bulkModal').addEventListener('click',function(e){if(e.target===this)closeBulkModal();});
+document.getElementById('editTicketModal').addEventListener('click',function(e){if(e.target===this)closeEditTicketModal();});
+document.getElementById('deptBlockModal').addEventListener('click',function(e){if(e.target===this)closeDeptBlockModal();});
 
 // ── START ─────────────────────────────────────────────────────
 startApp();
