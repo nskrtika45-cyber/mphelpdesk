@@ -216,8 +216,9 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
     <div style="font-size:16px;font-weight:700;margin-bottom:4px">Sign in</div>
     <div style="font-size:13px;color:var(--muted);margin-bottom:18px">Use your company credentials</div>
     <div class="mb-3">
-      <label class="form-label">Email</label>
-      <input class="form-control" id="loginEmail" type="email" placeholder="your@email.com" autocomplete="username"/>
+      <label class="form-label">Employee ID</label>
+      <input class="form-control" id="loginEmail" type="text" placeholder="e.g. 101" autocomplete="username" maxlength="60"/>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">Enter your 3-digit Employee ID (admins may use email)</div>
     </div>
     <div class="mb-3">
       <label class="form-label">Password</label>
@@ -493,7 +494,7 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
     </div>
   </div>
   <div class="info-panel mb-3"><i class="ti ti-info-circle" style="font-size:16px;flex-shrink:0"></i> New users receive a Firebase Auth email with login credentials. Role is stored in Firestore.</div>
-  <div class="card-box"><div style="overflow-x:auto"><table class="table table-hover mb-0"><thead><tr><th>#</th><th>Name</th><th>Email</th><th>Role</th><th>Department</th><th>Active</th><th>Actions</th></tr></thead><tbody id="usersBody"></tbody></table></div></div>
+  <div class="card-box"><div style="overflow-x:auto"><table class="table table-hover mb-0"><thead><tr><th>#</th><th>Emp ID</th><th>Name</th><th>Email</th><th>Role</th><th>Department</th><th>Active</th><th>Actions</th></tr></thead><tbody id="usersBody"></tbody></table></div></div>
 </div>
 
 <!-- REPORTS -->
@@ -547,8 +548,9 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
     <div class="mh"><h3 id="umTitle">Add User</h3><button class="btn-x" onclick="closeUM()">✕</button></div>
     <div class="mb-p">
       <div class="row g-3">
+        <div class="col-md-6"><label class="form-label">Employee ID <span style="color:var(--red)">*</span></label><input class="form-control" id="u-empid" placeholder="e.g. 101" maxlength="3" oninput="this.value=this.value.replace(/[^0-9]/g,'')"/></div>
         <div class="col-md-6"><label class="form-label">Full Name <span style="color:var(--red)">*</span></label><input class="form-control" id="u-name" placeholder="Full name"/></div>
-        <div class="col-md-6"><label class="form-label">Email <span style="color:var(--red)">*</span></label><input class="form-control" id="u-email" placeholder="email@company.com"/></div>
+        <div class="col-md-6"><label class="form-label">Email (optional, for notifications)</label><input class="form-control" id="u-email" placeholder="email@company.com"/></div>
         <div class="col-md-6">
           <label class="form-label">Role</label>
           <select class="form-select" id="u-role"><option value="User">User — own tickets only</option><option value="Admin">Admin — full access</option></select>
@@ -643,7 +645,7 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
         <div style="font-size:12.5px;color:var(--muted);margin-bottom:10px">Fill in this CSV template with your users. Do not change the column headers.</div>
         <button class="btn-outline" onclick="downloadTemplate()" style="font-size:12px;padding:6px 14px"><i class="ti ti-file-spreadsheet"></i> Download CSV Template</button>
         <div style="margin-top:10px;font-size:12px;color:var(--muted)">
-          <strong>Required columns:</strong> name, email, password, role, department<br/>
+          <strong>Required columns:</strong> empid (3 digits), name, password, role, department · email optional<br/>
           <strong>Role values:</strong> Admin or User<br/>
           <strong>Department values:</strong> Accounts, HR, Projects, ERP, IT
         </div>
@@ -667,6 +669,7 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
             <thead style="position:sticky;top:0;background:#fff">
               <tr>
                 <th>#</th>
+                <th>Emp ID</th>
                 <th>Name</th>
                 <th>Email</th>
                 <th>Role</th>
@@ -737,6 +740,20 @@ const FIREBASE_CONFIG = {
   appId:             "1:661961999893:web:72db660f96027aebeb301c"
 };
 function getFirebaseConfig(){ return FIREBASE_CONFIG; }
+
+// ── EMPLOYEE ID LOGIN ──────────────────────────────────────────
+// Firebase Auth requires email format internally. Employee IDs are
+// mapped to internal emails: 101 -> 101@emp.mphelpdesk.com
+const EMP_EMAIL_DOMAIN = 'emp.mphelpdesk.com';
+function empToEmail(input){
+  const v = String(input||'').trim();
+  if(v.includes('@')) return v;              // full email typed (e.g. existing admin)
+  return v + '@' + EMP_EMAIL_DOMAIN;          // employee id -> internal email
+}
+function emailToEmp(email){
+  if(!email) return '';
+  return email.endsWith('@'+EMP_EMAIL_DOMAIN) ? email.split('@')[0] : email;
+}
 
 let app, auth, db, functions;
 
@@ -933,6 +950,7 @@ function startApp(){
           const newProfile = {
             name: user.displayName || user.email.split('@')[0] || 'Admin',
             email: user.email,
+            empId: emailToEmp(user.email).match(/^\d{3}$/) ? emailToEmp(user.email) : '',
             role: isFirstUser ? 'Admin' : 'User',
             deptId: 'd4',
             active: true,
@@ -980,8 +998,9 @@ window.doLogin=async function(){
   if(!email||!pwd){ err.style.display='flex'; document.getElementById('loginErrMsg').textContent='Enter email and password.'; return; }
   btn.innerHTML='<span class="spinner"></span> Signing in…'; btn.disabled=true;
   try{
-    console.log('Attempting login for:', email);
-    const cred = await signInWithEmailAndPassword(auth, email, pwd);
+    const loginEmail = empToEmail(email);
+    console.log('Attempting login for:', loginEmail);
+    const cred = await signInWithEmailAndPassword(auth, loginEmail, pwd);
     console.log('Auth success, UID:', cred.user.uid);
     document.getElementById('resetSection').style.display='block';
   } catch(e){
@@ -1003,8 +1022,13 @@ window.doLogin=async function(){
 window.doLogout=async function(){ await signOut(auth); };
 
 window.sendReset=async function(){
-  const email=document.getElementById('loginEmail').value.trim()||SESSION.user?.email;
-  if(!email){ toast('Enter your email first','error'); return; }
+  let email=document.getElementById('loginEmail')?.value.trim()||SESSION.user?.email||'';
+  email = empToEmail(email);
+  if(!email){ toast('Enter your Employee ID or email first','error'); return; }
+  if(email.endsWith('@'+EMP_EMAIL_DOMAIN)){
+    toast('Employee ID accounts cannot receive reset emails. Ask your admin to reset your password.','error');
+    return;
+  }
   try{ await sendPasswordResetEmail(auth, email); toast('Password reset email sent to '+email); }
   catch(e){ toast('Error: '+e.message,'error'); }
 };
@@ -1044,7 +1068,7 @@ function initAppUI(){
   document.getElementById('sidebarAv').textContent=av;
   document.getElementById('sidebarAv').className='avatar'+(isAdmin()?'':' av-user');
   document.getElementById('sidebarName').textContent=p.name||'User';
-  document.getElementById('sidebarEmail').textContent=p.email||SESSION.user.email;
+  document.getElementById('sidebarEmail').textContent = p.empId ? ('Emp ID: '+p.empId) : emailToEmp(p.email||SESSION.user.email);
   document.getElementById('roleChip').innerHTML=`<span class="rp ${isAdmin()?'rp-admin':'rp-user'}">${isAdmin()?'Administrator':'User'}</span>`;
   document.getElementById('topbarAv').textContent=av;
   document.getElementById('topbarAv').className='avatar'+(isAdmin()?'':' av-user');
@@ -1695,17 +1719,20 @@ window.saveMM=async function(){
 // ── USERS ─────────────────────────────────────────────────────
 window.renderUsers=function(){
   document.getElementById('u-dept').innerHTML=MASTERS.departments.map(d=>`<option value="${d.id}">${d.name}</option>`).join('');
-  document.getElementById('usersBody').innerHTML=_users.map((u,i)=>`<tr><td>${i+1}</td><td><div style="display:flex;align-items:center;gap:8px"><div style="width:28px;height:28px;border-radius:50%;background:${u.role==='Admin'?'var(--navy)':'#2A5298'};color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">${(u.name||'U').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)}</div><div><div style="font-size:13px;font-weight:500">${u.name}</div><div style="font-size:11px;color:var(--muted)">${getDept(u.deptId)}</div></div></div></td><td>${u.email}</td><td><span class="${u.role==='Admin'?'b-admin':'b-user'}">${u.role}</span></td><td>${getDept(u.deptId)}</td><td>${u.active?'<span class="b-resolved">Active</span>':'<span class="b-closed">Inactive</span>'}</td><td><button class="btn-icon" onclick='openUserModal(${JSON.stringify(u)})'><i class="ti ti-edit"></i></button></td></tr>`).join('');
+  document.getElementById('usersBody').innerHTML=_users.map((u,i)=>`<tr><td>${i+1}</td><td><span style="font-weight:600;font-family:monospace">${u.empId||'—'}</span></td><td><div style="display:flex;align-items:center;gap:8px"><div style="width:28px;height:28px;border-radius:50%;background:${u.role==='Admin'?'var(--navy)':'#2A5298'};color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">${(u.name||'U').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)}</div><div><div style="font-size:13px;font-weight:500">${u.name}</div><div style="font-size:11px;color:var(--muted)">${getDept(u.deptId)}</div></div></div></td><td style="font-size:12px">${u.notifyEmail || emailToEmp(u.email)}</td><td><span class="${u.role==='Admin'?'b-admin':'b-user'}">${u.role}</span></td><td>${getDept(u.deptId)}</td><td>${u.active?'<span class="b-resolved">Active</span>':'<span class="b-closed">Inactive</span>'}</td><td><button class="btn-icon" onclick='openUserModal(${JSON.stringify(u)})'><i class="ti ti-edit"></i></button></td></tr>`).join('');
 };
 
 window.openUserModal=function(user=null){
   window._editUserId=user?.id||null;
   const isEdit = !!user;
   document.getElementById('umTitle').textContent = isEdit ? 'Edit User' : 'Add User';
+  document.getElementById('u-empid').value = user?.empId||'';
+  document.getElementById('u-empid').readOnly = isEdit; // login ID can't change (Firebase Auth)
+  document.getElementById('u-empid').style.background = isEdit ? '#F8F9FB' : '';
   document.getElementById('u-name').value  = user?.name||'';
-  document.getElementById('u-email').value = user?.email||'';
-  document.getElementById('u-email').readOnly = isEdit; // email can't change (Firebase Auth)
-  document.getElementById('u-email').style.background = isEdit ? '#F8F9FB' : '';
+  document.getElementById('u-email').value = user?.notifyEmail || (user && !String(user.email||'').endsWith('@'+EMP_EMAIL_DOMAIN) ? user.email : '') || '';
+  document.getElementById('u-email').readOnly = false;
+  document.getElementById('u-email').style.background = '';
   document.getElementById('u-role').value  = user?.role||'User';
   document.getElementById('u-active').checked = user?.active!==false;
   document.getElementById('u-pass').value  = '';
@@ -1727,13 +1754,19 @@ window.openUserModal=function(user=null){
 window.closeUM=function(){ document.getElementById('userModal').classList.remove('show'); window._editUserId=null; };
 
 window.saveUser=async function(){
-  const name=document.getElementById('u-name').value.trim();
-  const email=document.getElementById('u-email').value.trim();
-  const role=document.getElementById('u-role').value;
-  const deptId=document.getElementById('u-dept').value;
-  const active=document.getElementById('u-active').checked;
-  const pwd=document.getElementById('u-pass').value;
-  if(!name||!email){toast('Name and email are required','error');return;}
+  const empId  = document.getElementById('u-empid').value.trim();
+  const name   = document.getElementById('u-name').value.trim();
+  const notifyEmail = document.getElementById('u-email').value.trim();
+  const role   = document.getElementById('u-role').value;
+  const deptId = document.getElementById('u-dept').value;
+  const active = document.getElementById('u-active').checked;
+  const pwd    = document.getElementById('u-pass').value;
+  if(!name){toast('Name is required','error');return;}
+  if(!window._editUserId){
+    if(!/^\d{3}$/.test(empId)){toast('Employee ID must be exactly 3 digits (e.g. 101)','error');return;}
+    if(_users.find(u=>u.empId===empId)){toast('Employee ID '+empId+' already exists','error');return;}
+  }
+  if(notifyEmail && !notifyEmail.includes('@')){toast('Notification email is invalid','error');return;}
 
   const btn=document.getElementById('umSaveBtn');
   btn.innerHTML='<span class="spinner"></span>'; btn.disabled=true;
@@ -1742,24 +1775,27 @@ window.saveUser=async function(){
   try{
     if(window._editUserId){
       // Edit existing user profile in Firestore
-      await updateDoc(doc(db,'users',window._editUserId),{name,role,deptId,active});
+      await updateDoc(doc(db,'users',window._editUserId),{name,role,deptId,active,notifyEmail});
       toast('User details updated successfully');
     } else {
-      // Create new Firebase Auth user + Firestore profile
+      // Create new Firebase Auth user (empId mapped to internal email) + Firestore profile
       if(!pwd||pwd.length<6){toast('Password must be at least 6 characters','error');btn.innerHTML='<i class="ti ti-check"></i> Create User';btn.disabled=false;return;}
-      const cred=await createUserWithEmailAndPassword(auth,email,pwd);
-      await setDoc(doc(db,'users',cred.user.uid),{name,email,role,deptId,active,createdAt:serverTimestamp()});
-      // Queue welcome email
-      await addDoc(collection(db,'emailQueue'),{
-        eventType:'user_created', toEmail:email, userName:name, role,
-        tempPassword:pwd, appUrl:window.location.href, createdAt:serverTimestamp(), sent:false
-      });
-      toast('User created and welcome email queued');
+      const authEmail = empToEmail(empId);
+      const cred=await createUserWithEmailAndPassword(auth,authEmail,pwd);
+      await setDoc(doc(db,'users',cred.user.uid),{empId,name,email:authEmail,notifyEmail,role,deptId,active,createdAt:serverTimestamp()});
+      // Queue welcome email (to real email if given)
+      if(notifyEmail){
+        await addDoc(collection(db,'emailQueue'),{
+          eventType:'user_created', toEmail:notifyEmail, userName:name, role,
+          empId, tempPassword:pwd, appUrl:window.location.href, createdAt:serverTimestamp(), sent:false
+        });
+      }
+      toast('User created — Employee ID: '+empId);
     }
     setSyncStatus('synced'); closeUM(); await loadUsers(); renderUsers();
   } catch(e){
     setSyncStatus('err');
-    const msgs={'auth/email-already-in-use':'Email already exists.','auth/weak-password':'Password too weak.'};
+    const msgs={'auth/email-already-in-use':'This Employee ID is already registered.','auth/weak-password':'Password too weak.'};
     toast((msgs[e.code]||e.message),'error');
   }
   finally{
@@ -1833,12 +1869,12 @@ window.closeBulkModal = function(){
 
 window.downloadTemplate = function(){
   const csv = [
-    'name,email,password,role,department',
-    'Saravanan K,saravanan@mpdevelopers.com,Welcome@123,User,ERP',
-    'Priya R,priya@mpdevelopers.com,Welcome@123,User,Accounts',
-    'Ravi M,ravi@mpdevelopers.com,Welcome@123,User,HR',
-    'Deepa S,deepa@mpdevelopers.com,Welcome@123,Admin,IT',
-    'Karthik V,karthik@mpdevelopers.com,Welcome@123,User,Projects'
+    'empid,name,email,password,role,department',
+    '101,Saravanan K,saravanan@mpdevelopers.com,Welcome@123,User,ERP',
+    '102,Priya R,priya@mpdevelopers.com,Welcome@123,User,Accounts',
+    '103,Ravi M,ravi@mpdevelopers.com,Welcome@123,User,HR',
+    '104,Deepa S,deepa@mpdevelopers.com,Welcome@123,Admin,IT',
+    '105,Karthik V,,Welcome@123,User,Projects'
   ].join('\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
@@ -1860,14 +1896,15 @@ window.parseBulkCSV = function(){
 
     // Parse header
     const headers = lines[0].toLowerCase().split(',').map(h => h.trim().replace(/"/g,''));
+    const empIdx   = headers.indexOf('empid');
     const nameIdx  = headers.indexOf('name');
     const emailIdx = headers.indexOf('email');
     const passIdx  = headers.indexOf('password');
     const roleIdx  = headers.indexOf('role');
     const deptIdx  = headers.indexOf('department');
 
-    if(nameIdx<0||emailIdx<0||passIdx<0){
-      toast('CSV must have columns: name, email, password','error'); return;
+    if(empIdx<0||nameIdx<0||passIdx<0){
+      toast('CSV must have columns: empid, name, password','error'); return;
     }
 
     _bulkUsers = [];
@@ -1876,8 +1913,9 @@ window.parseBulkCSV = function(){
 
     for(let i=1; i<lines.length; i++){
       const cols = lines[i].split(',').map(c => c.trim().replace(/^"|"$/g,''));
+      const empId = empIdx>=0 ? (cols[empIdx]||'') : '';
       const name  = cols[nameIdx]  || '';
-      const email = cols[emailIdx] || '';
+      const email = emailIdx>=0 ? (cols[emailIdx]||'') : '';
       const pass  = cols[passIdx]  || '';
       const role  = cols[roleIdx]  || 'User';
       const dept  = cols[deptIdx]  || '';
@@ -1886,8 +1924,10 @@ window.parseBulkCSV = function(){
       let statusClass = 'b-resolved';
       let errors = [];
 
+      if(!/^\d{3}$/.test(empId)) errors.push('Emp ID must be 3 digits');
+      else if(_users.find(u=>u.empId===empId)) errors.push('Emp ID exists');
       if(!name)  errors.push('Name missing');
-      if(!email || !email.includes('@')) errors.push('Invalid email');
+      if(email && !email.includes('@')) errors.push('Invalid email');
       if(!pass || pass.length < 6) errors.push('Password min 6 chars');
       if(role !== 'Admin' && role !== 'User') errors.push('Role must be Admin or User');
 
@@ -1899,7 +1939,7 @@ window.parseBulkCSV = function(){
         statusClass = 'b-critical';
       }
 
-      _bulkUsers.push({ name, email, pass, role: (role==='Admin'?'Admin':'User'), deptId, deptName, status, statusClass, valid: errors.length===0 });
+      _bulkUsers.push({ empId, name, email, pass, role: (role==='Admin'?'Admin':'User'), deptId, deptName, status, statusClass, valid: errors.length===0 });
     }
 
     // Render preview
@@ -1910,6 +1950,7 @@ window.parseBulkCSV = function(){
     document.getElementById('bulkPreviewBody').innerHTML = _bulkUsers.map((u,i) => `
       <tr>
         <td>${i+1}</td>
+        <td style="font-family:monospace;font-weight:600">${u.empId||'—'}</td>
         <td><strong>${u.name||'—'}</strong></td>
         <td style="font-size:12px">${u.email||'—'}</td>
         <td><span class="${u.role==='Admin'?'b-admin':'b-user'}">${u.role}</span></td>
@@ -1953,40 +1994,46 @@ window.startBulkUpload = async function(){
     pBar.style.width = pct + '%';
 
     try{
-      // Create Firebase Auth user
-      const cred = await createUserWithEmailAndPassword(auth, u.email, u.pass);
+      // Create Firebase Auth user from Employee ID
+      const authEmail = empToEmail(u.empId);
+      const cred = await createUserWithEmailAndPassword(auth, authEmail, u.pass);
 
       // Create Firestore profile
       await setDoc(doc(db, 'users', cred.user.uid), {
-        name:      u.name,
-        email:     u.email,
-        role:      u.role,
-        deptId:    u.deptId,
-        active:    true,
-        createdAt: serverTimestamp(),
-        createdBy: SESSION.user.uid
+        empId:       u.empId,
+        name:        u.name,
+        email:       authEmail,
+        notifyEmail: u.email || '',
+        role:        u.role,
+        deptId:      u.deptId,
+        active:      true,
+        createdAt:   serverTimestamp(),
+        createdBy:   SESSION.user.uid
       });
 
-      // Queue welcome email
-      await addDoc(collection(db,'emailQueue'),{
-        eventType:   'user_created',
-        toEmail:     u.email,
-        userName:    u.name,
-        role:        u.role,
-        tempPassword:u.pass,
-        appUrl:      window.location.href,
-        createdAt:   serverTimestamp(),
-        sent:        false
-      });
+      // Queue welcome email (only if a real email was provided)
+      if(u.email){
+        await addDoc(collection(db,'emailQueue'),{
+          eventType:   'user_created',
+          toEmail:     u.email,
+          userName:    u.name,
+          empId:       u.empId,
+          role:        u.role,
+          tempPassword:u.pass,
+          appUrl:      window.location.href,
+          createdAt:   serverTimestamp(),
+          sent:        false
+        });
+      }
 
       created++;
-      log.innerHTML += `<div style="color:#1D9E75">✅ ${u.name} (${u.email}) — created</div>`;
+      log.innerHTML += `<div style="color:#1D9E75">✅ ${u.name} (ID: ${u.empId}) — created</div>`;
     } catch(e){
       failed++;
       const msg = e.code === 'auth/email-already-in-use'
-        ? 'Email already exists'
+        ? 'Employee ID already registered'
         : e.message;
-      log.innerHTML += `<div style="color:#E24B4A">❌ ${u.name} (${u.email}) — ${msg}</div>`;
+      log.innerHTML += `<div style="color:#E24B4A">❌ ${u.name} (ID: ${u.empId}) — ${msg}</div>`;
     }
     log.scrollTop = log.scrollHeight;
 
