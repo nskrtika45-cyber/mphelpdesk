@@ -494,7 +494,7 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
     </div>
   </div>
   <div class="info-panel mb-3"><i class="ti ti-info-circle" style="font-size:16px;flex-shrink:0"></i> New users receive a Firebase Auth email with login credentials. Role is stored in Firestore.</div>
-  <div class="card-box"><div style="overflow-x:auto"><table class="table table-hover mb-0"><thead><tr><th>#</th><th>Emp ID</th><th>Name</th><th>Email</th><th>Role</th><th>Department</th><th>Active</th><th>Actions</th></tr></thead><tbody id="usersBody"></tbody></table></div></div>
+  <div class="card-box"><div style="overflow-x:auto"><table class="table table-hover mb-0"><thead><tr><th>#</th><th>Login ID</th><th>Name</th><th>Email</th><th>Role</th><th>Department</th><th>Active</th><th>Actions</th></tr></thead><tbody id="usersBody"></tbody></table></div></div>
 </div>
 
 <!-- REPORTS -->
@@ -717,6 +717,7 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
 <!-- ══════════════════════════════════════════════════════════════ -->
 <!-- FIREBASE SDK -->
 <!-- ══════════════════════════════════════════════════════════════ -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script type="module">
 import { initializeApp }                         from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { getAuth, signInWithEmailAndPassword,
@@ -740,6 +741,39 @@ const FIREBASE_CONFIG = {
   appId:             "1:661961999893:web:72db660f96027aebeb301c"
 };
 function getFirebaseConfig(){ return FIREBASE_CONFIG; }
+
+// ── EMAILJS — real email sending, no backend needed ────────────
+const EMAILJS_PUBLIC_KEY  = '_9TwPG27wbdDlHx8o';
+const EMAILJS_SERVICE_ID  = 'service_tx9e606';
+const EMAILJS_TEMPLATE_ID = 'template_ri5mhau';
+if(window.emailjs){ window.emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY }); }
+
+// Returns a real, deliverable email for a user, or null if none on file
+function getRealEmail(user){
+  if(!user) return null;
+  if(user.notifyEmail) return user.notifyEmail;
+  if(user.email && !user.email.endsWith('@'+EMP_EMAIL_DOMAIN)) return user.email;
+  return null;
+}
+
+// Sends one real email via EmailJS. Never throws — logs and returns true/false.
+async function sendRealEmail({ toEmail, toName, subject, message, ticketNo='', statusName='' }){
+  if(!toEmail || !window.emailjs) return false;
+  try{
+    await window.emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      to_email:    toEmail,
+      to_name:     toName || 'there',
+      subject:     subject || 'MP HelpDesk Notification',
+      message:     message || '',
+      ticket_no:   ticketNo || '',
+      status_name: statusName || ''
+    });
+    return true;
+  } catch(e){
+    console.error('EmailJS send failed:', e);
+    return false;
+  }
+}
 
 // ── EMPLOYEE ID LOGIN ──────────────────────────────────────────
 // Firebase Auth requires email format internally. Employee IDs are
@@ -1456,24 +1490,52 @@ window.delTicket=async function(id){
 async function sendEmailNotification(ticketId, eventType){
   const t = _tickets.find(x=>x.id===ticketId);
   if(!t) return;
-  const adminUser   = _users.find(u=>u.role==='Admin');
-  const raiser      = _users.find(u=>u.id===t.userId);
-  const assignedUser= t.assignedTo ? _users.find(u=>u.id===t.assignedTo) : null;
+  const adminUsers   = _users.filter(u=>u.role==='Admin');
+  const raiser       = _users.find(u=>u.id===t.userId);
+  const assignedUser = t.assignedTo ? _users.find(u=>u.id===t.assignedTo) : null;
 
-  let toEmail = '';
-  if(eventType==='ticket_created')   toEmail = adminUser?.email || '';
-  else if(eventType==='ticket_assigned') toEmail = assignedUser?.email || adminUser?.email || '';
-  else toEmail = raiser?.email || '';
+  // Determine recipient(s) and message per event type
+  let recipients = []; // [{email, name}]
+  let message = '';
 
+  if(eventType === 'ticket_created'){
+    adminUsers.forEach(a => { const e=getRealEmail(a); if(e) recipients.push({email:e, name:a.name}); });
+    message = `A new ticket has been raised by ${raiser?.name||'a user'}.\n\nSubject: ${t.subject}\nDepartment: ${getDept(t.deptId)}\nPriority: ${getPri(t.priorityId)}`;
+  } else if(eventType === 'ticket_assigned'){
+    const e = getRealEmail(assignedUser);
+    if(e) recipients.push({email:e, name:assignedUser.name});
+    message = `A ticket has been assigned to you.\n\nSubject: ${t.subject}\nRaised by: ${raiser?.name||'User'}`;
+  } else if(eventType === 'status_changed'){
+    const e = getRealEmail(raiser);
+    if(e) recipients.push({email:e, name:raiser.name});
+    message = `Your ticket status has been updated.\n\nSubject: ${t.subject}\nNew Status: ${getStat(t.statusId)}`;
+  } else if(eventType === 'comment_added'){
+    const e = getRealEmail(raiser);
+    if(e) recipients.push({email:e, name:raiser.name});
+    message = `A new comment has been added to your ticket.\n\nSubject: ${t.subject}`;
+  }
+
+  // Send real emails via EmailJS
+  let anySent = false;
+  for(const r of recipients){
+    const ok = await sendRealEmail({
+      toEmail: r.email, toName: r.name,
+      subject: `MP HelpDesk — ${t.ticketNo}`,
+      message, ticketNo: t.ticketNo, statusName: getStat(t.statusId)
+    });
+    if(ok) anySent = true;
+  }
+
+  // Keep an audit log in Firestore regardless of send result
   await addDoc(collection(db,'emailQueue'),{
     ticketId, ticketNo:t.ticketNo, subject:t.subject,
     eventType,
-    toEmail,
+    toEmail: recipients.map(r=>r.email).join(', ') || '(no email on file)',
     raisedBy:    raiser?.name||'User',
     assignedTo:  assignedUser?.name||'',
     statusName:  getStat(t.statusId),
     createdAt:   serverTimestamp(),
-    sent: false
+    sent: anySent
   });
 }
 
@@ -1602,10 +1664,99 @@ window.submitTicket=async function(){
 };
 
 // ── MASTERS ───────────────────────────────────────────────────
-window.renderIssueTypes =function(){ document.getElementById('itBody').innerHTML=MASTERS.issueTypes.map((r,i)=>`<tr><td>${i+1}</td><td><strong>${r.name}</strong></td><td>${r.active?'<span class="b-resolved">Active</span>':'<span class="b-closed">Inactive</span>'}</td><td><button class="btn-icon" onclick='openMM("issueType",${JSON.stringify(r)})'><i class="ti ti-edit"></i></button></td></tr>`).join(''); };
-window.renderSubTypes   =function(){ document.getElementById('stBody').innerHTML=MASTERS.subTypes.map((r,i)=>`<tr><td>${i+1}</td><td>${getType(r.typeId)}</td><td>${r.name}</td><td>${r.active?'<span class="b-resolved">Active</span>':'<span class="b-closed">Inactive</span>'}</td><td><button class="btn-icon" onclick='openMM("subType",${JSON.stringify(r)})'><i class="ti ti-edit"></i></button></td></tr>`).join(''); };
+// ── GENERIC ACTIVE/INACTIVE TOGGLE (clickable button) ──
+// Green pill = Active (click to deactivate). Red pill = Inactive (click to activate).
+function activeToggleBtn(collectionName, docId, isActive, refreshFnName){
+  const bg    = isActive ? 'var(--teal-bg)' : 'var(--red-bg)';
+  const color = isActive ? '#085041' : '#791F1F';
+  const dot   = isActive ? '#1D9E75' : '#E24B4A';
+  const label = isActive ? 'Active' : 'Inactive';
+  return `<button onclick='toggleMasterActive("${collectionName}","${docId}",${isActive},"${refreshFnName}")'
+    style="background:${bg};color:${color};border:none;border-radius:20px;padding:3px 12px;font-size:11px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:5px"
+    title="Click to ${isActive?'deactivate':'activate'}">
+    <span style="width:7px;height:7px;border-radius:50%;background:${dot};flex-shrink:0"></span>${label}
+  </button>`;
+}
+
+window.toggleMasterActive = async function(collectionName, docId, currentActive, refreshFnName){
+  if(!isAdmin()) return;
+  setSyncStatus('saving');
+  try{
+    await updateDoc(doc(db, collectionName, docId), { active: !currentActive });
+    await loadMasters();
+    populateFilters();
+    window[refreshFnName]?.();
+    setSyncStatus('synced');
+    toast(!currentActive ? 'Marked as Active' : 'Marked as Inactive');
+  } catch(e){
+    setSyncStatus('err');
+    toast('Update failed: '+e.message,'error');
+  }
+};
+
+window.renderIssueTypes =function(){ document.getElementById('itBody').innerHTML=MASTERS.issueTypes.map((r,i)=>`<tr><td>${i+1}</td><td><strong>${r.name}</strong></td><td>${activeToggleBtn('issueTypes', r.id, r.active!==false, 'renderIssueTypes')}</td><td><button class="btn-icon" onclick='openMM("issueType",${JSON.stringify(r)})' title="Edit"><i class="ti ti-edit"></i></button> <button class="btn-icon" onclick='deleteIssueType("${r.id}","${r.name.replace(/"/g,'')}")' title="Delete" style="color:var(--red)"><i class="ti ti-trash"></i></button></td></tr>`).join(''); };
+
+// ── DELETE ISSUE TYPE (with ticket + sub-type validation) ──
+window.deleteIssueType = async function(typeId, typeName){
+  if(!isAdmin()) return;
+
+  const ticketsUsing  = _tickets.filter(t => t.typeId === typeId);
+  const subTypesUsing = MASTERS.subTypes.filter(s => s.typeId === typeId);
+
+  if(ticketsUsing.length > 0){
+    showMasterBlockPopup(typeName, ticketsUsing.length, 'ticket', 'Issue Type', 'issueTypes', typeId, 'renderIssueTypes');
+    return;
+  }
+  if(subTypesUsing.length > 0){
+    showMasterBlockPopup(typeName, subTypesUsing.length, 'subtype', 'Issue Type', 'issueTypes', typeId, 'renderIssueTypes');
+    return;
+  }
+
+  if(!confirm(`Delete Issue Type "${typeName}"?\n\nThis cannot be undone.`)) return;
+
+  setSyncStatus('saving');
+  try{
+    await deleteDoc(doc(db,'issueTypes', typeId));
+    await loadMasters();
+    populateFilters();
+    renderIssueTypes();
+    setSyncStatus('synced');
+    toast(`Issue Type "${typeName}" deleted`);
+  } catch(e){
+    setSyncStatus('err');
+    toast('Delete failed: '+e.message,'error');
+  }
+};
+window.renderSubTypes   =function(){ document.getElementById('stBody').innerHTML=MASTERS.subTypes.map((r,i)=>`<tr><td>${i+1}</td><td>${getType(r.typeId)}</td><td>${r.name}</td><td>${activeToggleBtn('subTypes', r.id, r.active!==false, 'renderSubTypes')}</td><td><button class="btn-icon" onclick='openMM("subType",${JSON.stringify(r)})' title="Edit"><i class="ti ti-edit"></i></button> <button class="btn-icon" onclick='deleteSubType("${r.id}","${r.name.replace(/"/g,'')}")' title="Delete" style="color:var(--red)"><i class="ti ti-trash"></i></button></td></tr>`).join(''); };
+
+// ── DELETE ISSUE SUB-TYPE (with ticket validation) ──
+window.deleteSubType = async function(subTypeId, subTypeName){
+  if(!isAdmin()) return;
+
+  const ticketsUsing = _tickets.filter(t => t.subTypeId === subTypeId);
+
+  if(ticketsUsing.length > 0){
+    showMasterBlockPopup(subTypeName, ticketsUsing.length, 'ticket', 'Issue Sub-Type', 'subTypes', subTypeId, 'renderSubTypes');
+    return;
+  }
+
+  if(!confirm(`Delete Issue Sub-Type "${subTypeName}"?\n\nThis cannot be undone.`)) return;
+
+  setSyncStatus('saving');
+  try{
+    await deleteDoc(doc(db,'subTypes', subTypeId));
+    await loadMasters();
+    populateFilters();
+    renderSubTypes();
+    setSyncStatus('synced');
+    toast(`Issue Sub-Type "${subTypeName}" deleted`);
+  } catch(e){
+    setSyncStatus('err');
+    toast('Delete failed: '+e.message,'error');
+  }
+};
 window.renderPriorities =function(){ const m={1:'b-low',2:'b-medium',3:'b-high',4:'b-critical'}; document.getElementById('priBody').innerHTML=MASTERS.priorities.map((r,i)=>`<tr><td>${i+1}</td><td>${r.name}</td><td><span class="${m[r.level]||'b-low'}">${r.name}</span></td><td><button class="btn-icon" onclick='openMM("priority",${JSON.stringify(r)})'><i class="ti ti-edit"></i></button></td></tr>`).join(''); };
-window.renderDepts      =function(){ document.getElementById('deptBody').innerHTML=MASTERS.departments.map((r,i)=>`<tr><td>${i+1}</td><td>${r.name}</td><td>${r.active?'<span class="b-resolved">Active</span>':'<span class="b-closed">Inactive</span>'}</td><td><button class="btn-icon" onclick='openMM("dept",${JSON.stringify(r)})' title="Edit"><i class="ti ti-edit"></i></button> <button class="btn-icon" onclick='deleteDept("${r.id}","${r.name.replace(/"/g,'')}")' title="Delete" style="color:var(--red)"><i class="ti ti-trash"></i></button></td></tr>`).join(''); };
+window.renderDepts      =function(){ document.getElementById('deptBody').innerHTML=MASTERS.departments.map((r,i)=>`<tr><td>${i+1}</td><td>${r.name}</td><td>${activeToggleBtn('departments', r.id, r.active!==false, 'renderDepts')}</td><td><button class="btn-icon" onclick='openMM("dept",${JSON.stringify(r)})' title="Edit"><i class="ti ti-edit"></i></button> <button class="btn-icon" onclick='deleteDept("${r.id}","${r.name.replace(/"/g,'')}")' title="Delete" style="color:var(--red)"><i class="ti ti-trash"></i></button></td></tr>`).join(''); };
 
 // ── DELETE DEPARTMENT (with ticket validation) ──
 window.deleteDept = async function(deptId, deptName){
@@ -1617,11 +1768,11 @@ window.deleteDept = async function(deptId, deptName){
   const usersInDept = _users.filter(u => u.deptId === deptId);
 
   if(ticketsInDept.length > 0){
-    showDeptBlockPopup(deptName, ticketsInDept.length, 'ticket');
+    showMasterBlockPopup(deptName, ticketsInDept.length, 'ticket', 'department', 'departments', deptId, 'renderDepts');
     return;
   }
   if(usersInDept.length > 0){
-    showDeptBlockPopup(deptName, usersInDept.length, 'user');
+    showMasterBlockPopup(deptName, usersInDept.length, 'user', 'department', 'departments', deptId, 'renderDepts');
     return;
   }
 
@@ -1643,28 +1794,68 @@ window.deleteDept = async function(deptId, deptName){
 };
 
 // ── BLOCKED DELETE POPUP ──
-window.showDeptBlockPopup = function(deptName, count, type){
-  const reason = type === 'ticket'
-    ? `<strong>${count} ticket${count>1?'s are':' is'}</strong> raised under this department.`
-    : `<strong>${count} user${count>1?'s belong':' belongs'}</strong> to this department.`;
-  const advice = type === 'ticket'
-    ? 'Close or reassign those tickets to another department first, or mark this department as <strong>Inactive</strong> instead.'
-    : 'Move those users to another department first, or mark this department as <strong>Inactive</strong> instead.';
+// Generic blocked-delete popup — used by Department, Issue Type, Issue Sub-Type
+// blockedBy: 'ticket' | 'user' | 'subtype'
+// collectionName/docId/refreshFnName (optional) enable a one-click "Mark as Inactive" button
+window.showMasterBlockPopup = function(itemName, count, blockedBy, entityLabel, collectionName, docId, refreshFnName){
+  entityLabel = entityLabel || 'department';
+  const lower = entityLabel.toLowerCase();
+
+  let reason, advice;
+  if(blockedBy === 'ticket'){
+    reason = `<strong>${count} ticket${count>1?'s are':' is'}</strong> raised using this ${lower}.`;
+    advice = `Close or reassign those tickets first, or mark this ${lower} as <strong>Inactive</strong> instead.`;
+  } else if(blockedBy === 'user'){
+    reason = `<strong>${count} user${count>1?'s belong':' belongs'}</strong> to this ${lower}.`;
+    advice = `Move those users to another ${lower} first, or mark this ${lower} as <strong>Inactive</strong> instead.`;
+  } else { // subtype
+    reason = `<strong>${count} sub-type${count>1?'s exist':' exists'}</strong> under this ${lower}.`;
+    advice = `Delete those sub-types first, or mark this ${lower} as <strong>Inactive</strong> instead.`;
+  }
+
+  const canQuickDeactivate = collectionName && docId && refreshFnName;
+  const inactiveBtn = canQuickDeactivate
+    ? `<button onclick='quickMarkInactive("${collectionName}","${docId}","${refreshFnName}")' class="btn-navy" style="margin-top:12px;width:100%;justify-content:center;padding:9px"><i class="ti ti-eye-off"></i> Mark as Inactive Instead</button>`
+    : '';
 
   document.getElementById('deptBlockMsg').innerHTML = `
     <div style="text-align:center;margin-bottom:14px">
       <div style="width:56px;height:56px;background:var(--red-bg);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
         <i class="ti ti-alert-triangle" style="font-size:26px;color:var(--red)"></i>
       </div>
-      <div style="font-size:16px;font-weight:700">Cannot delete "${deptName}"</div>
+      <div style="font-size:16px;font-weight:700">Cannot delete "${itemName}"</div>
     </div>
     <div style="font-size:13.5px;line-height:1.7;color:var(--text);background:var(--red-bg);border-radius:8px;padding:12px 16px;margin-bottom:12px">
       ${reason}
     </div>
     <div style="font-size:13px;line-height:1.7;color:var(--muted)">
       <i class="ti ti-bulb" style="color:var(--amber)"></i> ${advice}
-    </div>`;
+    </div>
+    ${inactiveBtn}`;
   document.getElementById('deptBlockModal').classList.add('show');
+};
+
+// One-click deactivate straight from the blocked-delete popup
+window.quickMarkInactive = async function(collectionName, docId, refreshFnName){
+  if(!isAdmin()) return;
+  setSyncStatus('saving');
+  try{
+    await updateDoc(doc(db, collectionName, docId), { active: false });
+    await loadMasters();
+    populateFilters();
+    window[refreshFnName]?.();
+    setSyncStatus('synced');
+    closeDeptBlockModal();
+    toast('Marked as Inactive');
+  } catch(e){
+    setSyncStatus('err');
+    toast('Update failed: '+e.message,'error');
+  }
+};
+
+// Backward-compatible alias for existing Department delete calls
+window.showDeptBlockPopup = function(deptName, count, type){
+  showMasterBlockPopup(deptName, count, type, 'department');
 };
 
 window.closeDeptBlockModal = function(){
@@ -1719,7 +1910,7 @@ window.saveMM=async function(){
 // ── USERS ─────────────────────────────────────────────────────
 window.renderUsers=function(){
   document.getElementById('u-dept').innerHTML=MASTERS.departments.map(d=>`<option value="${d.id}">${d.name}</option>`).join('');
-  document.getElementById('usersBody').innerHTML=_users.map((u,i)=>`<tr><td>${i+1}</td><td><span style="font-weight:600;font-family:monospace">${u.empId||'—'}</span></td><td><div style="display:flex;align-items:center;gap:8px"><div style="width:28px;height:28px;border-radius:50%;background:${u.role==='Admin'?'var(--navy)':'#2A5298'};color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">${(u.name||'U').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)}</div><div><div style="font-size:13px;font-weight:500">${u.name}</div><div style="font-size:11px;color:var(--muted)">${getDept(u.deptId)}</div></div></div></td><td style="font-size:12px">${u.notifyEmail || emailToEmp(u.email)}</td><td><span class="${u.role==='Admin'?'b-admin':'b-user'}">${u.role}</span></td><td>${getDept(u.deptId)}</td><td>${u.active?'<span class="b-resolved">Active</span>':'<span class="b-closed">Inactive</span>'}</td><td><button class="btn-icon" onclick='openUserModal(${JSON.stringify(u)})'><i class="ti ti-edit"></i></button></td></tr>`).join('');
+  document.getElementById('usersBody').innerHTML=_users.map((u,i)=>`<tr><td>${i+1}</td><td><span style="font-weight:600;font-family:monospace">${u.empId||'—'}</span></td><td><div style="display:flex;align-items:center;gap:8px"><div style="width:28px;height:28px;border-radius:50%;background:${u.role==='Admin'?'var(--navy)':'#2A5298'};color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">${(u.name||'U').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)}</div><div><div style="font-size:13px;font-weight:500">${u.name}</div><div style="font-size:11px;color:var(--muted)">${getDept(u.deptId)}</div></div></div></td><td style="font-size:12px">${u.notifyEmail ? u.notifyEmail : '<span style="color:var(--muted)">—</span>'}</td><td><span class="${u.role==='Admin'?'b-admin':'b-user'}">${u.role}</span></td><td>${getDept(u.deptId)}</td><td>${u.active?'<span class="b-resolved">Active</span>':'<span class="b-closed">Inactive</span>'}</td><td><button class="btn-icon" onclick='openUserModal(${JSON.stringify(u)})'><i class="ti ti-edit"></i></button></td></tr>`).join('');
 };
 
 window.openUserModal=function(user=null){
@@ -1783,11 +1974,16 @@ window.saveUser=async function(){
       const authEmail = empToEmail(empId);
       const cred=await createUserWithEmailAndPassword(auth,authEmail,pwd);
       await setDoc(doc(db,'users',cred.user.uid),{empId,name,email:authEmail,notifyEmail,role,deptId,active,createdAt:serverTimestamp()});
-      // Queue welcome email (to real email if given)
+      // Send welcome email (to real email if given)
       if(notifyEmail){
+        const sent = await sendRealEmail({
+          toEmail: notifyEmail, toName: name,
+          subject: 'Welcome to MP HelpDesk',
+          message: `Your MP HelpDesk account has been created.\n\nLogin ID: ${empId}\nTemporary Password: ${pwd}\n\nLogin at: ${window.location.href}`
+        });
         await addDoc(collection(db,'emailQueue'),{
           eventType:'user_created', toEmail:notifyEmail, userName:name, role,
-          empId, tempPassword:pwd, appUrl:window.location.href, createdAt:serverTimestamp(), sent:false
+          empId, tempPassword:pwd, appUrl:window.location.href, createdAt:serverTimestamp(), sent
         });
       }
       toast('User created — Employee ID: '+empId);
@@ -2011,8 +2207,13 @@ window.startBulkUpload = async function(){
         createdBy:   SESSION.user.uid
       });
 
-      // Queue welcome email (only if a real email was provided)
+      // Send welcome email (only if a real email was provided)
       if(u.email){
+        const sent = await sendRealEmail({
+          toEmail: u.email, toName: u.name,
+          subject: 'Welcome to MP HelpDesk',
+          message: `Your MP HelpDesk account has been created.\n\nLogin ID: ${u.empId}\nTemporary Password: ${u.pass}\n\nLogin at: ${window.location.href}`
+        });
         await addDoc(collection(db,'emailQueue'),{
           eventType:   'user_created',
           toEmail:     u.email,
@@ -2022,7 +2223,7 @@ window.startBulkUpload = async function(){
           tempPassword:u.pass,
           appUrl:      window.location.href,
           createdAt:   serverTimestamp(),
-          sent:        false
+          sent:        sent
         });
       }
 
