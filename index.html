@@ -1487,20 +1487,28 @@ window.delTicket=async function(id){
 };
 
 // ── EMAIL NOTIFICATIONS ───────────────────────────────────────
-async function sendEmailNotification(ticketId, eventType){
-  const t = _tickets.find(x=>x.id===ticketId);
+async function sendEmailNotification(ticketIdOrData, eventType){
+  // Accept either a ticket ID (looked up from the local cache) or a full
+  // ticket object passed directly — avoids a race condition where a
+  // just-created ticket isn't in _tickets yet when this is called.
+  const t = typeof ticketIdOrData === 'string'
+    ? _tickets.find(x=>x.id===ticketIdOrData)
+    : ticketIdOrData;
   if(!t) return;
+  const ticketId = t.id;
   const adminUsers   = _users.filter(u=>u.role==='Admin');
   const raiser       = _users.find(u=>u.id===t.userId);
   const assignedUser = t.assignedTo ? _users.find(u=>u.id===t.assignedTo) : null;
 
-  // Determine recipient(s) and message per event type
+  // Determine recipient(s), subject line, and message per event type
   let recipients = []; // [{email, name}]
   let message = '';
+  let subjectLine = `MP HelpDesk — ${t.ticketNo}`;
 
   if(eventType === 'ticket_created'){
     adminUsers.forEach(a => { const e=getRealEmail(a); if(e) recipients.push({email:e, name:a.name}); });
-    message = `A new ticket has been raised by ${raiser?.name||'a user'}.\n\nSubject: ${t.subject}\nDepartment: ${getDept(t.deptId)}\nPriority: ${getPri(t.priorityId)}`;
+    subjectLine = `🎫 New Ticket Raised — ${t.ticketNo}`;
+    message = `A new ticket has been raised by ${raiser?.name||'a user'}.\n\nTicket No: ${t.ticketNo}\nSubject: ${t.subject}\nDepartment: ${getDept(t.deptId)}\nPriority: ${getPri(t.priorityId)}\n\nLog in to MP HelpDesk to view and assign this ticket.`;
   } else if(eventType === 'ticket_assigned'){
     const e = getRealEmail(assignedUser);
     if(e) recipients.push({email:e, name:assignedUser.name});
@@ -1520,7 +1528,7 @@ async function sendEmailNotification(ticketId, eventType){
   for(const r of recipients){
     const ok = await sendRealEmail({
       toEmail: r.email, toName: r.name,
-      subject: `MP HelpDesk — ${t.ticketNo}`,
+      subject: subjectLine,
       message, ticketNo: t.ticketNo, statusName: getStat(t.statusId)
     });
     if(ok) anySent = true;
@@ -1655,8 +1663,9 @@ window.submitTicket=async function(){
     };
     const ref = await addDoc(collection(db,'tickets'), ticketData);
     setSyncStatus('synced');
-    // Email notification
-    try{ await sendEmailNotification(ref.id,'ticket_created'); } catch(e){}
+    // Email notification to Admins — pass ticket data directly (avoids
+    // waiting on the real-time listener to catch up)
+    try{ await sendEmailNotification({ id: ref.id, ...ticketData }, 'ticket_created'); } catch(e){ console.error('Email notify failed:', e); }
     toast('Ticket '+ticketData.ticketNo+' created!');
     showPage('tickets',null);
   } catch(e){ setSyncStatus('err'); toast('Failed: '+e.message,'error'); }
