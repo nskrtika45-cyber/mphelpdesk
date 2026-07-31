@@ -1557,50 +1557,30 @@ function initNewTicketForm(){
   const med=MASTERS.priorities.find(p=>p.level===2);
   if(med) document.getElementById('ct-priority').value=med.id;
 
-  // Issue Type & Sub-Type — Admin: editable dropdown | User: locked read-only display
+  // Issue Type & Sub-Type — editable dropdowns for everyone (Admin and User)
   const ctType    = document.getElementById('ct-type');
   const ctSubtype = document.getElementById('ct-subtype');
-  const typeWrap  = document.getElementById('ct-typeWrap');
-  const subWrap   = document.getElementById('ct-subtypeWrap');
 
-  if(isAdmin()){
-    // Admin gets full editable dropdowns
-    ctType.innerHTML   = MASTERS.issueTypes.map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
-    ctType.disabled    = false;
-    ctType.style.background = '';
-    ctType.style.color      = '';
-    ctType.style.cursor     = '';
-    ctSubtype.disabled = false;
-    ctSubtype.style.background = '';
-    ctSubtype.style.color      = '';
-    ctSubtype.style.cursor     = '';
-    // Show ADMIN ONLY badges
-    const ab1 = document.getElementById('ct-typeAdminBadge');
-    const ab2 = document.getElementById('ct-subtypeAdminBadge');
-    if(ab1) ab1.style.display = 'inline';
-    if(ab2) ab2.style.display = 'inline';
-    const typeNote = document.getElementById('ct-typeNote');
-    if(typeNote) typeNote.style.display = 'none';
-    loadSubTypes();
-  } else {
-    // User gets locked dropdowns — pre-filled but cannot change
-    ctType.innerHTML    = MASTERS.issueTypes.map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
-    ctType.disabled     = true;
-    ctType.style.background   = '#F8F9FB';
-    ctType.style.color        = 'var(--muted)';
-    ctType.style.cursor       = 'not-allowed';
-    loadSubTypes();
-    ctSubtype.disabled  = true;
-    ctSubtype.style.background= '#F8F9FB';
-    ctSubtype.style.color     = 'var(--muted)';
-    ctSubtype.style.cursor    = 'not-allowed';
-    // Add lock badge to labels
-    const typeLbl = document.querySelector('label[for="ct-type"]') || typeWrap?.querySelector('.form-label');
-    const subLbl  = document.querySelector('label[for="ct-subtype"]') || subWrap?.querySelector('.form-label');
-    // Show info note
-    const typeNote = document.getElementById('ct-typeNote');
-    if(typeNote) typeNote.style.display = 'flex';
-  }
+  ctType.innerHTML   = MASTERS.issueTypes.filter(t=>t.active!==false).map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
+  ctType.disabled    = false;
+  ctType.style.background = '';
+  ctType.style.color      = '';
+  ctType.style.cursor     = '';
+  ctSubtype.disabled = false;
+  ctSubtype.style.background = '';
+  ctSubtype.style.color      = '';
+  ctSubtype.style.cursor     = '';
+
+  // ADMIN ONLY badges no longer apply — hide them
+  const ab1 = document.getElementById('ct-typeAdminBadge');
+  const ab2 = document.getElementById('ct-subtypeAdminBadge');
+  if(ab1) ab1.style.display = 'none';
+  if(ab2) ab2.style.display = 'none';
+  // Lock note no longer applies — hide it
+  const typeNote = document.getElementById('ct-typeNote');
+  if(typeNote) typeNote.style.display = 'none';
+
+  loadSubTypes();
   if(isAdmin()){
     document.getElementById('raisedByWrap').innerHTML=`<select class="form-select" id="ct-userId">${_users.map(u=>`<option value="${u.id}">${u.name}</option>`).join('')}</select>`;
     document.getElementById('ct-userId').value=SESSION.user.uid;
@@ -1618,17 +1598,9 @@ function initNewTicketForm(){
 window.initNewTicketForm=initNewTicketForm;
 
 window.loadSubTypes=function(){
-  const tid     = document.getElementById('ct-type').value;
-  const ctSub   = document.getElementById('ct-subtype');
-  const wasDisabled = ctSub.disabled;
-  ctSub.innerHTML = MASTERS.subTypes.filter(s=>s.typeId===tid&&s.active).map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
-  // Preserve disabled state after reload
-  if(wasDisabled){
-    ctSub.disabled         = true;
-    ctSub.style.background = '#F8F9FB';
-    ctSub.style.color      = 'var(--muted)';
-    ctSub.style.cursor     = 'not-allowed';
-  }
+  const tid   = document.getElementById('ct-type').value;
+  const ctSub = document.getElementById('ct-subtype');
+  ctSub.innerHTML = MASTERS.subTypes.filter(s=>s.typeId===tid&&s.active!==false).map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
 };
 
 window.submitTicket=async function(){
