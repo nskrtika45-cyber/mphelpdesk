@@ -247,7 +247,7 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
   <div class="s-logo">
     <img src="https://erp.mpdevelopers.com/images/%7Be0847889-8a54-4363-afdd-966dd480dfbb%7D.jpeg" alt="MP Developers" style="width:36px;height:36px;border-radius:8px;object-fit:contain;background:#fff;padding:2px;flex-shrink:0" onerror="this.style.display='none';document.getElementById('sidebarLogoFallback').style.display='flex'"/>
     <div id="sidebarLogoFallback" style="display:none;width:36px;height:36px;background:var(--teal);border-radius:8px;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0">HD</div>
-    <div><div class="s-brand">MP HelpDesk</div><div class="s-sub"><i class="ti ti-flame" style="font-size:10px"></i> Firebase</div></div>
+    <div><div class="s-brand">MP HelpDesk</div><div class="s-sub"><i class="ti ti-flame" style="font-size:10px"></i> Firebase · Build 2026-08-01</div></div>
   </div>
   <div id="nav-admin" style="display:none">
     <div class="s-sec">Main</div>
@@ -1228,6 +1228,7 @@ function updateBadges(){
 
 // ── DASHBOARD ─────────────────────────────────────────────────
 function renderDashboard(){
+  updateBadges(); // always keep sidebar badge in sync with what's on screen
   const myT = isAdmin() ? _tickets : _tickets.filter(t=>t.userId===SESSION.user.uid);
   const activeT = myT.filter(t=>!['s5'].includes(t.statusId));
 
@@ -1316,6 +1317,7 @@ window.filterTicketsFromDash = function(type){
 };
 
 window.renderTickets=function(){
+  updateBadges(); // always keep sidebar badge in sync with what's on screen
   const admin = isAdmin();
   document.getElementById('ticketListTitle').textContent = admin ? 'All Tickets' : 'My Tickets';
   document.getElementById('ticketListSub').textContent   = admin ? 'All Tickets' : 'My Tickets';
