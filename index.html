@@ -399,6 +399,11 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
         <div class="col-md-4"><label class="form-label">Ticket No</label><input class="form-control" id="ct-no" readonly/></div>
         <div class="col-12"><label class="form-label">Subject <span style="color:var(--red)">*</span></label><input class="form-control" id="ct-subject" placeholder="Brief summary of the issue"/></div>
         <div class="col-12"><label class="form-label">Description</label><textarea class="form-control" id="ct-desc" rows="4" placeholder="Describe the issue in detail..."></textarea></div>
+        <div class="col-12">
+          <label class="form-label">Attachments <span style="font-size:11px;color:var(--muted);font-weight:400">(optional — images, PDF, Word, Excel — max 3 files, 5MB each)</span></label>
+          <input type="file" id="ct-files" class="form-control" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx" onchange="handleFileSelect()"/>
+          <div id="ct-fileList" style="margin-top:8px"></div>
+        </div>
         <div class="col-12" style="display:flex;gap:10px">
           <button class="btn-teal" id="submitBtn" onclick="submitTicket()"><i class="ti ti-send"></i> Submit Ticket</button>
           <button class="btn-outline" onclick="initNewTicketForm()"><i class="ti ti-refresh"></i> Reset</button>
@@ -443,6 +448,10 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
             <div class="meta-item"><label>Status</label><p id="td-stat">—</p></div>
             <div class="meta-item" id="td-assignedToWrap"><label>Assigned To</label><p id="td-assignedTo">—</p></div>
             <div class="meta-item"><label>Created On</label><p id="td-date">—</p></div>
+          </div>
+          <div id="td-attachmentsWrap" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+            <label style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);font-weight:600">Attachments</label>
+            <div id="td-attachments" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:8px"></div>
           </div>
         </div>
       </div>
@@ -728,8 +737,10 @@ import { getFirestore, collection, doc,
          getDocs, getDoc, addDoc, setDoc,
          updateDoc, deleteDoc, query, where,
          orderBy, onSnapshot, serverTimestamp,
-         writeBatch, limit }                      from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+         writeBatch, limit, runTransaction }      from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { getFunctions, httpsCallable }            from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js';
+import { getStorage, ref as storageRef,
+         uploadBytes, getDownloadURL }            from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js';
 
 // ── CONFIG ────────────────────────────────────────────────────
 const FIREBASE_CONFIG = {
@@ -789,7 +800,7 @@ function emailToEmp(email){
   return email.endsWith('@'+EMP_EMAIL_DOMAIN) ? email.split('@')[0] : email;
 }
 
-let app, auth, db, functions;
+let app, auth, db, functions, storage;
 
 function initFirebase(){
   const cfg = getFirebaseConfig();
@@ -799,6 +810,7 @@ function initFirebase(){
     auth      = getAuth(app);
     db        = getFirestore(app);
     functions = getFunctions(app);
+    storage   = getStorage(app);
     return true;
   } catch(e){ console.error('Firebase init error:',e); return false; }
 }
@@ -855,10 +867,20 @@ function setSyncStatus(s){
   lbl.textContent=s==='saving'?'Saving…':s==='err'?'Error':'Synced';
 }
 
-function genTicketNo(){
-  const d=new Date().toISOString().slice(0,10).replace(/-/g,'');
-  const seq=String((_tickets.length||0)+1).padStart(4,'0');
-  return `TKT-${d}-${seq}`;
+// Atomic, race-condition-safe ticket number using a Firestore counter.
+// Guarantees no two tickets ever get the same number, even if two people
+// submit at the exact same moment.
+async function genTicketNo(){
+  const d = new Date().toISOString().slice(0,10).replace(/-/g,'');
+  const counterRef = doc(db,'counters','tickets');
+  const nextSeq = await runTransaction(db, async (tx)=>{
+    const snap = await tx.get(counterRef);
+    const current = snap.exists() ? (snap.data().value||0) : 0;
+    const next = current + 1;
+    tx.set(counterRef, { value: next }, { merge:true });
+    return next;
+  });
+  return `TKT-${d}-${String(nextSeq).padStart(4,'0')}`;
 }
 
 function today(){ return new Date().toISOString().split('T')[0]; }
@@ -1333,6 +1355,25 @@ window.viewTicket=async function(id){
   if(assignedWrap) assignedWrap.style.display = isAdmin() ? '' : 'none';
   if(assignedEl)   assignedEl.textContent = t.assignedTo ? getUser(t.assignedTo) : 'Unassigned';
 
+  // Attachments — visible to everyone who can view the ticket
+  const attWrap = document.getElementById('td-attachmentsWrap');
+  const attBody = document.getElementById('td-attachments');
+  const attachments = t.attachments || [];
+  if(attachments.length > 0 && attWrap && attBody){
+    attWrap.style.display = 'block';
+    attBody.innerHTML = attachments.map(a=>{
+      const isImg = /\.(jpg|jpeg|png|gif|webp)$/i.test(a.name||'');
+      const icon  = isImg ? 'ti-photo' : /\.pdf$/i.test(a.name||'') ? 'ti-file-type-pdf' : /\.(doc|docx)$/i.test(a.name||'') ? 'ti-file-type-doc' : /\.(xls|xlsx)$/i.test(a.name||'') ? 'ti-file-type-xls' : 'ti-file';
+      return `<a href="${a.url}" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:6px;padding:7px 12px;background:var(--gray);border-radius:8px;font-size:12.5px;color:var(--text);text-decoration:none;border:1px solid var(--border)">
+        <i class="ti ${icon}" style="color:var(--blue)"></i>
+        <span>${a.name}</span>
+        <i class="ti ti-external-link" style="font-size:12px;color:var(--muted)"></i>
+      </a>`;
+    }).join('');
+  } else if(attWrap){
+    attWrap.style.display = 'none';
+  }
+
   const sw=document.getElementById('td-statusWrap'), ub=document.getElementById('td-userBanner');
   const editBar = document.getElementById('td-editBtnWrap');
   if(isAdmin()){
@@ -1549,9 +1590,8 @@ async function sendEmailNotification(ticketIdOrData, eventType){
 
 // ── NEW TICKET ────────────────────────────────────────────────
 function initNewTicketForm(){
-  const no=genTicketNo();
-  document.getElementById('ct-no').value=no;
-  document.getElementById('ctNoDisplay').textContent=no;
+  document.getElementById('ct-no').value='Auto-assigned on submit';
+  document.getElementById('ctNoDisplay').textContent='';
   document.getElementById('ct-dept').innerHTML=MASTERS.departments.map(d=>`<option value="${d.id}">${d.name}</option>`).join('');
   document.getElementById('ct-priority').innerHTML=MASTERS.priorities.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
   const med=MASTERS.priorities.find(p=>p.level===2);
@@ -1594,8 +1634,58 @@ function initNewTicketForm(){
   }
   document.getElementById('ct-subject').value='';
   document.getElementById('ct-desc').value='';
+  document.getElementById('ct-files').value='';
+  document.getElementById('ct-fileList').innerHTML='';
+  window._ctSelectedFiles = [];
 }
 window.initNewTicketForm=initNewTicketForm;
+
+// ── FILE ATTACHMENTS (Raise Ticket) ─────────────────────────────
+const MAX_ATTACH_FILES = 3;
+const MAX_ATTACH_SIZE  = 5 * 1024 * 1024; // 5MB
+
+window.handleFileSelect = function(){
+  const input = document.getElementById('ct-files');
+  const files = Array.from(input.files || []);
+  const listEl = document.getElementById('ct-fileList');
+
+  if(files.length > MAX_ATTACH_FILES){
+    toast(`Maximum ${MAX_ATTACH_FILES} files allowed`,'error');
+    input.value=''; listEl.innerHTML=''; window._ctSelectedFiles=[]; return;
+  }
+  const oversized = files.find(f=>f.size > MAX_ATTACH_SIZE);
+  if(oversized){
+    toast(`"${oversized.name}" is too large — max 5MB per file`,'error');
+    input.value=''; listEl.innerHTML=''; window._ctSelectedFiles=[]; return;
+  }
+
+  window._ctSelectedFiles = files;
+  listEl.innerHTML = files.map(f=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--gray);border-radius:6px;margin-bottom:4px;font-size:12.5px">
+      <i class="ti ti-paperclip" style="color:var(--muted)"></i>
+      <span style="flex:1">${f.name}</span>
+      <span style="color:var(--muted);font-size:11px">${(f.size/1024).toFixed(0)} KB</span>
+    </div>`).join('');
+};
+
+// Uploads selected files to Firebase Storage under tickets/{ticketId}/ and
+// returns an array of {name, url, size}
+async function uploadTicketAttachments(ticketId, files){
+  const results = [];
+  for(const file of files){
+    try{
+      const path = `tickets/${ticketId}/${Date.now()}_${file.name}`;
+      const fileRef = storageRef(storage, path);
+      await uploadBytes(fileRef, file);
+      const url = await getDownloadURL(fileRef);
+      results.push({ name:file.name, url, size:file.size });
+    } catch(e){
+      console.error('Attachment upload failed for', file.name, e);
+      toast(`Failed to upload "${file.name}"`,'error');
+    }
+  }
+  return results;
+}
 
 window.loadSubTypes=function(){
   const tid   = document.getElementById('ct-type').value;
@@ -1619,8 +1709,9 @@ window.submitTicket=async function(){
   btn.innerHTML='<span class="spinner"></span> Submitting…'; btn.disabled=true;
   setSyncStatus('saving');
   try{
+    const ticketNo = await genTicketNo();
     const ticketData={
-      ticketNo: genTicketNo(),
+      ticketNo,
       userId:   uid,
       deptId:   document.getElementById('ct-dept').value,
       typeId:   document.getElementById('ct-type').value,
@@ -1634,11 +1725,24 @@ window.submitTicket=async function(){
       comments:[], activity:[{text:'Ticket created (Open)',by:SESSION.profile.name,date:today()}]
     };
     const ref = await addDoc(collection(db,'tickets'), ticketData);
+
+    // Upload attachments (if any) then attach their URLs to the ticket
+    const selectedFiles = window._ctSelectedFiles || [];
+    if(selectedFiles.length > 0){
+      btn.innerHTML = '<span class="spinner"></span> Uploading attachments…';
+      const uploaded = await uploadTicketAttachments(ref.id, selectedFiles);
+      if(uploaded.length > 0){
+        await updateDoc(doc(db,'tickets',ref.id), { attachments: uploaded });
+        ticketData.attachments = uploaded;
+      }
+    }
+
     setSyncStatus('synced');
     // Email notification to Admins — pass ticket data directly (avoids
     // waiting on the real-time listener to catch up)
     try{ await sendEmailNotification({ id: ref.id, ...ticketData }, 'ticket_created'); } catch(e){ console.error('Email notify failed:', e); }
     toast('Ticket '+ticketData.ticketNo+' created!');
+    window._ctSelectedFiles = [];
     showPage('tickets',null);
   } catch(e){ setSyncStatus('err'); toast('Failed: '+e.message,'error'); }
   finally{ btn.innerHTML='<i class="ti ti-send"></i> Submit Ticket'; btn.disabled=false; }
