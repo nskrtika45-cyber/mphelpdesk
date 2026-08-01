@@ -508,7 +508,12 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
 
 <!-- REPORTS -->
 <div class="page" id="page-reports">
-  <div class="ph"><h1>Reports</h1><button class="btn-outline" onclick="exportCSV()"><i class="ti ti-download"></i> Export CSV</button></div>
+  <div class="ph"><h1>Reports</h1>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn-outline" onclick="fixDuplicateTicketNumbers()" style="color:var(--amber);border-color:#FAC775"><i class="ti ti-tool"></i> Fix Duplicate Ticket Numbers</button>
+      <button class="btn-outline" onclick="exportCSV()"><i class="ti ti-download"></i> Export CSV</button>
+    </div>
+  </div>
   <div class="row g-3 mb-3">
     <div class="col-md-3"><select class="form-select" id="rDept"><option value="">All Departments</option></select></div>
     <div class="col-md-3"><select class="form-select" id="rStatus"><option value="">All Status</option></select></div>
@@ -2098,6 +2103,65 @@ window.runReport=function(){
   if(fp) data=data.filter(t=>t.priorityId===fp);
   window._rptData=data;
   document.getElementById('rptBody').innerHTML=data.length===0?emptyRow(7,'No records found.'):data.map(t=>`<tr><td style="color:var(--blue);font-weight:500">${t.ticketNo}</td><td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.subject}</td><td>${getUser(t.userId)}</td><td>${getDept(t.deptId)}</td><td>${priBadge(t.priorityId)}</td><td>${statBadge(t.statusId)}</td><td>${fmtDate(t.createdAt)}</td></tr>`).join('');
+};
+
+// ── FIX DUPLICATE TICKET NUMBERS (one-time repair tool) ──
+// Re-numbers every ticket in creation order with a guaranteed-unique
+// number, then resets the atomic counter so new tickets continue correctly.
+window.fixDuplicateTicketNumbers = async function(){
+  if(!isAdmin()) return;
+
+  // Check if there actually are duplicates before doing anything
+  const numberCounts = {};
+  _tickets.forEach(t => { numberCounts[t.ticketNo] = (numberCounts[t.ticketNo]||0) + 1; });
+  const duplicates = Object.entries(numberCounts).filter(([no,count])=>count>1);
+
+  if(duplicates.length === 0){
+    toast('No duplicate ticket numbers found — everything looks good!');
+    return;
+  }
+
+  const dupList = duplicates.map(([no,count])=>`${no} (used ${count} times)`).join('\n');
+  if(!confirm(`Found duplicate ticket numbers:\n\n${dupList}\n\nThis will re-number ALL ${_tickets.length} tickets in creation order to fix this. Continue?`)) return;
+
+  setLoading(true, 'Fixing ticket numbers…');
+  try{
+    // Sort all tickets by creation date, oldest first
+    const sorted = [...(await getDocs(collection(db,'tickets'))).docs]
+      .map(d=>({ id:d.id, ...d.data() }))
+      .sort((a,b)=>{
+        const ta = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0;
+        const tb = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0;
+        return ta - tb;
+      });
+
+    let seq = 0;
+    const batch = writeBatch(db);
+    let batchCount = 0;
+
+    for(const t of sorted){
+      seq++;
+      const d = t.createdAt?.toDate ? t.createdAt.toDate() : new Date();
+      const dateStr = d.toISOString().slice(0,10).replace(/-/g,'');
+      const newNo = `TKT-${dateStr}-${String(seq).padStart(4,'0')}`;
+      if(newNo !== t.ticketNo){
+        batch.update(doc(db,'tickets',t.id), { ticketNo: newNo });
+        batchCount++;
+      }
+    }
+
+    if(batchCount > 0) await batch.commit();
+
+    // Reset the atomic counter so the NEXT new ticket continues from here safely
+    await setDoc(doc(db,'counters','tickets'), { value: seq }, { merge:true });
+
+    setLoading(false);
+    toast(`Fixed! ${batchCount} ticket number(s) corrected. Refreshing…`);
+    setTimeout(()=>location.reload(), 1500);
+  } catch(e){
+    setLoading(false);
+    toast('Fix failed: '+e.message,'error');
+  }
 };
 
 window.exportCSV=function(){
