@@ -1156,10 +1156,22 @@ function subscribeTickets(){
   if(isAdmin()){
     q = query(collection(db,'tickets'), orderBy('createdAt','desc'));
   } else {
-    q = query(collection(db,'tickets'), where('userId','==',SESSION.user.uid), orderBy('createdAt','desc'));
+    // No orderBy here on purpose — combining where(userId==) with
+    // orderBy(createdAt) requires a Firestore composite index that isn't
+    // set up. Sorting happens client-side below instead, which needs no
+    // index at all and works identically for a small per-user ticket list.
+    q = query(collection(db,'tickets'), where('userId','==',SESSION.user.uid));
   }
   unsubTickets = onSnapshot(q, snap => {
     _tickets = snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(!isAdmin()){
+      // Client-side sort, newest first
+      _tickets.sort((a,b)=>{
+        const ta = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0;
+        const tb = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0;
+        return tb - ta;
+      });
+    }
     window._tickets = _tickets;
     updateBadges();
     // Refresh current page if it's a ticket-related page
