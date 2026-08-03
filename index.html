@@ -502,6 +502,7 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
       <button class="btn-navy" onclick="openUserModal()"><i class="ti ti-user-plus"></i> Add User</button>
     </div>
   </div>
+  <div id="dupUserWarning" style="display:none" class="warn-panel mb-3"></div>
   <div class="info-panel mb-3"><i class="ti ti-info-circle" style="font-size:16px;flex-shrink:0"></i> New users receive a Firebase Auth email with login credentials. Role is stored in Firestore.</div>
   <div class="card-box"><div style="overflow-x:auto"><table class="table table-hover mb-0"><thead><tr><th>#</th><th>Login ID</th><th>Name</th><th>Email</th><th>Role</th><th>Department</th><th>Active</th><th>Actions</th></tr></thead><tbody id="usersBody"></tbody></table></div></div>
 </div>
@@ -608,6 +609,10 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
         <div class="col-12">
           <label class="form-label">Description</label>
           <textarea class="form-control" id="et-desc" rows="4" placeholder="Detailed description..."></textarea>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Raised By <span style="font-size:10px;color:var(--muted);font-weight:400">(fix if linked to wrong account)</span></label>
+          <select class="form-select" id="et-raisedBy"></select>
         </div>
         <div class="col-md-4">
           <label class="form-label">Issue Type</label>
@@ -2002,6 +2007,23 @@ window.saveMM=async function(){
 // ── USERS ─────────────────────────────────────────────────────
 window.renderUsers=function(){
   document.getElementById('u-dept').innerHTML=MASTERS.departments.map(d=>`<option value="${d.id}">${d.name}</option>`).join('');
+
+  // Diagnostic: flag duplicate names — often the cause of "my tickets don't
+  // show up" when a person's account was recreated with a new login ID
+  const nameCounts = {};
+  _users.forEach(u => { nameCounts[u.name] = (nameCounts[u.name]||0) + 1; });
+  const dupNames = Object.entries(nameCounts).filter(([n,c])=>c>1).map(([n])=>n);
+  const dupBanner = document.getElementById('dupUserWarning');
+  if(dupBanner){
+    if(dupNames.length > 0){
+      dupBanner.style.display = 'flex';
+      dupBanner.innerHTML = `<i class="ti ti-alert-triangle" style="flex-shrink:0"></i>
+        <span><strong>Duplicate accounts detected:</strong> ${dupNames.join(', ')} — each has more than one login. Tickets raised under an older duplicate won't show up when that person logs in with their current account. Open the affected tickets and use <strong>Modify Ticket → Raised By</strong> to point them to the correct current account, then deactivate the old duplicate here.</span>`;
+    } else {
+      dupBanner.style.display = 'none';
+    }
+  }
+
   document.getElementById('usersBody').innerHTML=_users.map((u,i)=>`<tr><td>${i+1}</td><td><span style="font-weight:600;font-family:monospace">${u.empId||'—'}</span></td><td><div style="display:flex;align-items:center;gap:8px"><div style="width:28px;height:28px;border-radius:50%;background:${u.role==='Admin'?'var(--navy)':'#2A5298'};color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">${(u.name||'U').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)}</div><div><div style="font-size:13px;font-weight:500">${u.name}</div><div style="font-size:11px;color:var(--muted)">${getDept(u.deptId)}</div></div></div></td><td style="font-size:12px">${u.notifyEmail ? u.notifyEmail : '<span style="color:var(--muted)">—</span>'}</td><td><span class="${u.role==='Admin'?'b-admin':'b-user'}">${u.role}</span></td><td>${getDept(u.deptId)}</td><td>${u.active?'<span class="b-resolved">Active</span>':'<span class="b-closed">Inactive</span>'}</td><td><button class="btn-icon" onclick='openUserModal(${JSON.stringify(u)})'><i class="ti ti-edit"></i></button></td></tr>`).join('');
 };
 
@@ -2472,6 +2494,15 @@ window.openEditTicketModal = function(){
   document.getElementById('et-subject').value = t.subject || '';
   document.getElementById('et-desc').value    = t.description || '';
 
+  // Raised By — lists ALL users, shows current, flags duplicate names so
+  // admin can spot which account a ticket is actually wired to
+  const nameCounts = {};
+  _users.forEach(u => { nameCounts[u.name] = (nameCounts[u.name]||0) + 1; });
+  document.getElementById('et-raisedBy').innerHTML = _users.map(u=>{
+    const dupTag = nameCounts[u.name] > 1 ? ` — Login ID: ${u.empId||emailToEmp(u.email)}` : '';
+    return `<option value="${u.id}" ${u.id===t.userId?'selected':''}>${u.name}${dupTag}</option>`;
+  }).join('');
+
   // Issue Types
   document.getElementById('et-type').innerHTML =
     MASTERS.issueTypes.map(x=>`<option value="${x.id}" ${x.id===t.typeId?'selected':''}>${x.name}</option>`).join('');
@@ -2516,6 +2547,7 @@ window.saveEditTicket = async function(){
 
   const subject    = document.getElementById('et-subject').value.trim();
   const desc       = document.getElementById('et-desc').value.trim();
+  const raisedById = document.getElementById('et-raisedBy').value;
   const typeId     = document.getElementById('et-type').value;
   const subTypeId  = document.getElementById('et-subtype').value || null;
   const priorityId = document.getElementById('et-priority').value;
@@ -2533,6 +2565,11 @@ window.saveEditTicket = async function(){
     const activity = [...(t.activity||[])];
 
     // Log what changed
+    if(raisedById !== t.userId){
+      const oldName = getUser(t.userId);
+      const newName = getUser(raisedById);
+      activity.push({ text:`Raised By corrected: ${oldName} → ${newName}`, by:SESSION.profile.name, date:today() });
+    }
     if(subject    !== t.subject)    activity.push({ text:`Subject updated`,          by:SESSION.profile.name, date:today() });
     if(typeId     !== t.typeId)     activity.push({ text:`Issue Type → ${getType(typeId)}`, by:SESSION.profile.name, date:today() });
     if(priorityId !== t.priorityId) activity.push({ text:`Priority → ${getPri(priorityId)}`, by:SESSION.profile.name, date:today() });
@@ -2544,6 +2581,7 @@ window.saveEditTicket = async function(){
 
     await updateDoc(doc(db,'tickets',id), {
       subject, description:desc,
+      userId: raisedById,
       typeId, subTypeId, priorityId, deptId, statusId,
       assignedTo, activity,
       updatedAt:   serverTimestamp(),
@@ -2555,6 +2593,7 @@ window.saveEditTicket = async function(){
     // Update ticket detail UI immediately
     document.getElementById('td-subject').textContent  = subject;
     document.getElementById('td-desc').textContent     = desc;
+    document.getElementById('td-by').textContent       = getUser(raisedById);
     document.getElementById('td-type').textContent     = getType(typeId);
     document.getElementById('td-sub').textContent      = getSub(subTypeId) || '—';
     document.getElementById('td-pri').textContent      = getPri(priorityId);
