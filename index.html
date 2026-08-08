@@ -665,9 +665,12 @@
 
       <div class="section-title group"><h2>CRM Dashboard</h2><div class="line"></div></div>
 
-      <div id="crmAgreementDashboard">
+      <div class="kpi-grid" id="kpiGridCRM">
+        <span id="kpiGridAgreement" style="display:contents"></span>
+        <span id="kpiGridCollection" style="display:contents"></span>
+      </div>
 
-      <div class="kpi-grid" id="kpiGridAgreement"></div>
+      <div id="crmAgreementDashboard">
 
       <div class="section-title"><h2>Pipeline Status</h2><div class="line"></div></div>
       <div class="chart-grid">
@@ -678,8 +681,6 @@
       </div>
 
       <div id="crmCollectionDashboard">
-
-      <div class="kpi-grid" id="kpiGridCollection"></div>
 
       <div class="section-title"><h2>Collections by Project</h2><div class="line"></div></div>
       <div class="chart-grid">
@@ -1281,6 +1282,7 @@ let collectionFYData = [];
 let outstandingData = [];
 let genuineCancelledUnits = 0, genuineCancelledValue = 0;
 let agreementSignedCount = 0, agreementSignedValue = 0, agreementRegisteredCount = 0, agreementRegisteredValue = 0;
+let agreementYetToSignCount = 0, agreementYetToSignValue = 0, agreementYetToRegisterCount = 0, agreementYetToRegisterValue = 0;
 let soldValueMode = 'net'; // 'net' = current sold value as-is; 'gross' = net + genuine cancellations added back
 let locationWiseData = [];
 let propertyWiseData = [];
@@ -2145,6 +2147,16 @@ function applyFiltersAndRender(){
   agreementRegisteredCount = registeredRecords.length;
   agreementRegisteredValue = registeredRecords.reduce((a,r)=>a+(r.agreementValue||0),0);
 
+  // "Yet to Sign" / "Yet to be Registered" are current backlog snapshots, not period activity — a
+  // unit with no Agreement/Regn Date can never match an FY/Month filter on that date, so these are
+  // Project-only (like Unsold inventory), showing the live pending count regardless of booking period.
+  const yetToSignRecords = filterProjectOnly(RAW.agreementRecords).filter(r=>r.agreementDate === '');
+  const yetToRegisterRecords = filterProjectOnly(RAW.agreementRecords).filter(r=>r.regnDate === '');
+  agreementYetToSignCount = yetToSignRecords.length;
+  agreementYetToSignValue = yetToSignRecords.reduce((a,r)=>a+(r.agreementValue||0),0);
+  agreementYetToRegisterCount = yetToRegisterRecords.length;
+  agreementYetToRegisterValue = yetToRegisterRecords.reduce((a,r)=>a+(r.agreementValue||0),0);
+
   // ---- Collection ----
   // Unit-wise collection now comes from Sheet1 raw receipts, cumulated per unit — not Sheet6's own
   // pre-computed unit summary. Since Sheet1 has real receipt dates, this now respects Project + FY +
@@ -2293,7 +2305,9 @@ function renderKPIs(){
   if(RAW.agreementRecords.length){
     cards.push(
       {lbl:'Total Agreement Signed', val: fmtNum(agreementSignedCount), sub: `${fmtINRCr(agreementSignedValue)} booking value &middot; by Agreement Date`},
-      {lbl:'Total Agreement Registered', val: fmtNum(agreementRegisteredCount), sub: `${fmtINRCr(agreementRegisteredValue)} booking value &middot; by Regn Date`},
+      {lbl:'Yet to Sign', val: fmtNum(agreementYetToSignCount), sub: `${fmtINRCr(agreementYetToSignValue)} booking value &middot; current backlog`},
+      {lbl:'Total Unit Registered', val: fmtNum(agreementRegisteredCount), sub: `${fmtINRCr(agreementRegisteredValue)} booking value &middot; by Regn Date`},
+      {lbl:'Yet to be Registered', val: fmtNum(agreementYetToRegisterCount), sub: `${fmtINRCr(agreementYetToRegisterValue)} booking value &middot; current backlog`},
     );
   }
   document.getElementById('kpiGrid').innerHTML = cards.map(c=>`
@@ -2632,18 +2646,15 @@ function renderAgreementPage(){
   const { statusList, projectPending } = buildAgreementSummary(agreementData);
   const total = agreementData.length;
   const regnRecorded = agreementData.filter(r=>r.regnDate!=='').length;
-  const possessionRecorded = agreementData.filter(r=>r.possessionDate!=='').length;
   const pendingRegn = total - regnRecorded;
-  const pendingPossession = total - possessionRecorded;
 
   document.getElementById('kpiGridAgreement').innerHTML = [
     {lbl:'Units Tracked', val: fmtNum(total), sub:'From the Agreement Register report'},
-    {lbl:'Regn Date Recorded', val: fmtNum(regnRecorded), sub:`${(regnRecorded/total*100).toFixed(1)}% of tracked units`},
-    {lbl:'Possession Date Recorded', val: fmtNum(possessionRecorded), sub:`${(possessionRecorded/total*100).toFixed(1)}% of tracked units`},
     {lbl:'Regn Date Pending', val: fmtNum(pendingRegn), sub:'Units with no Regn Date recorded yet'},
-    {lbl:'Possession Date Pending', val: fmtNum(pendingPossession), sub:'Units with no Possession Date recorded yet'},
     {lbl:'Total Agreement Signed', val: fmtNum(agreementSignedCount), sub: `${fmtINRCr(agreementSignedValue)} booking value &middot; by Agreement Date`},
-    {lbl:'Total Agreement Registered', val: fmtNum(agreementRegisteredCount), sub: `${fmtINRCr(agreementRegisteredValue)} booking value &middot; by Regn Date`},
+    {lbl:'Yet to Sign', val: fmtNum(agreementYetToSignCount), sub: `${fmtINRCr(agreementYetToSignValue)} booking value &middot; current backlog`},
+    {lbl:'Total Unit Registered', val: fmtNum(agreementRegisteredCount), sub: `${fmtINRCr(agreementRegisteredValue)} booking value &middot; by Regn Date`},
+    {lbl:'Yet to be Registered', val: fmtNum(agreementYetToRegisterCount), sub: `${fmtINRCr(agreementYetToRegisterValue)} booking value &middot; current backlog`},
   ].map(c=>`<div class="kpi"><div class="lbl">${c.lbl}</div><div class="val num">${c.val}</div><div class="sub">${c.sub}</div></div>`).join('');
 
   const navy = getComputedStyle(document.documentElement).getPropertyValue('--navy').trim();
@@ -2778,13 +2789,11 @@ function renderCollectionPage(){
   // "Total Collected" and the project chart DO respect Project + FY + Month, sourced from the dated
   // Sheet1 receipts rather than the dateless Sheet6 unit summary.
   const totalCollected = periodActive ? collectionPeriodTotal : allTimeCollected;
-  const outstandingRatioPct = Math.max(0, 100 - collectionPct);
 
   document.getElementById('kpiGridCollection').innerHTML = [
     {lbl:'Total Collected', val: fmtINRCr(totalCollected), sub: periodActive ? 'Received in the selected period' : `${fmtNum(unitsRecorded)} units with collection recorded`},
     {lbl:'Collection %', val: fmtPct(collectionPct), sub:(hasOutstandingReport?'':'Estimated — ') + 'of total cost, all-time (not affected by FY/Month)'},
     {lbl:'Outstanding Balance', val: fmtINRCr(outstandingTotal), sub: outstandingSub},
-    {lbl:'Collection Ratio', val: `${collectionPct.toFixed(0)} : ${outstandingRatioPct.toFixed(0)}`, sub:'Collected : Outstanding, of total cost, all-time'},
   ].map(c=>`<div class="kpi"><div class="lbl">${c.lbl}</div><div class="val num">${c.val}</div><div class="sub">${c.sub}</div></div>`).join('');
 
   const navy = getComputedStyle(document.documentElement).getPropertyValue('--navy').trim();
