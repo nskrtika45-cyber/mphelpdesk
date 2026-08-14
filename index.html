@@ -335,6 +335,7 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
   <div class="row g-3 mb-4" id="adminCharts" style="display:none">
     <div class="col-md-6"><div class="card-box"><div class="cbh"><h2><i class="ti ti-building" style="margin-right:6px"></i>Department-wise</h2></div><div class="cbb" id="deptChart"></div></div></div>
     <div class="col-md-6"><div class="card-box"><div class="cbh"><h2><i class="ti ti-flag" style="margin-right:6px"></i>Priority Breakdown</h2></div><div class="cbb" id="priChart"></div></div></div>
+    <div class="col-md-6"><div class="card-box"><div class="cbh"><h2><i class="ti ti-user-check" style="margin-right:6px"></i>Assigned To — Workload</h2></div><div class="cbb" id="assignChart"></div></div></div>
   </div>
   <div class="card-box">
     <div class="cbh"><h2>Recent Tickets</h2><button class="btn-outline" onclick="showPage('tickets',null)" style="font-size:12px;padding:5px 12px">View all</button></div>
@@ -521,7 +522,7 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
     <div class="col-md-3"><select class="form-select" id="rPriority"><option value="">All Priority</option></select></div>
     <div class="col-md-3"><button class="btn-navy" style="width:100%;justify-content:center" onclick="runReport()"><i class="ti ti-search"></i> Run Report</button></div>
   </div>
-  <div class="card-box"><div style="overflow-x:auto"><table class="table table-hover mb-0"><thead><tr><th>Ticket No</th><th>Subject</th><th>Raised By</th><th>Dept</th><th>Priority</th><th>Status</th><th>Date</th></tr></thead><tbody id="rptBody"></tbody></table></div></div>
+  <div class="card-box"><div style="overflow-x:auto"><table class="table table-hover mb-0"><thead><tr><th>Ticket No</th><th>Subject</th><th>Raised By</th><th>Dept</th><th>Priority</th><th>Status</th><th>Assigned To</th><th>Date</th></tr></thead><tbody id="rptBody"></tbody></table></div></div>
 </div>
 
 <!-- CHANGE PASSWORD -->
@@ -1087,6 +1088,21 @@ window.doLogin=async function(){
 
 window.doLogout=async function(){ await signOut(auth); };
 
+// ── ADMIN: Send password reset email to any user ──
+// Firebase's free (Spark) plan has no backend, so Admin can't type a new
+// password for someone else directly — that needs a paid Cloud Function.
+// This is the free alternative: trigger Firebase's official reset email.
+window.adminResetPassword = async function(email, name){
+  if(!isAdmin()) return;
+  if(!confirm(`Send a password reset email to ${name} (${email})?`)) return;
+  try{
+    await sendPasswordResetEmail(auth, email);
+    toast(`Reset email sent to ${name}`);
+  } catch(e){
+    toast('Failed to send reset email: '+e.message,'error');
+  }
+};
+
 window.sendReset=async function(){
   let email=document.getElementById('loginEmail')?.value.trim()||SESSION.user?.email||'';
   email = empToEmail(email);
@@ -1280,12 +1296,26 @@ function renderDashboard(){
   document.getElementById('th-recBy').style.display=isAdmin()?'':'none';
 
   if(isAdmin()&&_tickets.length){
-    const dC={},pC={};
-    _tickets.forEach(t=>{ dC[t.deptId]=(dC[t.deptId]||0)+1; pC[t.priorityId]=(pC[t.priorityId]||0)+1; });
+    const dC={},pC={},aC={};
+    _tickets.forEach(t=>{
+      dC[t.deptId]=(dC[t.deptId]||0)+1;
+      pC[t.priorityId]=(pC[t.priorityId]||0)+1;
+      const aKey = t.assignedTo || '__unassigned__';
+      aC[aKey]=(aC[aKey]||0)+1;
+    });
     const maxD=Math.max(...Object.values(dC),1);
     document.getElementById('deptChart').innerHTML=Object.entries(dC).map(([id,c])=>`<div class="bar-wrap"><div class="bar-label">${getDept(id)}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(c/maxD*100)}%"></div></div><div class="bar-val">${c}</div></div>`).join('');
     const priC=['#888780','#378ADD','#EF9F27','#E24B4A'];
     document.getElementById('priChart').innerHTML=MASTERS.priorities.map(p=>`<div class="bar-wrap"><div class="bar-label">${p.name}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round((pC[p.id]||0)/Math.max(_tickets.length,1)*100)}%;background:${p.color||priC[p.level-1]}"></div></div><div class="bar-val">${pC[p.id]||0}</div></div>`).join('');
+
+    // Assigned To — workload per admin/support person, sorted busiest first
+    const maxA = Math.max(...Object.values(aC), 1);
+    const assignEntries = Object.entries(aC).sort((a,b)=>b[1]-a[1]);
+    document.getElementById('assignChart').innerHTML = assignEntries.map(([id,c])=>{
+      const label = id==='__unassigned__' ? 'Unassigned' : getUser(id);
+      const barColor = id==='__unassigned__' ? '#888780' : 'var(--navy)';
+      return `<div class="bar-wrap"><div class="bar-label">${label}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(c/maxA*100)}%;background:${barColor}"></div></div><div class="bar-val">${c}</div></div>`;
+    }).join('');
   }
 
   const recent=myT.slice(0,5);
@@ -2036,7 +2066,7 @@ window.renderUsers=function(){
     }
   }
 
-  document.getElementById('usersBody').innerHTML=_users.map((u,i)=>`<tr><td>${i+1}</td><td><span style="font-weight:600;font-family:monospace">${u.empId||'—'}</span></td><td><div style="display:flex;align-items:center;gap:8px"><div style="width:28px;height:28px;border-radius:50%;background:${u.role==='Admin'?'var(--navy)':'#2A5298'};color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">${(u.name||'U').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)}</div><div><div style="font-size:13px;font-weight:500">${u.name}</div><div style="font-size:11px;color:var(--muted)">${getDept(u.deptId)}</div></div></div></td><td style="font-size:12px">${u.notifyEmail ? u.notifyEmail : '<span style="color:var(--muted)">—</span>'}</td><td><span class="${u.role==='Admin'?'b-admin':'b-user'}">${u.role}</span></td><td>${getDept(u.deptId)}</td><td>${u.active?'<span class="b-resolved">Active</span>':'<span class="b-closed">Inactive</span>'}</td><td><button class="btn-icon" onclick='openUserModal(${JSON.stringify(u)})'><i class="ti ti-edit"></i></button></td></tr>`).join('');
+  document.getElementById('usersBody').innerHTML=_users.map((u,i)=>`<tr><td>${i+1}</td><td><span style="font-weight:600;font-family:monospace">${u.empId||'—'}</span></td><td><div style="display:flex;align-items:center;gap:8px"><div style="width:28px;height:28px;border-radius:50%;background:${u.role==='Admin'?'var(--navy)':'#2A5298'};color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">${(u.name||'U').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)}</div><div><div style="font-size:13px;font-weight:500">${u.name}</div><div style="font-size:11px;color:var(--muted)">${getDept(u.deptId)}</div></div></div></td><td style="font-size:12px">${u.notifyEmail ? u.notifyEmail : '<span style="color:var(--muted)">—</span>'}</td><td><span class="${u.role==='Admin'?'b-admin':'b-user'}">${u.role}</span></td><td>${getDept(u.deptId)}</td><td>${u.active?'<span class="b-resolved">Active</span>':'<span class="b-closed">Inactive</span>'}</td><td><button class="btn-icon" onclick='openUserModal(${JSON.stringify(u)})' title="Edit"><i class="ti ti-edit"></i></button> ${u.notifyEmail ? `<button class="btn-icon" onclick="adminResetPassword('${u.notifyEmail}','${u.name.replace(/'/g,'')}')" title="Send password reset email" style="color:var(--blue)"><i class="ti ti-key"></i></button>` : `<button class="btn-icon" disabled title="Add an email first to enable password reset" style="color:var(--muted);cursor:not-allowed"><i class="ti ti-key"></i></button>`}</td></tr>`).join('');
 };
 
 window.openUserModal=function(user=null){
@@ -2136,7 +2166,7 @@ window.runReport=function(){
   if(fs) data=data.filter(t=>t.statusId===fs);
   if(fp) data=data.filter(t=>t.priorityId===fp);
   window._rptData=data;
-  document.getElementById('rptBody').innerHTML=data.length===0?emptyRow(7,'No records found.'):data.map(t=>`<tr><td style="color:var(--blue);font-weight:500">${t.ticketNo}</td><td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.subject}</td><td>${getUser(t.userId)}</td><td>${getDept(t.deptId)}</td><td>${priBadge(t.priorityId)}</td><td>${statBadge(t.statusId)}</td><td>${fmtDate(t.createdAt)}</td></tr>`).join('');
+  document.getElementById('rptBody').innerHTML=data.length===0?emptyRow(8,'No records found.'):data.map(t=>`<tr><td style="color:var(--blue);font-weight:500">${t.ticketNo}</td><td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.subject}</td><td>${getUser(t.userId)}</td><td>${getDept(t.deptId)}</td><td>${priBadge(t.priorityId)}</td><td>${statBadge(t.statusId)}</td><td>${t.assignedTo ? `<strong>${getUser(t.assignedTo)}</strong>` : '<span style="color:var(--muted)">—</span>'}</td><td>${fmtDate(t.createdAt)}</td></tr>`).join('');
 };
 
 // ── FIX DUPLICATE TICKET NUMBERS (one-time repair tool) ──
@@ -2199,7 +2229,7 @@ window.fixDuplicateTicketNumbers = async function(){
 };
 
 window.exportCSV=function(){
-  const rows=['Ticket No,Subject,Raised By,Department,Priority,Status,Date'].concat(window._rptData.map(t=>`"${t.ticketNo}","${t.subject}","${getUser(t.userId)}","${getDept(t.deptId)}","${getPri(t.priorityId)}","${getStat(t.statusId)}","${fmtDate(t.createdAt)}"`)).join('\n');
+  const rows=['Ticket No,Subject,Raised By,Department,Priority,Status,Assigned To,Date'].concat(window._rptData.map(t=>`"${t.ticketNo}","${t.subject}","${getUser(t.userId)}","${getDept(t.deptId)}","${getPri(t.priorityId)}","${getStat(t.statusId)}","${t.assignedTo?getUser(t.assignedTo):''}","${fmtDate(t.createdAt)}"`)).join('\n');
   const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([rows],{type:'text/csv'})); a.download='helpdesk_report.csv'; a.click(); toast('CSV exported');
 };
 
