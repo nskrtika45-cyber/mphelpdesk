@@ -262,6 +262,7 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
     <div class="nav-item" data-p="mStatus" onclick="showPage('mStatus',this)"><i class="ti ti-circle-check"></i> Status</div>
     <div class="s-sec">Admin</div>
     <div class="nav-item" data-p="users" onclick="showPage('users',this)"><i class="ti ti-users"></i> Users</div>
+    <div class="nav-item" data-p="setUserPwd" onclick="showPage('setUserPwd',this)"><i class="ti ti-key"></i> Set User Password</div>
     <div class="nav-item" data-p="reports" onclick="showPage('reports',this)"><i class="ti ti-chart-bar"></i> Reports</div>
     <div class="nav-item" data-p="changePwd" onclick="showPage('changePwd',this)"><i class="ti ti-lock"></i> Change Password</div>
   </div>
@@ -506,6 +507,40 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
   <div id="dupUserWarning" style="display:none" class="warn-panel mb-3"></div>
   <div class="info-panel mb-3"><i class="ti ti-info-circle" style="font-size:16px;flex-shrink:0"></i> New users receive a Firebase Auth email with login credentials. Role is stored in Firestore.</div>
   <div class="card-box"><div style="overflow-x:auto"><table class="table table-hover mb-0"><thead><tr><th>#</th><th>Login ID</th><th>Name</th><th>Email</th><th>Role</th><th>Department</th><th>Active</th><th>Actions</th></tr></thead><tbody id="usersBody"></tbody></table></div></div>
+</div>
+
+<!-- SET USER PASSWORD (Admin only) -->
+<div class="page" id="page-setUserPwd">
+  <div class="ph"><h1>Set User Password</h1></div>
+  <div class="card-box">
+    <div class="cbb">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Employee <span style="color:var(--red)">*</span></label>
+          <select class="form-select" id="sup-user" onchange="document.getElementById('sup-msg').style.display='none'">
+            <option value="">— Select an employee —</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Password <span style="color:var(--red)">*</span></label>
+          <input class="form-control" type="password" id="sup-pwd" placeholder="Min 6 characters" oninput="supPwdStrength()"/>
+          <div id="supPwdBar" class="pwd-bar" style="width:0;background:var(--red)"></div>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Confirm Password <span style="color:var(--red)">*</span></label>
+          <input class="form-control" type="password" id="sup-pwd2" placeholder="Re-enter password"/>
+        </div>
+      </div>
+      <div id="sup-msg" style="display:none;font-size:12.5px;padding:8px 12px;border-radius:7px;margin-top:14px"></div>
+      <button class="btn-navy mt-4" id="supSubmitBtn" onclick="submitSetUserPassword()"><i class="ti ti-check"></i> Submit</button>
+
+      <div style="margin-top:22px;padding-top:16px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);line-height:1.8">
+        <strong style="color:var(--text)">Note:</strong><br/>
+        * The password should have minimum 6 and maximum 25 characters.<br/>
+        * The password should not have any part of the username / login ID.
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- REPORTS -->
@@ -1098,6 +1133,66 @@ window.doLogin=async function(){
 
 window.doLogout=async function(){ await signOut(auth); };
 
+// ── SET USER PASSWORD PAGE (Admin only, dedicated page) ──
+window.renderSetUserPwd = function(){
+  const sel = document.getElementById('sup-user');
+  sel.innerHTML = '<option value="">— Select an employee —</option>' +
+    _users.map(u => `<option value="${u.id}" data-login="${u.empId||emailToEmp(u.email)}">${u.name} (${u.empId||emailToEmp(u.email)})</option>`).join('');
+  document.getElementById('sup-pwd').value = '';
+  document.getElementById('sup-pwd2').value = '';
+  document.getElementById('supPwdBar').style.width = '0';
+  document.getElementById('sup-msg').style.display = 'none';
+};
+
+window.supPwdStrength = function(){
+  const v = document.getElementById('sup-pwd').value;
+  const bar = document.getElementById('supPwdBar');
+  if(!v){ bar.style.width='0'; return; }
+  let s=0; if(v.length>=6)s++; if(v.length>=10)s++; if(/[A-Z]/.test(v)&&/[a-z]/.test(v))s++; if(/\d/.test(v))s++; if(/[^A-Za-z0-9]/.test(v))s++;
+  const lv=[null,{w:'20%',c:'#E24B4A'},{w:'40%',c:'#EF9F27'},{w:'60%',c:'#EF9F27'},{w:'80%',c:'#1D9E75'},{w:'100%',c:'#1D9E75'}];
+  const x=lv[Math.max(1,s)]; bar.style.width=x.w; bar.style.background=x.c;
+};
+
+window.submitSetUserPassword = async function(){
+  if(!isAdmin()) return;
+  const sel      = document.getElementById('sup-user');
+  const targetUid= sel.value;
+  const loginId  = sel.options[sel.selectedIndex]?.dataset.login || '';
+  const pwd      = document.getElementById('sup-pwd').value;
+  const pwd2     = document.getElementById('sup-pwd2').value;
+  const msgEl    = document.getElementById('sup-msg');
+  const btn      = document.getElementById('supSubmitBtn');
+
+  const showMsg = (text, ok) => {
+    msgEl.style.display = 'block'; msgEl.textContent = text;
+    msgEl.style.background = ok ? 'var(--teal-bg)' : 'var(--red-bg)';
+    msgEl.style.color      = ok ? '#085041' : '#791F1F';
+  };
+
+  if(!targetUid){ showMsg('Please select an employee.', false); return; }
+  if(!pwd || pwd.length < 6 || pwd.length > 25){ showMsg('Password must be 6–25 characters.', false); return; }
+  if(loginId && pwd.toLowerCase().includes(loginId.toLowerCase())){ showMsg('Password should not contain the employee\'s login ID.', false); return; }
+  if(pwd !== pwd2){ showMsg('Passwords do not match.', false); return; }
+
+  btn.innerHTML = '<span class="spinner"></span> Submitting…'; btn.disabled = true;
+  try{
+    const call = httpsCallable(functions, 'adminSetUserPassword');
+    await call({ targetUid, newPassword: pwd });
+    showMsg('Password updated successfully!', true);
+    document.getElementById('sup-pwd').value = '';
+    document.getElementById('sup-pwd2').value = '';
+    document.getElementById('supPwdBar').style.width = '0';
+    toast('Password set for '+ (sel.options[sel.selectedIndex]?.textContent || 'user'));
+  } catch(e){
+    const friendly = e.code === 'functions/not-found' || e.message?.includes('NOT_FOUND')
+      ? 'This feature needs the Cloud Function deployed first.'
+      : (e.message || 'Failed to set password.');
+    showMsg(friendly, false);
+  } finally{
+    btn.innerHTML = '<i class="ti ti-check"></i> Submit'; btn.disabled = false;
+  }
+};
+
 // ── ADMIN: Instantly SET a new password for any user (Cloud Function) ──
 // Requires the Blaze plan + the deployed 'adminSetUserPassword' function.
 // Falls back to a clear error if the function isn't deployed yet.
@@ -1259,7 +1354,7 @@ function subscribeTickets(){
 }
 
 // ── NAVIGATION ────────────────────────────────────────────────
-const PAGE_TITLES={dashboard:'Dashboard',tickets:'Tickets',newTicket:'New Ticket',ticketDetail:'Ticket Detail',mIssueType:'Issue Type',mSubType:'Issue Sub-Type',mPriority:'Priority',mDept:'Department',mStatus:'Status',users:'User Management',reports:'Reports',changePwd:'Change Password'};
+const PAGE_TITLES={dashboard:'Dashboard',tickets:'Tickets',newTicket:'New Ticket',ticketDetail:'Ticket Detail',mIssueType:'Issue Type',mSubType:'Issue Sub-Type',mPriority:'Priority',mDept:'Department',mStatus:'Status',users:'User Management',setUserPwd:'Set User Password',reports:'Reports',changePwd:'Change Password'};
 window.showPage=function(id,el,skipHistory){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-'+id)?.classList.add('active');
@@ -1278,7 +1373,7 @@ window.showPage=function(id,el,skipHistory){
     }
   }
 
-  const fn={dashboard:renderDashboard,tickets:renderTickets,newTicket:initNewTicketForm,mIssueType:renderIssueTypes,mSubType:renderSubTypes,mPriority:renderPriorities,mDept:renderDepts,mStatus:renderStatuses,users:renderUsers,reports:runReport};
+  const fn={dashboard:renderDashboard,tickets:renderTickets,newTicket:initNewTicketForm,mIssueType:renderIssueTypes,mSubType:renderSubTypes,mPriority:renderPriorities,mDept:renderDepts,mStatus:renderStatuses,users:renderUsers,setUserPwd:renderSetUserPwd,reports:runReport};
   fn[id]?.();
 };
 
