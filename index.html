@@ -575,6 +575,16 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
         <div class="col-md-6" id="u-passWrap"><label class="form-label">Temporary Password <span style="color:var(--red)">*</span></label><input class="form-control" type="password" id="u-pass" placeholder="Min 6 characters"/></div>
         <div class="col-md-6" style="display:flex;align-items:flex-end"><label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox" id="u-active" checked/> Active</label></div>
         <div class="col-12" id="umEmailNote"><div class="info-panel"><i class="ti ti-mail" style="font-size:15px;flex-shrink:0"></i> A welcome email with login details will be sent to the user automatically.</div></div>
+        <div class="col-12" id="umChangePwdSection" style="display:none">
+          <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:2px">
+            <label class="form-label">Set a New Password for this user</label>
+            <div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap">
+              <input class="form-control" type="password" id="u-newPwd" placeholder="Min 6 characters" style="flex:1;min-width:180px"/>
+              <button class="btn-outline" id="umSetPwdBtn" onclick="adminSetPassword()" style="white-space:nowrap"><i class="ti ti-key"></i> Set Password</button>
+            </div>
+            <div id="umPwdMsg" style="font-size:12px;margin-top:6px;display:none"></div>
+          </div>
+        </div>
       </div>
     </div>
     <div class="mf"><button class="btn-outline" onclick="closeUM()">Cancel</button><button class="btn-teal" id="umSaveBtn" onclick="saveUser()"><i class="ti ti-check"></i> Create User</button></div>
@@ -1087,6 +1097,42 @@ window.doLogin=async function(){
 };
 
 window.doLogout=async function(){ await signOut(auth); };
+
+// ── ADMIN: Instantly SET a new password for any user (Cloud Function) ──
+// Requires the Blaze plan + the deployed 'adminSetUserPassword' function.
+// Falls back to a clear error if the function isn't deployed yet.
+window.adminSetPassword = async function(){
+  if(!isAdmin()) return;
+  const targetUid = window._editUserTargetUid;
+  const newPwd    = document.getElementById('u-newPwd').value;
+  const msgEl     = document.getElementById('umPwdMsg');
+  const btn       = document.getElementById('umSetPwdBtn');
+
+  const showMsg = (text, ok) => {
+    msgEl.style.display = 'block';
+    msgEl.textContent = text;
+    msgEl.style.color = ok ? '#085041' : '#791F1F';
+  };
+
+  if(!targetUid){ showMsg('No user selected.', false); return; }
+  if(!newPwd || newPwd.length < 6){ showMsg('Password must be at least 6 characters.', false); return; }
+
+  btn.innerHTML = '<span class="spinner" style="border-top-color:var(--navy)"></span>'; btn.disabled = true;
+  try{
+    const call = httpsCallable(functions, 'adminSetUserPassword');
+    await call({ targetUid, newPassword: newPwd });
+    showMsg('Password updated successfully!', true);
+    document.getElementById('u-newPwd').value = '';
+    toast('Password changed for this user');
+  } catch(e){
+    const friendly = e.code === 'functions/not-found' || e.message?.includes('NOT_FOUND')
+      ? 'This feature needs the Cloud Function deployed first — see setup guide.'
+      : (e.message || 'Failed to set password.');
+    showMsg(friendly, false);
+  } finally{
+    btn.innerHTML = '<i class="ti ti-key"></i> Set Password'; btn.disabled = false;
+  }
+};
 
 // ── ADMIN: Send password reset email to any user ──
 // Firebase's free (Spark) plan has no backend, so Admin can't type a new
@@ -2085,6 +2131,14 @@ window.openUserModal=function(user=null){
   document.getElementById('u-pass').value  = '';
   document.getElementById('u-passWrap').style.display = isEdit ? 'none' : 'block';
   document.getElementById('u-dept').innerHTML = MASTERS.departments.map(d=>`<option value="${d.id}" ${user&&user.deptId===d.id?'selected':''}>${d.name}</option>`).join('');
+
+  // Change Password section — only shown when editing an existing user
+  const pwdSection = document.getElementById('umChangePwdSection');
+  if(pwdSection) pwdSection.style.display = isEdit ? 'block' : 'none';
+  document.getElementById('u-newPwd').value = '';
+  const pwdMsg = document.getElementById('umPwdMsg');
+  if(pwdMsg){ pwdMsg.style.display='none'; }
+  window._editUserTargetUid = user?.id || null;
 
   // Button label: Update vs Create
   const saveBtn = document.getElementById('umSaveBtn');
