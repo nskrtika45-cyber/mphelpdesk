@@ -693,6 +693,9 @@
         <div class="chart-card"><h3>Net amount by project (top 15, ₹ Cr)</h3><div class="wrap tall"><canvas id="chartMarketingProject"></canvas></div></div>
         <div class="chart-card"><h3>Outstanding amount by activity (top 15, ₹ Cr)</h3><div class="wrap tall"><canvas id="chartMarketingActivity"></canvas></div></div>
       </div>
+      <div class="chart-grid one" style="margin-top:18px;">
+        <div class="chart-card"><h3>Promotion payments by financial year (₹ Cr, by processed date)</h3><div class="wrap tall"><canvas id="chartMarketingFY"></canvas></div></div>
+      </div>
       <div class="section-title"><h2>Project-wise Marketing Detail</h2><div class="line"></div></div>
       <div class="table-toolbar">
         <input type="text" id="marketingProjectSearchBox" placeholder="Search project name...">
@@ -1716,6 +1719,19 @@ function aggregateCollectionFY(records){
     fyMap[fy.label].value += rec.amount;
   });
   return Object.entries(fyMap).map(([label,d])=>({label, value:d.value, sortKey:d.sortKey})).sort((a,b)=>a.sortKey-b.sortKey);
+}
+// Marketing promotion payments by financial year — grouped by the report's own Processed Date.
+// Records with no parseable Processed Date (rare, blank cells) are simply excluded from this trend.
+function aggregateMarketingFY(records){
+  const fyMap = {};
+  records.forEach(rec=>{
+    const fy = financialYearOf(rec.processedDate);
+    if(!fy) return;
+    if(!fyMap[fy.label]) fyMap[fy.label] = {netAmount:0, paidAmount:0, sortKey:fy.sortKey};
+    fyMap[fy.label].netAmount += rec.netAmount;
+    fyMap[fy.label].paidAmount += rec.paidAmount;
+  });
+  return Object.entries(fyMap).map(([label,d])=>({label, netAmount:d.netAmount, paidAmount:d.paidAmount, sortKey:d.sortKey})).sort((a,b)=>a.sortKey-b.sortKey);
 }
 function buildCollectionSummary(records){
   const projectTotals = {};
@@ -3076,7 +3092,7 @@ function renderBookingPage(){
 // Project filter, tracked in marketingFilterState.
 function renderMarketingPage(){
   if(!RAW.promotionRecords.length){
-    destroyChart('marketingProject'); destroyChart('marketingActivity');
+    destroyChart('marketingProject'); destroyChart('marketingActivity'); destroyChart('marketingFY');
     return; // updateSectionVisibility() already shows the "no data" empty state instead of this content
   }
   const filtered = RAW.promotionRecords.filter(r =>
@@ -3105,6 +3121,7 @@ function renderMarketingPage(){
   const navy = getComputedStyle(document.documentElement).getPropertyValue('--navy').trim();
   const teal = getComputedStyle(document.documentElement).getPropertyValue('--teal').trim();
   const brick = getComputedStyle(document.documentElement).getPropertyValue('--brick').trim();
+  const gold = getComputedStyle(document.documentElement).getPropertyValue('--gold').trim();
   // Net amount by project (top 15) — rows with no project ("Brand / Corporate" company-wide spend)
   // are grouped under "Brand / Corporate" so they aren't silently dropped from the chart.
   const byProjectMap = {};
@@ -3156,6 +3173,32 @@ function renderMarketingPage(){
         }
       },
       plugins:[ChartDataLabels]
+    });
+  }
+  // Promotion payments by financial year (Net Amount vs Paid Amount, grouped by the report's Processed Date)
+  const marketingFYData = aggregateMarketingFY(filtered);
+  destroyChart('marketingFY');
+  if(marketingFYData.length === 0){
+    chartEmptyMessage('chartMarketingFY', 'No promotion payments with a usable processed date match the current filter.');
+  } else {
+    chartClearEmptyMessage('chartMarketingFY');
+    charts.marketingFY = new Chart(document.getElementById('chartMarketingFY'), {
+      type:'bar',
+      data:{
+        labels: marketingFYData.map(f=>f.label),
+        datasets:[
+          {label:'Net Amount', data: marketingFYData.map(f=>f.netAmount/1e7), backgroundColor: teal},
+          {label:'Paid Amount', data: marketingFYData.map(f=>f.paidAmount/1e7), backgroundColor: gold},
+        ]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        scales:{ x:{ grid:{display:false} }, y:{ title:{display:true,text:'₹ Crore'}, grid:{color:'#EEF1F5'} } },
+        plugins:{
+          legend:{position:'bottom', labels:{boxWidth:12,font:{size:11}}},
+          tooltip:{callbacks:{label: ctx=> ctx.dataset.label+': ₹'+ctx.raw.toFixed(2)+' Cr'}}
+        }
+      }
     });
   }
   // ---- Project-wise Marketing Detail ---- (Advance Paid de-duplicated by Request Id within each project;
