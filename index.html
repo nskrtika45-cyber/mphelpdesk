@@ -31,7 +31,6 @@
   body{margin:0;background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;}
   h1,h2,h3,.display{font-family:'Fraunces',serif;}
   .num{font-variant-numeric:tabular-nums;}
-
   /* ---------- Header ---------- */
   header.top{
     background:linear-gradient(155deg,var(--navy) 0%,var(--navy-light) 100%);
@@ -56,9 +55,7 @@
   .tick-rule i{display:block;width:1px;height:8px;background:var(--gold);opacity:.55;}
   .tick-rule i:nth-child(4n){height:13px;opacity:.9;}
   .tick-rule .line{flex:1;height:1px;background:var(--gold);opacity:.55;margin:0 2px;}
-
   main{max-width:1800px;margin:0 auto;padding:28px 32px 70px;}
-
   /* ---------- Role gate ---------- */
   .role-gate{
     min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px;
@@ -99,7 +96,6 @@
   .role-indicator .admin-link:hover{background:rgba(255,255,255,.12);}
   .role-indicator button{background:transparent;border:1px solid rgba(255,255,255,.3);color:#fff;font-size:11.5px;padding:5px 12px;border-radius:20px;cursor:pointer;font-family:'Inter',sans-serif;}
   .role-indicator button:hover{background:rgba(255,255,255,.12);}
-
   /* ---------- Last updated / empty state / publish status ---------- */
   .last-updated-badge{
     display:flex;align-items:center;gap:8px;background:var(--navy-pale);border:1px solid var(--border);
@@ -115,7 +111,6 @@
   .publish-status{margin-top:12px;font-size:12.5px;padding:9px 12px;border-radius:7px;}
   .publish-status.ok{background:#EAF6F3;color:var(--teal);}
   .publish-status.err{background:#FBEDE6;color:var(--brick);}
-
   /* ---------- Admin: user management panel ---------- */
   .hidden{display:none !important;}
   .admin-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px 24px;margin-bottom:20px;}
@@ -134,7 +129,6 @@
   .add-row input{flex:1;min-width:220px;padding:9px 12px;border:1px solid var(--border);border-radius:7px;font-size:13px;font-family:'Inter',sans-serif;}
   .add-row select{flex-shrink:0;padding:9px 10px;border:1px solid var(--border);border-radius:7px;}
   .add-row .btn{flex-shrink:0;width:auto;}
-
   /* ---------- Pending / waiting-for-approval screen ---------- */
   .pending-screen{
     min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px;
@@ -159,7 +153,6 @@
     padding:9px 16px;border-radius:20px;cursor:pointer;font-family:'Inter',sans-serif;
   }
   .pending-inner .btn-row-pending button.primary{background:var(--gold);border-color:var(--gold);}
-
   /* ---------- Upload panel ---------- */
   .upload-card{
     background:var(--card);border:1px solid var(--border);border-radius:10px;
@@ -178,7 +171,6 @@
   .drop .fname{font-size:13.5px;color:var(--ink);font-weight:600;word-break:break-all;}
   .drop .hint{font-size:12px;color:#98A2B3;margin-top:4px;}
   .drop input{display:none;}
-
   .btn{
     appearance:none;border:none;border-radius:7px;padding:11px 22px;font-family:'Inter',sans-serif;
     font-weight:600;font-size:13.5px;cursor:pointer;transition:transform .1s, opacity .15s;
@@ -191,7 +183,6 @@
   .btn-ghost:hover{border-color:var(--navy);}
   .btn-row{display:flex;gap:12px;align-items:center;margin-top:20px;}
   .err{color:var(--brick);font-size:12.5px;margin-top:10px;display:none;}
-
   /* Collapsed loaded bar */
   .loaded-bar{
     display:none;align-items:center;justify-content:space-between;background:var(--card);
@@ -200,10 +191,8 @@
   .loaded-bar .files{color:var(--muted);}
   .loaded-bar .files b{color:var(--ink);}
   .loaded-bar .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--teal);margin-right:8px;}
-
   /* ---------- Dashboard ---------- */
   #dashboard{display:none;}
-
   /* Hero Sold/Available banner */
   .hero-split{
     display:grid;grid-template-columns:1fr 1fr;gap:0;background:var(--card);border:1px solid var(--border);
@@ -211,14 +200,13 @@
   }
   @media (max-width:700px){.hero-split{grid-template-columns:1fr;}}
   .hero-half{padding:24px 26px;position:relative;}
-  .hero-half.sold{background:linear-gradient(135deg,#0F6D6D 0%,#0B4F4F 100%);color:#fff;}
-  .hero-half.avail{background:linear-gradient(135deg,#C9A24B 0%,#A9822F 100%);color:#fff;}
+  .hero-half.sold{background:linear-gradient(135deg,var(--navy-light) 0%,var(--navy) 100%);color:#fff;}
+  .hero-half.avail{background:linear-gradient(135deg,var(--gold) 0%,var(--brick) 100%);color:#fff;}
   .hero-half .lbl{font-size:12px;text-transform:uppercase;letter-spacing:.08em;font-weight:700;opacity:.85;margin-bottom:8px;}
   .hero-half .big{font-family:'Fraunces',serif;font-size:36px;font-weight:700;line-height:1;margin-bottom:6px;}
   .hero-half .sub2{font-size:12.5px;opacity:.9;}
   .hero-bar{height:6px;background:rgba(255,255,255,.35);position:relative;margin-top:8px;}
   .hero-bar .fill{position:absolute;left:0;top:0;bottom:0;background:#fff;}
-
   /* Filter bar */
   .filter-bar{
     display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;background:var(--card);
@@ -234,9 +222,10 @@
   .filter-summary{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 2px 22px;font-size:12px;}
   .filter-chip{background:var(--navy-pale);color:var(--navy);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-weight:600;}
   .filter-note{color:var(--muted);}
-
-  /* Tabs */
-  .tabs{display:flex;gap:4px;margin-bottom:22px;border-bottom:1px solid var(--border);}
+  /* Section nav — was a tab switcher, now a sticky jump-to-section bar since every section renders
+     on one continuous page */
+  .tabs{display:flex;gap:4px;margin-bottom:22px;border-bottom:1px solid var(--border);
+    position:sticky;top:0;background:var(--bg);z-index:20;padding-top:4px;}
   .tab-btn{
     appearance:none;border:none;background:transparent;padding:11px 20px;font-family:'Inter',sans-serif;
     font-weight:600;font-size:13.5px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;
@@ -244,9 +233,7 @@
   }
   .tab-btn:hover{color:var(--navy);}
   .tab-btn.active{color:var(--navy);border-bottom-color:var(--gold);}
-  .page{display:none;}
-  .page.active{display:block;}
-
+  .page{display:block;scroll-margin-top:56px;}
   .section-title{display:flex;align-items:baseline;gap:10px;margin:34px 0 14px;}
   .section-title h2{font-size:16px;margin:0;color:var(--navy);text-transform:uppercase;letter-spacing:.06em;}
   .section-title .line{flex:1;height:1px;background:var(--border);}
@@ -255,7 +242,6 @@
   .section-title.group h2{font-size:21px;color:var(--gold);text-transform:none;letter-spacing:0;font-family:'Fraunces',serif;font-weight:600;}
   .section-title.group .line{background:var(--gold);opacity:.35;}
   .section-title.group:first-child{margin-top:0;}
-
   .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:14px;}
   @media (max-width:620px){.kpi-grid{grid-template-columns:repeat(2,1fr);}}
   .sold-toggle{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px;padding:8px 10px;background:var(--navy-pale);border:1px solid var(--border);border-radius:8px;font-size:13px;}
@@ -274,7 +260,6 @@
   .kpi .val{font-family:'Fraunces',serif;font-size:23px;font-weight:600;color:var(--navy);line-height:1.1;}
   .kpi .sub{font-size:11.5px;color:var(--muted);margin-top:6px;}
   .kpi .sub b{color:var(--ink);}
-
   .chart-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:18px;}
   .chart-grid.one{grid-template-columns:1fr;}
   @media (max-width:900px){.chart-grid{grid-template-columns:1fr;}}
@@ -288,7 +273,6 @@
   .chart-card .wrap.tall{height:340px;}
   .chart-card .wrap.xtall{height:560px;}
   .chart-note{margin:10px 2px 0;font-size:12px;color:var(--muted);line-height:1.5;}
-
   /* ---------- Filter / table ---------- */
   .table-toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px;}
   .table-toolbar input[type=text]{
@@ -315,10 +299,8 @@
   .pos{color:var(--teal);}
   .neg{color:var(--brick);}
   tfoot td{padding:11px 14px;font-weight:700;background:var(--navy-pale);border-top:2px solid var(--navy);color:var(--navy);}
-
   .footer-row{display:flex;justify-content:space-between;align-items:center;margin-top:16px;flex-wrap:wrap;gap:10px;}
   .footer-note{font-size:11.5px;color:var(--muted);}
-
   @media print{
     .upload-card,.loaded-bar,.table-toolbar,.btn-row,header.top .eyebrow,.tabs{display:none !important;}
     body{background:#fff;}
@@ -328,11 +310,10 @@
 </style>
 </head>
 <body>
-
 <div id="roleGate" class="role-gate">
   <div class="role-gate-inner">
     <div class="role-gate-logo"><img src="data:image/jpeg;base64,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" alt="MP Developers"></div>
-    <p class="role-gate-eyebrow">Created by MP Developers ERP</p>
+    <p class="role-gate-eyebrow">Created by MP Developers ERP Team</p>
     <h1>Sales &amp; CRM Dashboard</h1>
     <p class="role-gate-sub">Sign in to continue.</p>
     <form class="login-form" id="loginForm">
@@ -350,10 +331,9 @@
     <p class="role-gate-note">Access is provisioned per person by your administrator. Contact MIS if you need an account.</p>
   </div>
 </div>
-
 <div id="pendingScreen" class="pending-screen" style="display:none;">
   <div class="pending-inner">
-    <p class="role-gate-eyebrow">Created by MP Developers ERP</p>
+    <p class="role-gate-eyebrow">Created by MP Developers ERP Team</p>
     <h1 style="font-family:'Fraunces',serif;font-size:26px;font-weight:600;margin:0 0 10px;">Account Setup</h1>
     <div class="status-banner" id="pendingBanner"></div>
     <div class="uid-box"><span id="pendingUidText"></span><button id="pendingCopyUidBtn" type="button">Copy</button></div>
@@ -363,27 +343,21 @@
     </div>
   </div>
 </div>
-
 <div id="appShell" style="display:none;">
-
 <header class="top">
   <div class="header-row">
     <div class="logo-badge"><img src="data:image/jpeg;base64,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" alt="MP Developers"></div>
     <div class="header-text">
-      <p class="eyebrow">Created by MP Developers ERP</p>
+      <p class="eyebrow">Created by MP Developers ERP Team</p>
       <h1>Sales and CRM Dashboard</h1>
     </div>
     <div class="role-indicator" id="roleIndicator"></div>
   </div>
   <div class="tick-rule" id="tickRule"></div>
 </header>
-
 <main>
-
 <div id="dashboardView">
-
   <div class="last-updated-badge" id="lastUpdatedBadge" style="display:none;"></div>
-
   <div class="upload-card" id="uploadCard">
     <h2>Load this month's reports</h2>
     <p class="sub">Upload the two exports from IN4 ERP. Nothing leaves your browser — files are parsed locally.</p>
@@ -391,43 +365,43 @@
       <label class="drop" id="drop1">
         <div class="label">1 &middot; Sales Customer Detail Report</div>
         <div class="fname" id="fname1">Click to choose file (.xlsx)</div>
-        <div class="hint">Provides before/after discount rates per booked unit</div>
+        <div class="hint">ERP report name: "Sales Customer Detail Report" &mdash; provides before/after discount rates per booked unit</div>
         <input type="file" id="file1" accept=".xlsx">
       </label>
       <label class="drop" id="drop2">
         <div class="label">2 &middot; Sales &amp; Stock Summary Report</div>
         <div class="fname" id="fname2">Click to choose file (.xlsx)</div>
-        <div class="hint">Provides project-wise units, area &amp; net amount</div>
+        <div class="hint">ERP report name: "Sales &amp; Stock Summary Report" &mdash; provides project-wise units, area &amp; net amount</div>
         <input type="file" id="file2" accept=".xlsx">
       </label>
       <label class="drop" id="drop3">
         <div class="label">3 &middot; Agreement Register Report <span style="text-transform:none;font-weight:400;">(optional)</span></div>
         <div class="fname" id="fname3">Click to choose file (.xlsx)</div>
-        <div class="hint">Adds the Agreement Register tab — booking → agreement → registration → possession</div>
+        <div class="hint">ERP report name: "Agreement Register Report" &mdash; adds the Agreement Register tab — booking → agreement → registration → possession</div>
         <input type="file" id="file3" accept=".xlsx">
       </label>
       <label class="drop" id="drop4">
         <div class="label">4 &middot; Collection Register Report <span style="text-transform:none;font-weight:400;">(optional)</span></div>
         <div class="fname" id="fname4">Click to choose file (.xlsx)</div>
-        <div class="hint">Adds the Collection tab — per-unit collections &amp; outstanding balance</div>
+        <div class="hint">ERP report name: "Collection Register Report (Summary)" &mdash; adds the Collection tab — per-unit collections &amp; outstanding balance</div>
         <input type="file" id="file4" accept=".xlsx">
       </label>
       <label class="drop" id="drop5">
         <div class="label">5 &middot; Customer Booking Report <span style="text-transform:none;font-weight:400;">(optional)</span></div>
         <div class="fname" id="fname5">Click to choose file (.xlsx)</div>
-        <div class="hint">Adds the Bookings tab — value by project, month &amp; financial year</div>
+        <div class="hint">ERP report name: "Customerwise Booking Report" &mdash; adds the Bookings tab — value by project, month &amp; financial year</div>
         <input type="file" id="file5" accept=".xlsx">
       </label>
       <label class="drop" id="drop6">
-        <div class="label">6 &middot; Customer Outstanding Report <span style="text-transform:none;font-weight:400;">(optional)</span></div>
+        <div class="label">6 &middot; Debtor Ageing Report (Summary) <span style="text-transform:none;font-weight:400;">(optional)</span></div>
         <div class="fname" id="fname6">Click to choose file (.xlsx)</div>
-        <div class="hint">Replaces the estimated Outstanding Balance on the CRM tab with the ERP's own Total Balance Outstanding figure</div>
+        <div class="hint">ERP report name: "Debtor Ageing Report (Summary)" &mdash; replaces the estimated Outstanding Balance on the CRM tab with the ERP's own Total Outstanding figure, and adds Net Due as per Stage</div>
         <input type="file" id="file6" accept=".xlsx">
       </label>
       <label class="drop" id="drop7">
         <div class="label">7 &middot; Customer Cancellation Report <span style="text-transform:none;font-weight:400;">(optional)</span></div>
         <div class="fname" id="fname7">Click to choose file (.xlsx)</div>
-        <div class="hint">Adds a Sold Value toggle — with vs. without genuine cancellations (Customer Requested + Due to Non Payment only)</div>
+        <div class="hint">ERP report name: "Customer Booking Cancellation Detail Report" &mdash; adds a Sold Value toggle — with vs. without genuine cancellations (Customer Requested + Due to Non Payment only)</div>
         <input type="file" id="file7" accept=".xlsx">
       </label>
     </div>
@@ -438,21 +412,17 @@
     <div class="err" id="errMsg"></div>
     <div class="publish-status" id="publishStatus" style="display:none;"></div>
   </div>
-
   <div class="loaded-bar" id="loadedBar">
     <div class="files"><span class="dot"></span><span id="loadedNames"></span></div>
     <button class="btn btn-ghost" id="changeBtn">Upload new files</button>
   </div>
-
   <div class="empty-state" id="emptyState" style="display:none;">
     <h2>No dashboard has been published yet</h2>
     <p>Check back after the MIS team uploads this month's reports. If this message doesn't go away after they've published, this dashboard may be open outside Claude.ai — see the note MIS was given about where this needs to be opened.</p>
   </div>
-
   <div id="dashboard">
-
+    <div id="salesCrmModule">
     <div class="hero-split" id="heroSplit"></div>
-
     <div class="filter-bar">
       <div class="filter-field">
         <label for="filterProject">Project</label>
@@ -469,44 +439,49 @@
       <button class="btn btn-ghost" id="filterClear">Clear filters</button>
     </div>
     <div class="filter-summary" id="filterSummary" style="display:none;"></div>
-
+    <div class="section-title group"><h2>All Key Metrics</h2><div class="line"></div></div>
+    <div class="sold-toggle" id="soldValueToggle" style="display:none;">
+      <span class="sold-toggle-label">Booking Value:</span>
+      <div class="toggle-tabs">
+        <button type="button" class="toggle-tab active" data-mode="net">Active Bookings Only</button>
+        <button type="button" class="toggle-tab" data-mode="gross">All Bookings (Including Cancelled)</button>
+      </div>
+    </div>
+    <div class="kpi-grid" id="kpiGridMaster">
+      <span id="kpiGrid" style="display:contents"></span>
+      <span id="kpiGridSold" style="display:contents"></span>
+      <span id="kpiGridAvail" style="display:contents"></span>
+      <span id="kpiGridBookings" style="display:contents"></span>
+      <span id="kpiGridAgreement" style="display:contents"></span>
+      <span id="kpiGridCollection" style="display:contents"></span>
+    </div>
     <div class="tabs">
       <button class="tab-btn active" data-page="overview">Overview</button>
       <button class="tab-btn" data-page="sales">Sales</button>
       <button class="tab-btn" data-page="unsold">Unsold</button>
       <button class="tab-btn" data-page="crm" id="crmTabBtn" style="display:none;">CRM</button>
     </div>
-
     <!-- ================= OVERVIEW PAGE ================= -->
-    <div class="page active" id="page-overview">
-
-      <div class="kpi-grid" id="kpiGrid"></div>
-
+    <div class="page" id="page-overview">
+      <div class="section-title group"><h2>Overview</h2><div class="line"></div></div>
       <div class="section-title"><h2>Stock Position</h2><div class="line"></div></div>
       <div class="chart-grid">
         <div class="chart-card"><h3>Unit stock status — all projects</h3><div class="wrap tall"><canvas id="chartStockDonut"></canvas></div></div>
         <div class="chart-card"><h3>Sold vs unsold area by project (top 15, sq.ft)</h3><div class="wrap tall"><canvas id="chartSoldAvailArea"></canvas></div></div>
       </div>
-
       <div class="section-title group" id="overviewBookingsHeader"><h2>Bookings</h2><div class="line"></div></div>
       <div id="overviewBookingsSection">
-
-      <div class="kpi-grid" id="kpiGridBookings"></div>
-
       <div class="section-title"><h2>Bookings by Project &amp; Financial Year</h2><div class="line"></div></div>
       <div class="chart-grid">
         <div class="chart-card"><h3>Booking value by project (top 15, ₹ Cr)</h3><div class="wrap tall"><canvas id="chartBookingProject"></canvas></div></div>
         <div class="chart-card"><h3>Booking value by financial year (₹ Cr)</h3><div class="wrap tall"><canvas id="chartBookingFY"></canvas></div></div>
       </div>
-
       <div class="section-title"><h2>Unit Type &amp; Area</h2><div class="line"></div></div>
       <div class="chart-grid">
         <div class="chart-card"><h3>Booking value by unit type (₹ Cr)</h3><div class="wrap tall"><canvas id="chartBookingUnitType"></canvas></div></div>
         <div class="chart-card"><h3>Area booked by project (top 15, sq.ft)</h3><div class="wrap tall"><canvas id="chartBookingArea"></canvas></div></div>
       </div>
-
       </div>
-
       <div class="section-title"><h2>Project-wise Detail</h2><div class="line"></div></div>
       <div class="table-toolbar">
         <input type="text" id="searchBox" placeholder="Search project name...">
@@ -529,60 +504,17 @@
         </div>
       </div>
     </div>
-
     <!-- ================= SALES PAGE (Sold + Available + Bookings) ================= -->
     <div class="page" id="page-sales">
-
       <div class="section-title group"><h2>Sales</h2><div class="line"></div></div>
-
-      <div class="sold-toggle" id="soldValueToggle" style="display:none;">
-        <span class="sold-toggle-label">Sales value:</span>
-        <div class="toggle-tabs">
-          <button type="button" class="toggle-tab active" data-mode="net">Without Cancellation</button>
-          <button type="button" class="toggle-tab" data-mode="gross">With Cancellation</button>
-        </div>
-      </div>
-
-      <div class="kpi-grid" id="kpiGridSold"></div>
-
       <div class="section-title"><h2>Sales Value by Project</h2><div class="line"></div></div>
       <div class="chart-grid">
         <div class="chart-card"><h3>Sales value by project (top 15, ₹ Cr)</h3><div class="wrap tall"><canvas id="chartSoldValue"></canvas></div></div>
         <div class="chart-card"><h3>Sales value by financial year (₹ Cr, by booking date)</h3><div class="wrap tall"><canvas id="chartSoldFY"></canvas></div></div>
       </div>
-
-      <div class="section-title"><h2>Sales — Project-wise Detail</h2><div class="line"></div></div>
-      <div class="table-toolbar">
-        <input type="text" id="soldSearchBox" placeholder="Search project name...">
-      </div>
-      <div class="table-card">
-        <div class="table-scroll">
-          <table id="soldTable">
-            <thead><tr id="soldTheadRow"></tr></thead>
-            <tbody id="soldTbody"></tbody>
-            <tfoot><tr id="soldTfootRow"></tr></tfoot>
-          </table>
-        </div>
-      </div>
-
-      <div class="section-title group"><h2>Project-wise Sales &amp; Unsold</h2><div class="line"></div></div>
-      <div class="table-toolbar">
-        <input type="text" id="salesProjectSearchBox" placeholder="Search project name...">
-      </div>
-      <div class="table-card">
-        <div class="table-scroll">
-          <table id="salesProjectTable">
-            <thead><tr id="salesProjectTheadRow"></tr></thead>
-            <tbody id="salesProjectTbody"></tbody>
-            <tfoot><tr id="salesProjectTfootRow"></tr></tfoot>
-          </table>
-        </div>
-      </div>
-
+      <p class="chart-note" style="margin:4px 2px 18px;">Project-wise Sold/Unsold figures now live in one combined table — see <strong>Project-wise Detail</strong> on the Overview tab.</p>
       <div class="section-title group" id="salesBookingsHeader"><h2>Bookings</h2><div class="line"></div></div>
       <div id="salesBookingsSection">
-
-
       <div class="section-title"><h2>Unit-wise Booking Detail</h2><div class="line"></div></div>
       <div class="table-toolbar">
         <input type="text" id="bookingSearchBox" placeholder="Search project, unit or customer...">
@@ -596,22 +528,16 @@
           </table>
         </div>
       </div>
-
       </div>
-
     </div>
-
 <!-- ================= UNSOLD PAGE ================= -->
     <div class="page" id="page-unsold">
-
-      <div class="kpi-grid" id="kpiGridAvail"></div>
-
+      <div class="section-title group"><h2>Unsold</h2><div class="line"></div></div>
       <div class="section-title"><h2>Unsold Value by Project</h2><div class="line"></div></div>
       <div class="chart-grid">
         <div class="chart-card"><h3>Unsold value by project (top 15, ₹ Cr)</h3><div class="wrap tall"><canvas id="chartAvailValue"></canvas></div></div>
         <div class="chart-card"><h3>Unsold area by project (top 15, sq.ft)</h3><div class="wrap tall"><canvas id="chartAvailArea"></canvas></div></div>
       </div>
-
       <div class="section-title"><h2>Unsold Breakdown</h2><div class="line"></div></div>
       <div class="chart-grid">
         <div class="chart-card"><h3>Unsold value by location (₹ Cr)</h3><div class="wrap tall"><canvas id="chartUnsoldLocation"></canvas></div></div>
@@ -620,21 +546,7 @@
       <div class="chart-grid one" style="margin-top:18px;">
         <div class="chart-card"><h3>Unsold value by project (top 15, ₹ Cr)</h3><div class="wrap tall"><canvas id="chartUnsoldProject"></canvas></div></div>
       </div>
-
-      <div class="section-title"><h2>Unsold — Project-wise Detail</h2><div class="line"></div></div>
-      <div class="table-toolbar">
-        <input type="text" id="availSearchBox" placeholder="Search project name...">
-      </div>
-      <div class="table-card">
-        <div class="table-scroll">
-          <table id="availTable">
-            <thead><tr id="availTheadRow"></tr></thead>
-            <tbody id="availTbody"></tbody>
-            <tfoot><tr id="availTfootRow"></tr></tfoot>
-          </table>
-        </div>
-      </div>
-
+      <p class="chart-note" style="margin:4px 2px 18px;">Project-wise Unsold figures now live in one combined table — see <strong>Project-wise Detail</strong> on the Overview tab.</p>
       <div class="section-title"><h2>Unsold — Location Wise</h2><div class="line"></div></div>
       <div class="table-card">
         <div class="table-scroll">
@@ -646,7 +558,6 @@
         </div>
       </div>
       <p class="chart-note" id="locationUnmappedNote" style="margin:8px 2px 0;"></p>
-
       <div class="section-title"><h2>Unsold — Property Wise</h2><div class="line"></div></div>
       <div class="table-card">
         <div class="table-scroll">
@@ -657,63 +568,32 @@
           </table>
         </div>
       </div>
-
     </div>
-
 <!-- ================= CRM PAGE (Agreement Register + Collection & Outstanding) ================= -->
     <div class="page" id="page-crm">
-
       <div class="section-title group"><h2>CRM Dashboard</h2><div class="line"></div></div>
-
-      <div class="kpi-grid" id="kpiGridCRM">
-        <span id="kpiGridAgreement" style="display:contents"></span>
-        <span id="kpiGridCollection" style="display:contents"></span>
-      </div>
-
       <div id="crmAgreementDashboard">
-
       <div class="section-title"><h2>Pipeline Status</h2><div class="line"></div></div>
       <div class="chart-grid">
         <div class="chart-card"><h3>Units by ERP unit status (all categories, as given)</h3><div class="wrap xtall"><canvas id="chartStage"></canvas></div></div>
         <div class="chart-card"><h3>Pending registration by project (top 15, Regn Date blank)</h3><div class="wrap tall"><canvas id="chartPendingRegn"></canvas></div></div>
       </div>
-
       </div>
-
       <div id="crmCollectionDashboard">
-
       <div class="section-title"><h2>Collections by Project</h2><div class="line"></div></div>
       <div class="chart-grid">
         <div class="chart-card"><h3>Collected value by project (top 15, ₹ Cr)</h3><div class="wrap tall"><canvas id="chartCollection"></canvas></div></div>
         <div class="chart-card"><h3>Collection by financial year (₹ Cr, by receipt date)</h3><div class="wrap tall"><canvas id="chartCollectionFY"></canvas></div></div>
       </div>
-
       <div class="section-title"><h2>Outstanding by Project</h2><div class="line"></div></div>
       <div class="chart-grid">
         <div class="chart-card"><h3>Outstanding balance by project (top 15, sold value − collected)</h3><div class="wrap tall"><canvas id="chartOutstanding"></canvas></div></div>
         <div class="chart-card"><h3>Collected vs outstanding by project (top 15, ₹ Cr)</h3><div class="wrap tall"><canvas id="chartCollectedVsOutstanding"></canvas></div></div>
       </div>
-
       </div>
-
       <div class="section-title group"><h2>CRM Data</h2><div class="line"></div></div>
-
-      <div class="section-title"><h2>Project-wise CRM Detail</h2><div class="line"></div></div>
-      <div class="table-toolbar">
-        <input type="text" id="crmProjectSearchBox" placeholder="Search project name...">
-      </div>
-      <div class="table-card">
-        <div class="table-scroll">
-          <table id="crmProjectTable">
-            <thead><tr id="crmProjectTheadRow"></tr></thead>
-            <tbody id="crmProjectTbody"></tbody>
-            <tfoot><tr id="crmProjectTfootRow"></tr></tfoot>
-          </table>
-        </div>
-      </div>
-
+      <p class="chart-note" style="margin:4px 2px 18px;">Project-wise Agreement/Collection/Outstanding figures now live in one combined table — see <strong>Project-wise Detail</strong> on the Overview tab.</p>
       <div id="crmAgreementData">
-
       <div class="section-title"><h2>Unit-wise Agreement Detail</h2><div class="line"></div></div>
       <div class="table-toolbar">
         <input type="text" id="agreementSearchBox" placeholder="Search project, unit or customer...">
@@ -732,25 +612,8 @@
           </table>
         </div>
       </div>
-
       </div>
-
       <div id="crmCollectionData">
-
-      <div class="section-title"><h2>Outstanding — Project-wise Detail</h2><div class="line"></div></div>
-      <div class="table-toolbar">
-        <input type="text" id="outstandingSearchBox" placeholder="Search project name...">
-      </div>
-      <div class="table-card">
-        <div class="table-scroll">
-          <table id="outstandingTable">
-            <thead><tr id="outstandingTheadRow"></tr></thead>
-            <tbody id="outstandingTbody"></tbody>
-            <tfoot><tr id="outstandingTfootRow"></tr></tfoot>
-          </table>
-        </div>
-      </div>
-
       <div class="section-title"><h2>Unit-wise Collection Detail</h2><div class="line"></div></div>
       <div class="table-toolbar">
         <input type="text" id="collectionSearchBox" placeholder="Search project, unit or customer...">
@@ -764,16 +627,11 @@
           </table>
         </div>
       </div>
-
       </div>
-
     </div>
-
-
+    </div>
   </div>
-
 </div>
-
 <div id="adminUsersPanel" style="display:none;">
   <div class="section-title"><h2>People &amp; Access</h2><div class="line"></div></div>
   <div class="admin-card">
@@ -799,9 +657,7 @@
     </div>
   </div>
 </div>
-
 </main>
-
 <script>
 // build the header tick-rule
 (function(){
@@ -810,13 +666,11 @@
   for(let i=0;i<40;i++) html += '<i></i>';
   el.innerHTML = html;
 })();
-
 /* ============ FIREBASE AUTH + FIRESTORE (MIS vs Management) ============ */
 // Real access control: Firebase Authentication identifies the signed-in person, and their role
 // (mis / management) is looked up from Firestore. Firestore security rules (set up separately,
 // server-side) enforce that only 'mis' accounts can write the published dashboard document — so
 // this is genuine access control, not just a client-side UI split.
-
 const firebaseConfig = {
   apiKey: "AIzaSyC65rACXQiJMzwN0dbTgxIns0Ggn6Myl0I",
   authDomain: "mp-dashboard-f9bf5.firebaseapp.com",
@@ -829,12 +683,10 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
-
 // Firestore caps each document at 1MiB. The combined RAW data can exceed that (it's already
 // ~1.4MB with 5 reports loaded), so each RAW.* array is stored as its own small document instead
 // of one big one — every individual piece has comfortable headroom to keep growing month to month.
 const RAW_KEYS = ['customerRecords','stockDict','stockUnitRecords','agreementRecords','collectionReceiptRecords','bookingRecords','outstandingRecords','cancellationRecords'];
-
 // Project -> physical location & property type, as supplied by MP Developers (not derivable from
 // any ERP report). Projects not in this list show under "Unmapped" in the Location Wise view
 // rather than being silently dropped or guessed at — flag those to be added here as they come up.
@@ -877,7 +729,6 @@ function normalizeProjectName(name){
   const key = Object.keys(PROJECT_NAME_OVERRIDE).find(k => k.toLowerCase() === lower);
   return key ? PROJECT_NAME_OVERRIDE[key] : trimmed;
 }
-
 // Some sub-projects are recorded under the WRONG parent project in the ERP (e.g. Magnus & Merlin
 // show Project = "MP Green Bay" already, distinguishable only by their Sub Project name), and the
 // same risk applies to the Petals group — if any report has these as a Sub Project under some other
@@ -904,13 +755,13 @@ function resolveProjectForSubProject(project, subProject){
   const key = Object.keys(SUBPROJECT_PROJECT_OVERRIDE).find(k => k.toLowerCase() === lower);
   return key ? SUBPROJECT_PROJECT_OVERRIDE[key] : project;
 }
-
 const PROJECT_INFO = {
   'MP Amber': { location:'Anakaputhur', property:'Apartment' },
   'MP Divine': { location:'Kundrathur', property:'Apartment' },
   'MP Eden': { location:'Kalyanakuppam', property:'Plot' },
   'MP Golden Heights': { location:'Kovur', property:'Apartment' },
   'MP Green Bay': { location:'Kundrathur', property:'Apartment' },
+  'MP Green Bay CMDA': { location:'Kundrathur', property:'Apartment' },
   'MP Hila': { location:'Pozhichallur', property:'Apartment' },
   'MP Madang Gardens': { location:'Sirukadal', property:'Plot' },
   'MP Malarvanam': { location:'Sirukadal', property:'Plot' },
@@ -925,25 +776,33 @@ const PROJECT_INFO = {
   'MP Varam': { location:'Vanagaram', property:'Apartment' },
   'The White House': { location:'Manapakkam', property:'Apartment' },
 };
-function getLocation(project){ return (PROJECT_INFO[project] && PROJECT_INFO[project].location) || 'Unmapped'; }
+// Looks up a PROJECT_INFO entry tolerant of spacing/case drift between how a project name is
+// keyed here and how it actually appears in a given ERP export (e.g. "MP VALAS27" vs "MP Valas 27")
+// — normalizes both sides to letters+digits only before comparing, so formatting differences don't
+// silently push a project into "Unmapped" the way an exact-string lookup would.
+const PROJECT_INFO_LOOKUP = {};
+Object.keys(PROJECT_INFO).forEach(k => { PROJECT_INFO_LOOKUP[k.toLowerCase().replace(/[^a-z0-9]/g,'')] = PROJECT_INFO[k]; });
+function lookupProjectInfo(project){
+  if(!project) return null;
+  if(PROJECT_INFO[project]) return PROJECT_INFO[project];
+  return PROJECT_INFO_LOOKUP[(''+project).toLowerCase().replace(/[^a-z0-9]/g,'')] || null;
+}
+function getLocation(project){ const info = lookupProjectInfo(project); return (info && info.location) || 'Unmapped'; }
 function getPropertyType(project, unitType){
   // Prefer MP Developers' own project-level classification; only guess from the unit type
   // (Sales & Stock Summary report) for projects not yet in that list.
-  const known = PROJECT_INFO[project];
+  const known = lookupProjectInfo(project);
   if(known && known.property) return known.property;
   return (unitType || '').toUpperCase().includes('PLOT') ? 'Plot' : 'Apartment';
 }
-
 const DASH_COL = db.collection('dashboardData');
 let currentRole = null;
 let currentUser = null;
 let lastPublished = null; // {at: ISOString, files: [...]}
-
 function formatTimestamp(iso){
   try{ return new Date(iso).toLocaleString('en-IN', {dateStyle:'medium', timeStyle:'short'}); }
   catch(e){ return iso; }
 }
-
 function updateLastUpdatedBadge(){
   const el = document.getElementById('lastUpdatedBadge');
   if(!lastPublished){ el.style.display = 'none'; return; }
@@ -951,7 +810,6 @@ function updateLastUpdatedBadge(){
   const filesNote = (lastPublished.files && lastPublished.files.length) ? ` <span class="muted-part">&middot; ${lastPublished.files.length} report${lastPublished.files.length>1?'s':''} uploaded</span>` : '';
   el.innerHTML = `<span class="dot"></span>Data as of ${formatTimestamp(lastPublished.at)}${filesNote}`;
 }
-
 async function publishDashboardData(fileNames){
   const statusEl = document.getElementById('publishStatus');
   try{
@@ -979,35 +837,30 @@ async function publishDashboardData(fileNames){
     }
   }
 }
-
 function updateSectionVisibility(){
   const hasAgreement = RAW.agreementRecords.length > 0;
   const hasCollectionOrOutstanding = RAW.collectionReceiptRecords.length > 0 || RAW.outstandingRecords.length > 0;
   const hasBookings = RAW.bookingRecords.length > 0;
-
   document.getElementById('crmTabBtn').style.display = (hasAgreement || hasCollectionOrOutstanding) ? '' : 'none';
-
+  const crmPage = document.getElementById('page-crm');
+  if(crmPage) crmPage.style.display = (hasAgreement || hasCollectionOrOutstanding) ? '' : 'none';
   const agreementDashboard = document.getElementById('crmAgreementDashboard');
   const agreementDataSection = document.getElementById('crmAgreementData');
   if(agreementDashboard) agreementDashboard.style.display = hasAgreement ? '' : 'none';
   if(agreementDataSection) agreementDataSection.style.display = hasAgreement ? '' : 'none';
-
   const collectionDashboard = document.getElementById('crmCollectionDashboard');
   const collectionDataSection = document.getElementById('crmCollectionData');
   if(collectionDashboard) collectionDashboard.style.display = hasCollectionOrOutstanding ? '' : 'none';
   if(collectionDataSection) collectionDataSection.style.display = hasCollectionOrOutstanding ? '' : 'none';
-
   const bookingsHeader = document.getElementById('salesBookingsHeader');
   const bookingsSection = document.getElementById('salesBookingsSection');
   if(bookingsHeader) bookingsHeader.style.display = hasBookings ? '' : 'none';
   if(bookingsSection) bookingsSection.style.display = hasBookings ? '' : 'none';
-
   const overviewBookingsHeader = document.getElementById('overviewBookingsHeader');
   const overviewBookingsSection = document.getElementById('overviewBookingsSection');
   if(overviewBookingsHeader) overviewBookingsHeader.style.display = hasBookings ? '' : 'none';
   if(overviewBookingsSection) overviewBookingsSection.style.display = hasBookings ? '' : 'none';
 }
-
 async function tryLoadPublishedData(){
   try{
     const metaDoc = await DASH_COL.doc('meta').get();
@@ -1032,7 +885,6 @@ async function tryLoadPublishedData(){
     return false;
   }
 }
-
 const ROLE_LABELS = { admin: 'Admin', mis: 'MIS Team', management: 'Management' };
 const UPLOAD_ROLES = ['admin', 'mis']; // roles that get upload/publish access, same as MIS
 let authStateGeneration = 0; // guards against onAuthStateChanged firing more than once in quick
@@ -1040,7 +892,6 @@ let authStateGeneration = 0; // guards against onAuthStateChanged firing more th
   // can race: one removes an element while the other is still mid-way through touching it.
 function setStyle(id, prop, value){ const el = document.getElementById(id); if(el) el.style[prop] = value; }
 function removeEl(id){ const el = document.getElementById(id); if(el) el.remove(); }
-
 async function enterRole(role, user, myGeneration){
   currentRole = role;
   currentUser = user;
@@ -1058,7 +909,6 @@ async function enterRole(role, user, myGeneration){
       if(muBtn) muBtn.addEventListener('click', toggleUsersPanel);
     }
   }
-
   if(!UPLOAD_ROLES.includes(role)){
     // Remove the upload UI from the DOM entirely for Management, not just hide it.
     removeEl('uploadCard');
@@ -1083,7 +933,6 @@ async function enterRole(role, user, myGeneration){
     // else: leave the default upload-card visible, nothing published yet
   }
 }
-
 /* ---- Admin: in-page user management panel (admin role only) ---- */
 let usersPanelShown = false;
 function toggleUsersPanel(){
@@ -1093,7 +942,6 @@ function toggleUsersPanel(){
   document.getElementById('manageUsersBtn').textContent = usersPanelShown ? 'Back to dashboard' : 'Manage users';
   if(usersPanelShown) refreshUsersTable();
 }
-
 async function refreshUsersTable(){
   const tbody = document.getElementById('usersTbody');
   const emptyMsg = document.getElementById('emptyUsersMsg');
@@ -1139,7 +987,6 @@ async function refreshUsersTable(){
     });
   });
 }
-
 document.getElementById('preAssignBtn').addEventListener('click', async ()=>{
   const uid = document.getElementById('preUidInput').value.trim();
   const email = document.getElementById('preEmailInput').value.trim();
@@ -1157,7 +1004,6 @@ document.getElementById('preAssignBtn').addEventListener('click', async ()=>{
   }
   btn.disabled = false; btn.textContent = 'Assign';
 });
-
 /* ---- Pending / waiting-for-approval screen ---- */
 function showPendingScreen(user, isUnknownRole){
   setStyle('roleGate','display','none');
@@ -1178,7 +1024,6 @@ document.getElementById('pendingCopyUidBtn').addEventListener('click', ()=>{
 });
 document.getElementById('pendingSignOutBtn').addEventListener('click', ()=> auth.signOut());
 document.getElementById('pendingRefreshBtn').addEventListener('click', ()=> location.reload());
-
 document.getElementById('loginForm').addEventListener('submit', async (e)=>{
   e.preventDefault();
   const email = document.getElementById('loginEmail').value.trim();
@@ -1197,7 +1042,6 @@ document.getElementById('loginForm').addEventListener('submit', async (e)=>{
     btn.disabled = false; btn.textContent = 'Sign in';
   }
 });
-
 auth.onAuthStateChanged(async (user)=>{
   const myGeneration = ++authStateGeneration;
   const btn = document.getElementById('loginSubmitBtn');
@@ -1237,25 +1081,30 @@ auth.onAuthStateChanged(async (user)=>{
     await auth.signOut();
   }
 });
-
-
-// tab switching
+// section nav — clicking scrolls to that section instead of hiding the others, since every
+// section now renders on one continuous page at once
 document.querySelectorAll('.tab-btn').forEach(btn=>{
   btn.addEventListener('click', ()=>{
-    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-    btn.classList.add('active');
     const page = document.getElementById('page-' + btn.dataset.page);
-    page.classList.add('active');
-    // Chart.js sizes canvases based on visible parent width; nudge a resize once shown
-    requestAnimationFrame(()=>{
-      Object.values(charts).forEach(c=>{ if(c && c.resize) c.resize(); });
-    });
+    if(page) page.scrollIntoView({behavior:'smooth', block:'start'});
   });
 });
-
+// Keep the nav bar's active-state in sync with whichever section is actually in view while scrolling
+(function(){
+  const sections = ['overview','sales','unsold','crm']
+    .map(name => ({ name, el: document.getElementById('page-'+name) }))
+    .filter(s => s.el);
+  if(!sections.length || !('IntersectionObserver' in window)) return;
+  const observer = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(!entry.isIntersecting) return;
+      const name = entry.target.id.replace('page-','');
+      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.page === name));
+    });
+  }, { rootMargin: '-30% 0px -60% 0px', threshold: 0 });
+  sections.forEach(s => observer.observe(s.el));
+})();
 let file1Data = null, file2Data = null, file3Data = null, file4Data = null, file5Data = null, file6Data = null, file7Data = null;
-
 // RAW = unfiltered per-record data, parsed once when files load. Everything the dashboard renders
 // is derived from RAW by applyFiltersAndRender() so the Project / Financial Year / Month filters
 // can recompute every KPI, chart and table consistently instead of just hiding rows visually.
@@ -1266,12 +1115,10 @@ let RAW = {
   agreementRecords: [],        // Agreement Register: project, bookingDate, milestone dates, status
   collectionReceiptRecords: [],// Collection Sheet1: project, date, amount (used for the FY trend only)
   bookingRecords: [],          // Booking Report: project, bookingDate, value
-  outstandingRecords: [],      // Outstanding Payments Report: project, unit, netReceivable (no dates — snapshot as-on-date)
+  outstandingRecords: [],      // Debtor Ageing Report (Summary): project, unit, totalCost, dueAsOnDay, totalReceived, netDue, netReceivable (no dates — snapshot as-on-date)
   cancellationRecords: [],     // Customer Cancellation Report: project, bookingDate, unitValue, cancellationDate, reason
 };
-
 let filterState = { project: '', fy: '', month: '' };
-
 // Derived / currently-displayed data — render functions read these exactly as before.
 let masterData = [];
 let fyData = [];
@@ -1280,7 +1127,7 @@ let agreementData = [];
 let collectionData = [];
 let collectionFYData = [];
 let outstandingData = [];
-let genuineCancelledUnits = 0, genuineCancelledValue = 0;
+let genuineCancelledUnits = 0, genuineCancelledValue = 0, genuineCancelledArea = 0;
 let agreementSignedCount = 0, agreementSignedValue = 0, agreementRegisteredCount = 0, agreementRegisteredValue = 0;
 let agreementYetToSignCount = 0, agreementYetToSignValue = 0, agreementYetToRegisterCount = 0, agreementYetToRegisterValue = 0;
 let soldValueMode = 'net'; // 'net' = current sold value as-is; 'gross' = net + genuine cancellations added back
@@ -1293,7 +1140,6 @@ let soldValueByProjectAllTime = {}; // project-only view, used by Collection's O
 let collectionPeriodTotal = 0;       // Collected amount matching the current Project+FY+Month filter (from Sheet1 receipts)
 let collectionPeriodByProject = {};  // same, broken down by project
 let charts = {};
-
 function readFileAsWB(file){
   return new Promise((resolve,reject)=>{
     const reader = new FileReader();
@@ -1308,7 +1154,6 @@ function readFileAsWB(file){
     reader.readAsArrayBuffer(file);
   });
 }
-
 function wireDrop(dropId, fileId, fnameId, onPick){
   const drop = document.getElementById(dropId);
   const input = document.getElementById(fileId);
@@ -1321,7 +1166,6 @@ function wireDrop(dropId, fileId, fnameId, onPick){
     }
   });
 }
-
 wireDrop('drop1','file1','fname1', f=>{ file1Data = f; checkReady(); });
 wireDrop('drop2','file2','fname2', f=>{ file2Data = f; checkReady(); });
 wireDrop('drop3','file3','fname3', f=>{ file3Data = f; checkReady(); });
@@ -1329,11 +1173,9 @@ wireDrop('drop4','file4','fname4', f=>{ file4Data = f; checkReady(); });
 wireDrop('drop5','file5','fname5', f=>{ file5Data = f; checkReady(); });
 wireDrop('drop6','file6','fname6', f=>{ file6Data = f; checkReady(); });
 wireDrop('drop7','file7','fname7', f=>{ file7Data = f; checkReady(); });
-
 function checkReady(){
   document.getElementById('genBtn').disabled = !(file1Data && file2Data);
 }
-
 document.getElementById('genBtn').addEventListener('click', async ()=>{
   const errEl = document.getElementById('errMsg');
   errEl.style.display='none';
@@ -1344,31 +1186,27 @@ document.getElementById('genBtn').addEventListener('click', async ()=>{
     RAW.stockDict = stockParsed.stock;
     RAW.stockUnitRecords = stockParsed.unitRecords;
     if(Object.keys(RAW.stockDict).length === 0) throw new Error('No project data could be recognised in these files.');
-
     if(file3Data){
       const wb3 = await readFileAsWB(file3Data);
       RAW.agreementRecords = parseAgreementRegister(wb3);
     } else {
       RAW.agreementRecords = [];
     }
-
     if(file4Data){
       const wb4 = await readFileAsWB(file4Data);
       RAW.collectionReceiptRecords = parseCollectionFY(wb4);
     } else {
       RAW.collectionReceiptRecords = [];
     }
-
     if(file5Data){
       const wb5 = await readFileAsWB(file5Data);
       RAW.bookingRecords = parseBookingReport(wb5).records;
     } else {
       RAW.bookingRecords = [];
     }
-
     if(file6Data){
       const wb6 = await readFileAsWB(file6Data);
-      RAW.outstandingRecords = parseOutstandingReport(wb6);
+      RAW.outstandingRecords = parseDebtorAgeingReport(wb6);
     } else {
       RAW.outstandingRecords = [];
     }
@@ -1379,18 +1217,15 @@ document.getElementById('genBtn').addEventListener('click', async ()=>{
       RAW.cancellationRecords = [];
     }
     updateSectionVisibility();
-
     filterState = { project: '', fy: '', month: '' };
     populateFilterOptions();
     applyFiltersAndRender();
-
     const fileNames = [file1Data.name, file2Data.name, file3Data && file3Data.name, file4Data && file4Data.name, file5Data && file5Data.name, file6Data && file6Data.name, file7Data && file7Data.name].filter(Boolean);
     document.getElementById('uploadCard').style.display='none';
     document.getElementById('loadedBar').style.display='flex';
     document.getElementById('loadedNames').textContent = 'Loaded ' + fileNames.join(' + ');
     document.getElementById('dashboard').style.display='block';
     document.getElementById('genNote').textContent = 'Generated ' + new Date().toLocaleString('en-IN', {dateStyle:'medium', timeStyle:'short'}) + ' from the uploaded reports.';
-
     document.getElementById('genBtn').disabled = true;
     document.getElementById('genBtn').textContent = 'Publishing…';
     await publishDashboardData(fileNames);
@@ -1402,28 +1237,21 @@ document.getElementById('genBtn').addEventListener('click', async ()=>{
     errEl.style.display='block';
   }
 });
-
 document.getElementById('changeBtn').addEventListener('click', ()=>{
   document.getElementById('uploadCard').style.display='block';
   document.getElementById('loadedBar').style.display='none';
   document.getElementById('publishStatus').style.display='none';
 });
-
 document.getElementById('printBtn').addEventListener('click', ()=> window.print());
-
 /* ============ PARSING LOGIC ============ */
-
-
 function sheetToRows(ws){
   return XLSX.utils.sheet_to_json(ws, {header:1, raw:true, defval:null});
 }
-
 // Normalizes messy header text (embedded newlines, repeated spaces, footnote numbers like "(46)")
 // so header-based column lookups keep working when the ERP export reformats a label slightly.
 function normalizeHeader(v){
   return (v+'').replace(/\(\d+\)/g,'').replace(/\s+/g,' ').trim();
 }
-
 function parseCustomerDetails(wb){
   const ws = wb.Sheets[wb.SheetNames[0]];
   const rows = sheetToRows(ws);
@@ -1441,7 +1269,6 @@ function parseCustomerDetails(wb){
   const afterIdx = col['Base Rate (After Discount)'] !== undefined ? col['Base Rate (After Discount)'] : 8;
   const bookingDateIdx = col['Booking Date'] !== undefined ? col['Booking Date'] : 9;
   const statusIdx = col['Status'] !== undefined ? col['Status'] : 31;
-
   const records = [];
   let currentProject = null, currentSubProject = null;
   for(let i=headerIdx+1; i<rows.length; i++){
@@ -1466,7 +1293,6 @@ function parseCustomerDetails(wb){
   }
   return records;
 }
-
 // Pure aggregator — callable with the full record set or a filtered subset.
 function aggregateDiscount(records){
   const discount = {};
@@ -1497,7 +1323,6 @@ function aggregateDiscount(records){
     .sort((a,b)=>a.sortKey-b.sortKey);
   return {discount, cancelFYData};
 }
-
 // Converts a raw Excel serial date number to a JS Date, using SheetJS's own date-code parser so the
 // known 1900-leap-year quirk is handled correctly rather than reinventing that math by hand.
 function excelSerialToDate(serial){
@@ -1507,7 +1332,6 @@ function excelSerialToDate(serial){
   }
   return new Date(Math.round((serial - 25569) * 86400 * 1000)); // fallback manual conversion
 }
-
 function financialYearOf(dateVal){
   let d;
   if(dateVal instanceof Date) d = dateVal;
@@ -1520,7 +1344,6 @@ function financialYearOf(dateVal){
   if(m >= 4) return { label: 'FY' + y + '-' + String(y+1).slice(-2), sortKey: y };
   return { label: 'FY' + (y-1) + '-' + String(y).slice(-2), sortKey: y-1 };
 }
-
 function monthKeyOf(dateVal){
   let d;
   if(dateVal instanceof Date) d = dateVal;
@@ -1532,7 +1355,6 @@ function monthKeyOf(dateVal){
   const label = d.toLocaleString('en-IN', {month:'short', year:'numeric'});
   return { key, label, fy: financialYearOf(d) };
 }
-
 function parseStockSummary(wb){
   const sheet2Name = wb.SheetNames.find(n => n.toLowerCase() === 'sheet2') || wb.SheetNames[1];
   const sheet1Name = wb.SheetNames.find(n => n.toLowerCase() === 'sheet1') || wb.SheetNames[0];
@@ -1553,7 +1375,6 @@ function parseStockSummary(wb){
     s.availUnits += r[5]||0; s.availArea += r[6]||0;
     s.blockedUnits += r[7]||0; s.blockedArea += r[8]||0;
   }
-
   // Sheet1 (unit-level Net Amount): column positions can shift between exports (e.g. some exports add
   // 'Project'/'SubProject' columns at the start), so locate each needed column by its header text
   // rather than a fixed index. Returns raw per-unit records so callers can filter before aggregating.
@@ -1570,11 +1391,11 @@ function parseStockSummary(wb){
     : (col1['Sub Project'] !== undefined ? col1['Sub Project']
     : (headerRow1[1] !== null && headerRow1[1] !== '' ? 1 : undefined)); // tolerate "Sub Project" (with space) and other spelling drift
   const bookingDateColIdx = col1['Booking Date'] !== undefined ? col1['Booking Date'] : 2;
+  const unitNoColIdx = col1['Unit No'];
   const statusColIdx = col1['Status'] !== undefined ? col1['Status'] : 9;
   const netAmountColIdx = col1['Net Amount'] !== undefined ? col1['Net Amount'] : 13;
   const superAreaColIdx = col1['Super Area'];
   const unitTypeColIdx = col1['Unit Type'];
-
   const unitRecords = [];
   let currentProject1 = null, currentSubProject1 = null;
   for(let i=headerIdx1+1; i<rows1.length; i++){
@@ -1593,11 +1414,11 @@ function parseStockSummary(wb){
     if(!proj) continue;
     const area = (superAreaColIdx !== undefined && typeof r[superAreaColIdx] === 'number') ? r[superAreaColIdx] : 0;
     const unitType = (unitTypeColIdx !== undefined && r[unitTypeColIdx]) ? r[unitTypeColIdx] : '';
-    unitRecords.push({ project: proj, status, bookingDate, amount: amt, area, unitType });
+    const unitNo = (unitNoColIdx !== undefined && r[unitNoColIdx]) ? r[unitNoColIdx] : '';
+    unitRecords.push({ project: proj, subProject: rawSubProj || '', status, bookingDate, amount: amt, area, unitType, unitNo });
   }
   return {stock, unitRecords};
 }
-
 // Pure aggregator — callable with the full unit record set or a filtered subset.
 // unitRecords passed in are expected to already be scoped to one status (Sold or Available) by the
 // caller, so `units`/`area` here are plain per-project counts of whatever was passed in.
@@ -1625,7 +1446,6 @@ function aggregateStockValue(unitRecords){
     .sort((a,b)=>a.sortKey-b.sortKey);
   return {value, fyData, units, area};
 }
-
 function parseAgreementRegister(wb){
   const ws = wb.Sheets[wb.SheetNames[0]];
   const rows = sheetToRows(ws);
@@ -1646,7 +1466,6 @@ function parseAgreementRegister(wb){
   const recvdExctdIdx = col['Recvd & Exctd Date'] !== undefined ? col['Recvd & Exctd Date'] : 17;
   const regnDateIdx = col['Regn Date'] !== undefined ? col['Regn Date'] : 20;
   const possessionDateIdx = col['Possession Date'] !== undefined ? col['Possession Date'] : 21;
-
   const nb = v => v !== null && v !== undefined && v !== '';
   const records = [];
   let currentProject = null, currentSubProject = null;
@@ -1665,6 +1484,12 @@ function parseAgreementRegister(wb){
     if(typeof sr !== 'number') continue;
     const customer = r[customerIdx], booking = r[bookingIdx], unitNo = r[unitNoIdx], unitStatusText = r[statusIdx],
           agreementDate = r[agreementDateIdx], recvdExctd = r[recvdExctdIdx], regnDate = r[regnDateIdx], possessionDate = r[possessionDateIdx];
+    // A "Transferred" row is the OLD, superseded record left behind when a unit is resold/transferred
+    // to a new customer — the new owner gets their own row (e.g. "Key Handover") for the same unit.
+    // Counting both rows double-counts that single unit, which is exactly what inflated Units Tracked
+    // to 930 vs. 928 Sold Units (see MP Silver Bells unit 303 / MP Winter unit F3). Hardcoded skip so
+    // superseded transfer rows never enter the count.
+    if(typeof unitStatusText === 'string' && unitStatusText.trim().toLowerCase() === 'transferred') continue;
     const agreementValue = (agreementValueIdx !== undefined && typeof r[agreementValueIdx] === 'number') ? r[agreementValueIdx] : 0;
     const project = resolveProjectForSubProject(normalizeProjectName((projectColIdx !== undefined && r[projectColIdx]) ? r[projectColIdx] : currentProject), subProjectColIdx !== undefined ? r[subProjectColIdx] : currentSubProject);
     const subProject = (subProjectColIdx !== undefined && r[subProjectColIdx]) ? r[subProjectColIdx] : currentSubProject;
@@ -1679,7 +1504,6 @@ function parseAgreementRegister(wb){
   }
   return records;
 }
-
 function buildAgreementSummary(records){
   const statusCounts = {};
   const projectPending = {};
@@ -1694,9 +1518,7 @@ function buildAgreementSummary(records){
   const statusList = Object.entries(statusCounts).sort((a,b)=>b[1]-a[1]).map(([status,count])=>({status,count}));
   return {statusList, projectPending};
 }
-
 /* ============ COLLECTION REGISTER PARSING ============ */
-
 function parseCollectionFY(wb){
   // Sheet1 raw receipts — used for a clean FY trend (Sheet5's pre-built totals contain broken formula
   // cells) and, cumulated per unit, for the Unit-wise Collection Detail table (Sheet6's own unit
@@ -1728,7 +1550,6 @@ function parseCollectionFY(wb){
   }
   return records;
 }
-
 // Cumulates raw per-receipt records (from Sheet1) into one row per unit — this is what powers the
 // Unit-wise Collection Detail table now, replacing Sheet6's own pre-computed unit summary.
 function aggregateCollectionByUnit(records){
@@ -1741,7 +1562,6 @@ function aggregateCollectionByUnit(records){
   });
   return Object.values(map);
 }
-
 // Pure aggregator — callable with the full receipt record set or a filtered subset.
 function aggregateCollectionFY(records){
   const fyMap = {};
@@ -1753,7 +1573,6 @@ function aggregateCollectionFY(records){
   });
   return Object.entries(fyMap).map(([label,d])=>({label, value:d.value, sortKey:d.sortKey})).sort((a,b)=>a.sortKey-b.sortKey);
 }
-
 function buildCollectionSummary(records){
   const projectTotals = {};
   let allTimeCollected = 0;
@@ -1765,14 +1584,12 @@ function buildCollectionSummary(records){
   });
   return {projectTotals, allTimeCollected};
 }
-
 /* ============ BOOKING REPORT PARSING ============ */
 // This report has a DIFFERENT set of charge columns per project block (each project can have its
 // own fee structure), so column positions can't be hardcoded like the other reports. Instead, each
 // block re-states its own header row; we locate that block's "TOTAL" column fresh each time, and
 // the unit's booking value = TOTAL column + everything to its right (the "(Other)" charge columns).
 // Validated against the Collection Register: identical unit totals match exactly.
-
 function parseNumIN(v){
   if(v === null || v === undefined || v === '') return 0;
   if(typeof v === 'number') return v;
@@ -1780,12 +1597,10 @@ function parseNumIN(v){
   const n = parseFloat(s);
   return isNaN(n) ? 0 : n;
 }
-
 // Charge categories that are statutory pass-through payments, not part of the actual sale value —
 // excluded from bookingValue regardless of which "Base Cost" or "Other" column they show up as,
 // since project blocks restate their own charge columns and the exact set/wording can vary.
 const EXCLUDED_CHARGE_KEYWORDS = ['gst', 'corpus', 'regn', 'registration', 'stamp', 'maintenance'];
-
 function parseBookingReport(wb){
   const ws = wb.Sheets[wb.SheetNames[0]];
   const rows = sheetToRows(ws);
@@ -1793,7 +1608,6 @@ function parseBookingReport(wb){
   let currentProject = null, currentSubProject = null;
   let unitNoIdx = null, customerIdx = null, bookingDateIdx = null, unitTypeIdx = null, areaIdx = null;
   let chargeColIdxs = []; // every individual charge line-item column for the current block, pre-filtered to exclude statutory charges
-
   for(let i=0; i<rows.length; i++){
     const r = rows[i];
     const c0 = r[0];
@@ -1840,10 +1654,8 @@ function parseBookingReport(wb){
       bookingValue
     });
   }
-
   return {records};
 }
-
 // Pure aggregators — callable with the full record set or a filtered subset.
 function aggregateBookingFY(records){
   const fyMap = {};
@@ -1856,7 +1668,6 @@ function aggregateBookingFY(records){
   });
   return Object.entries(fyMap).map(([label,d])=>({label, value:d.value, sortKey:d.sortKey})).sort((a,b)=>a.sortKey-b.sortKey);
 }
-
 function aggregateBookingMonth(records){
   const monthMap = {};
   records.forEach(rec=>{
@@ -1868,65 +1679,71 @@ function aggregateBookingMonth(records){
   });
   return Object.values(monthMap).sort((a,b)=> a.sortKey.localeCompare(b.sortKey));
 }
-
-/* ============ CUSTOMER OUTSTANDING REPORT PARSING ============ */
-// This report's header spans TWO rows: an upper row with group labels ("Total Recieved",
-// "Total Balance Outstanding", etc.) and a lower row with sub-labels (Principle/Interest/
-// Penalty/Total, or month names). Columns are located by combining both rows into one label
-// per column (e.g. "Total Balance Outstanding" + "Total" -> "Total Balance Outstanding Total"),
-// so a column's meaning doesn't depend on its position. "Total Balance Outstanding Total" is
-// this report's own bottom-line outstanding figure (equivalent to the old report's Net Receivable).
-// A snapshot "as on now" report — no per-unit transaction date to filter by FY/Month, so this is
-// always Project-only filterable, same as Available inventory.
-
-function parseOutstandingReport(wb){
+/* ============ DEBTOR AGEING REPORT (SUMMARY) PARSING ============ */
+// Replaces the old "Customer Outstanding Report" as the source for Outstanding Balance — this is a
+// flat, one-row-per-unit report (Project/Sub Project are direct columns on every row, no marker rows),
+// with a per-sub-project "Total:" row and a final "Grand Total:" row that are skipped by requiring
+// S.No to be a number. Column positions are located by header text so a shifted export still parses.
+// A snapshot "as on date" report (see the "As on Date:- ..." line above the header) — no per-unit
+// transaction date to filter by FY/Month, so this is always Project-only filterable, same as Available
+// inventory. Field names on the returned records deliberately match what parseOutstandingReport used
+// to produce (project, subProject, unitNo, customer, status, totalCost, totalReceived, netReceivable,
+// asOnDate) so every existing consumer of RAW.outstandingRecords keeps working unchanged; dueAsOnDay
+// and netDue are new fields — netDue feeds the "Net Due as per Stage" KPI tile, dueAsOnDay is kept on
+// the record and included in the Outstanding sheet export even though no overview tile uses it now.
+function parseDebtorAgeingReport(wb){
   const ws = wb.Sheets[wb.SheetNames[0]];
   const rows = sheetToRows(ws);
-  let headerIdx = rows.findIndex(r => normalizeHeader(r[1]) === 'Project Name');
+  let headerIdx = rows.findIndex(r => normalizeHeader(r[0]) === 'Project' && r.some(c => normalizeHeader(c) === 'Total Outstanding'));
   if(headerIdx < 0) headerIdx = 3;
-  const headerRow1 = rows[headerIdx] || [];
-  const headerRow2 = rows[headerIdx+1] || [];
+  const headerRow = rows[headerIdx] || [];
   const col = {};
-  let lastGroup = '';
-  const width = Math.max(headerRow1.length, headerRow2.length);
-  for(let idx=0; idx<width; idx++){
-    const top = normalizeHeader(headerRow1[idx]);
-    if(top) lastGroup = top;
-    const sub = normalizeHeader(headerRow2[idx]);
-    const label = sub ? (lastGroup + ' ' + sub).trim() : lastGroup;
-    if(label && col[label] === undefined) col[label] = idx;
+  headerRow.forEach((v,idx)=>{ const t=normalizeHeader(v); if(t && col[t]===undefined) col[t]=idx; });
+  const projectIdx = col['Project'] !== undefined ? col['Project'] : 0;
+  const subProjectIdx = col['Sub Project'] !== undefined ? col['Sub Project'] : 1;
+  const snoIdx = col['S.No'] !== undefined ? col['S.No'] : 2;
+  const customerIdx = col['Customer Name'] !== undefined ? col['Customer Name'] : 5;
+  const unitNoIdx = col['Unit No'] !== undefined ? col['Unit No'] : 7;
+  const statusIdx = col['Status'] !== undefined ? col['Status'] : 11;
+  const totalCostIdx = col['Total Cost'] !== undefined ? col['Total Cost'] : 16;
+  const dueAsOnDayIdx = col['DueAsonDay'] !== undefined ? col['DueAsonDay'] : 17;
+  const totalReceivedIdx = col['Total Received'] !== undefined ? col['Total Received'] : 18;
+  const netDueIdx = col['NetDue'] !== undefined ? col['NetDue'] : 20;
+  const totalOutstandingIdx = col['Total Outstanding'] !== undefined ? col['Total Outstanding'] : 21;
+  // The "As on Date:- Aug 28,2026" line sits a couple of rows above the header — pull it out so the
+  // report's own as-on-date is available on every record instead of always being null.
+  let asOnDate = null;
+  for(let i=0; i<headerIdx; i++){
+    const c0 = rows[i][0];
+    if(typeof c0 === 'string' && /as on date/i.test(c0)){
+      const m = c0.match(/as on date\s*:?-?\s*(.+)/i);
+      asOnDate = m ? m[1].trim() : c0.trim();
+      break;
+    }
   }
-  const projectIdx = col['Project Name'] !== undefined ? col['Project Name'] : 1;
-  const blockIdx = col['Block']; // this report's equivalent of Sub Project
-  const customerIdx = col['Customer Name'] !== undefined ? col['Customer Name'] : 9;
-  const unitNoIdx = col['Unit No.'] !== undefined ? col['Unit No.'] : 4;
-  const bookingDateIdx = col['Booking Date'] !== undefined ? col['Booking Date'] : 10;
-  const statusIdx = col['Status'] !== undefined ? col['Status'] : 13;
-  const totalCostIdx = col['Total Price'] !== undefined ? col['Total Price'] : 16;
-  const totalReceivedIdx = col['Total Recieved Total'] !== undefined ? col['Total Recieved Total'] : 21;
-  const netReceivableIdx = col['Total Balance Outstanding Total'] !== undefined ? col['Total Balance Outstanding Total'] : 38;
-
   const records = [];
-  for(let i=headerIdx+2; i<rows.length; i++){
+  for(let i=headerIdx+1; i<rows.length; i++){
     const r = rows[i];
+    const sno = r[snoIdx];
+    if(typeof sno !== 'number') continue; // skips per-sub-project "Total:" rows and the final "Grand Total:" row
     const rawProject = r[projectIdx];
     if(rawProject === null || rawProject === '') continue;
-    const customer = r[customerIdx];
-    if(customer === null || customer === '') continue;
-    const netReceivable = r[netReceivableIdx];
-    if(typeof netReceivable !== 'number') continue;
-    const subProject = (blockIdx !== undefined && r[blockIdx]) ? r[blockIdx] : '';
-    const project = resolveProjectForSubProject(normalizeProjectName(rawProject), subProject);
+    const rawSubProject = (subProjectIdx !== undefined && r[subProjectIdx]) ? r[subProjectIdx] : '';
+    const project = resolveProjectForSubProject(normalizeProjectName(rawProject), rawSubProject);
     records.push({
-      project: project || 'Unknown', subProject,
-      unitNo: r[unitNoIdx] || '', customer, bookingDate: r[bookingDateIdx] || '',
-      status: r[statusIdx] || '', totalCost: r[totalCostIdx] || 0, totalReceived: r[totalReceivedIdx] || 0,
-      netReceivable, asOnDate: null,
+      project: project || 'Unknown', subProject: rawSubProject,
+      unitNo: r[unitNoIdx] || '', customer: r[customerIdx] || '', bookingDate: '',
+      status: r[statusIdx] || '',
+      totalCost: (typeof r[totalCostIdx] === 'number') ? r[totalCostIdx] : 0,
+      dueAsOnDay: (typeof r[dueAsOnDayIdx] === 'number') ? r[dueAsOnDayIdx] : 0,
+      totalReceived: (typeof r[totalReceivedIdx] === 'number') ? r[totalReceivedIdx] : 0,
+      netDue: (typeof r[netDueIdx] === 'number') ? r[netDueIdx] : 0,
+      netReceivable: (typeof r[totalOutstandingIdx] === 'number') ? r[totalOutstandingIdx] : 0,
+      asOnDate,
     });
   }
   return records;
 }
-
 /* ============ CUSTOMER CANCELLATION REPORT PARSING ============ */
 // Flat, one-row-per-unit report (no marker rows / forward-fill — Project and Sub Project are
 // direct columns on every row). "Cancellation Reason" has four ERP categories; only "Customer
@@ -1934,7 +1751,6 @@ function parseOutstandingReport(wb){
 // "ReBooking Cancellation" is really a unit transfer and "Other" is a data-entry mistake, so both
 // are parsed and kept on the record but excluded wherever a "genuine cancellation" total is built.
 const GENUINE_CANCELLATION_REASONS = ['Customer Requested', 'Due to Non Payment'];
-
 function parseCancellationReport(wb){
   const ws = wb.Sheets[wb.SheetNames[0]];
   const rows = sheetToRows(ws);
@@ -1947,10 +1763,10 @@ function parseCancellationReport(wb){
   const subProjectIdx = col['SubProject Name'] !== undefined ? col['SubProject Name'] : 2;
   const unitNoIdx = col['Unit No'] !== undefined ? col['Unit No'] : 3;
   const bookingDateIdx = col['Booking Date'] !== undefined ? col['Booking Date'] : 4;
+  const superAreaIdx = col['Super Area'] !== undefined ? col['Super Area'] : 6;
   const unitValueIdx = col['Unit Value'] !== undefined ? col['Unit Value'] : 8;
   const cancellationDateIdx = col['Cancellation Date'] !== undefined ? col['Cancellation Date'] : 14;
   const reasonIdx = col['Cancellation Reason'] !== undefined ? col['Cancellation Reason'] : 15;
-
   const records = [];
   for(let i=headerIdx+1; i<rows.length; i++){
     const r = rows[i];
@@ -1962,16 +1778,16 @@ function parseCancellationReport(wb){
     const subProject = r[subProjectIdx] || '';
     const project = resolveProjectForSubProject(normalizeProjectName(rawProject), subProject);
     const reason = (r[reasonIdx] || '').toString().trim();
+    const unitArea = typeof r[superAreaIdx] === 'number' ? r[superAreaIdx] : 0;
     records.push({
       project: project || 'Unknown', subProject, unitNo: r[unitNoIdx] || '', customer,
-      bookingDate: r[bookingDateIdx] || '', unitValue,
+      bookingDate: r[bookingDateIdx] || '', unitValue, unitArea,
       cancellationDate: r[cancellationDateIdx] || '', reason,
       isGenuine: GENUINE_CANCELLATION_REASONS.includes(reason),
     });
   }
   return records;
 }
-
 function buildMasterTable(discount, stock, value){
   const allProjects = new Set([...Object.keys(stock), ...Object.keys(value), ...Object.keys(discount)]);
   const master = [];
@@ -2002,22 +1818,18 @@ function buildMasterTable(discount, stock, value){
   master.sort((a,b)=> b.totalValue - a.totalValue);
   return master;
 }
-
 /* ============ FILTERING ============ */
 // Design: Project narrows every tab. Financial Year / Month narrow anything with a real transaction
 // date (bookings, agreements, cancellations, discounts). They do NOT narrow: available/unsold
 // inventory (a live snapshot, not a transaction), the Collection unit table (Sheet6 has no dates),
 // or any "value by FY" trend chart (narrowing a trend chart to one FY would just leave one bar —
 // those stay Project-scoped so they still show the full multi-year trend).
-
 function matchesProject(rec, project){ return !project || rec.project === project; }
-
 // Whether a Financial Year or Month filter is currently narrowing the data. Used by Project-wise
 // tables to hide rows with zero activity for the selected period — with no period selected, every
 // project belongs (it may just have zero sales ever); with a period selected, a project showing
 // zero Sold Units for that specific window isn't useful clutter, so those rows are hidden.
 function periodFilterActive(){ return !!(filterState.fy || filterState.month); }
-
 function matchesDate(rec, dateField, fy, month){
   if(!fy && !month) return true;
   const dateVal = rec[dateField];
@@ -2026,7 +1838,6 @@ function matchesDate(rec, dateField, fy, month){
   const fyInfo = financialYearOf(dateVal);
   return !!fyInfo && fyInfo.label === fy;
 }
-
 function filterFull(records, dateField){
   return records.filter(r => matchesProject(r, filterState.project) && matchesDate(r, dateField, filterState.fy, filterState.month));
 }
@@ -2037,14 +1848,12 @@ function filterStockDict(dict, project){
   if(!project) return dict;
   return dict[project] ? {[project]: dict[project]} : {};
 }
-
 function populateFilterOptions(){
   const projects = new Set();
   [RAW.customerRecords, RAW.stockUnitRecords, RAW.agreementRecords, RAW.collectionReceiptRecords, RAW.bookingRecords].forEach(arr=>{
     arr.forEach(r=> r.project && projects.add(r.project));
   });
   Object.keys(RAW.stockDict).forEach(p=> projects.add(p));
-
   const fySet = new Map(); // label -> sortKey
   const dateSources = [
     [RAW.customerRecords,'bookingDate'], [RAW.stockUnitRecords,'bookingDate'],
@@ -2054,7 +1863,6 @@ function populateFilterOptions(){
   dateSources.forEach(([arr,field])=>{
     arr.forEach(r=>{ const fy = financialYearOf(r[field]); if(fy) fySet.set(fy.label, fy.sortKey); });
   });
-
   const projSel = document.getElementById('filterProject');
   const fySel = document.getElementById('filterFY');
   const sortedProjects = [...projects].sort();
@@ -2063,7 +1871,6 @@ function populateFilterOptions(){
   fySel.innerHTML = '<option value="">All Financial Years</option>' + sortedFY.map(f=>`<option value="${f}">${f}</option>`).join('');
   populateMonthOptions();
 }
-
 function populateMonthOptions(){
   const monthSel = document.getElementById('filterMonth');
   const prevVal = monthSel.value;
@@ -2085,18 +1892,37 @@ function populateMonthOptions(){
   monthSel.innerHTML = '<option value="">All Months</option>' + sorted.map(([key,label])=>`<option value="${key}">${label}</option>`).join('');
   if(sorted.some(([key])=>key===prevVal)) monthSel.value = prevVal; else filterState.month = '';
 }
-
 function applyFiltersAndRender(){
   const dateFilterActive = !!(filterState.fy || filterState.month);
-
+  // Booking Report gives a cleaner sale value (Base Cost only — GST/Corpus/Registration/Maintenance
+  // excluded) than Stock Summary's own Net Amount, which typically still includes those charges. So
+  // for any Sold unit that has a matching Booking Report entry (same Project + Sub Project + Unit No),
+  // use ITS value instead of Stock Summary's Net Amount — while still trusting Stock Summary alone for
+  // WHICH units currently count as Sold (Booking Report is a historical log, not a current-status
+  // source, so it can't be used to decide Sold vs Available — only to refine the value of units already
+  // known to be Sold). Units with no Booking Report match keep their Stock Summary Net Amount as-is;
+  // there's usually only a handful of these, and they're a known, bounded exception rather than a
+  // silent gap.
+  // IMPORTANT: the match key MUST include Sub Project, not just Project + Unit No. Several projects
+  // (MP Kumudam Enclave, MP New Colony, MP Nilay Nivas, and others) have multiple towers/sub-projects
+  // that reuse the same unit labels (F1, F2, S1, S2, G1, G2, T1, T2, ...) — a Project+Unit-only key
+  // collided across 61 such unit labels, silently overwriting one tower's booking value with another's
+  // and pulling the wrong figure into Sales Value for every unit sharing that label. Keying on all
+  // three fields together eliminates every collision and is what actually closes the ~₹4 Cr gap
+  // between Sales Value and Total Booking Value down to the ~₹1.4 Cr that's genuinely explained by
+  // the 2 in-abeyance units that have no Booking Report row at all (see Units Tracked tile).
+  const bookingValueByUnit = {};
+  RAW.bookingRecords.forEach(r=>{ bookingValueByUnit[r.project+'|'+(r.subProject||'').trim().toLowerCase()+'|'+String(r.unitNo).trim()] = r.bookingValue; });
   // ---- Sold-side vs Available-side of Stock Summary Sheet1 ----
-  const soldRecs = RAW.stockUnitRecords.filter(r=>r.status==='Sold');
+  const soldRecs = RAW.stockUnitRecords.filter(r=>r.status==='Sold').map(r=>{
+    const match = bookingValueByUnit[r.project+'|'+(r.subProject||'').trim().toLowerCase()+'|'+String(r.unitNo).trim()];
+    return match !== undefined ? { ...r, amount: match } : r;
+  });
   const availRecs = RAW.stockUnitRecords.filter(r=>r.status==='Available');
   const soldFiltered = filterFull(soldRecs, 'bookingDate');           // respects Project + FY + Month
   const availFiltered = filterProjectOnly(availRecs);                 // snapshot — Project only
   const { value: valueSold, units: soldUnitCounts, area: soldAreaSums } = aggregateStockValue(soldFiltered);
   const { value: valueAvail } = aggregateStockValue(availFiltered);
-
   // Unsold (Available) broken down by physical location and by property type (Apartment/Plot) —
   // both snapshot views, Project-filter only, matching Available's own no-date-filter behaviour.
   const locMap = {}, propMap = {};
@@ -2115,11 +1941,9 @@ function applyFiltersAndRender(){
     value[p] = { soldValue: (valueSold[p]&&valueSold[p].soldValue)||0, availValue: (valueAvail[p]&&valueAvail[p].availValue)||0 };
   });
   fyData = aggregateStockValue(filterProjectOnly(soldRecs)).fyData;   // trend chart — Project only, full history
-
   // project-only sold value, independent of FY/Month — used solely by Collection's Outstanding Balance,
   // since Collection's own unit table (Sheet6) has no dates to match a FY/Month filter against.
   soldValueByProjectAllTime = aggregateStockValue(filterProjectOnly(soldRecs)).value;
-
   let stock = filterStockDict(RAW.stockDict, filterState.project);
   if(dateFilterActive){
     // Sheet2 has no dates at all, so its Sold Units/Area can't be narrowed by FY/Month — swap those
@@ -2132,17 +1956,13 @@ function applyFiltersAndRender(){
     });
     stock = merged;
   }
-
   // ---- Customer Details (discount + cancellations) ----
   const customerFiltered = filterFull(RAW.customerRecords, 'bookingDate');
   const { discount } = aggregateDiscount(customerFiltered);
   cancelDiscountFYData = aggregateDiscount(filterProjectOnly(RAW.customerRecords)).cancelFYData; // trend — Project only
-
   masterData = buildMasterTable(discount, stock, value);
-
   // ---- Agreement Register — fully filterable, no separate trend chart to protect ----
   agreementData = filterFull(RAW.agreementRecords, 'bookingDate');
-
   // "Signed" and "Registered" are each filtered by FY/Month using their OWN date (Agreement Date /
   // Regn Date respectively), not booking date — a unit booked in one FY can be signed or registered
   // in a later one, so these two figures deliberately don't share the Sold/Bookings date basis.
@@ -2152,17 +1972,14 @@ function applyFiltersAndRender(){
   agreementSignedValue = signedRecords.reduce((a,r)=>a+(r.agreementValue||0),0);
   agreementRegisteredCount = registeredRecords.length;
   agreementRegisteredValue = registeredRecords.reduce((a,r)=>a+(r.agreementValue||0),0);
-
-  // "Yet to Sign" / "Yet to be Registered" are current backlog snapshots, not period activity — a
-  // unit with no Agreement/Regn Date can never match an FY/Month filter on that date, so these are
-  // Project-only (like Unsold inventory), showing the live pending count regardless of booking period.
-  const yetToSignRecords = filterProjectOnly(RAW.agreementRecords).filter(r=>r.agreementDate === '');
-  const yetToRegisterRecords = filterProjectOnly(RAW.agreementRecords).filter(r=>r.regnDate === '');
+  // "Yet to Sign" / "Yet to be Registered" — units booked within the selected Project + FY + Month
+  // (by Booking Date, same basis as Units Tracked) whose Agreement/Regn Date is still blank as of now.
+  const yetToSignRecords = filterFull(RAW.agreementRecords, 'bookingDate').filter(r=>r.agreementDate === '');
+  const yetToRegisterRecords = filterFull(RAW.agreementRecords, 'bookingDate').filter(r=>r.regnDate === '');
   agreementYetToSignCount = yetToSignRecords.length;
   agreementYetToSignValue = yetToSignRecords.reduce((a,r)=>a+(r.agreementValue||0),0);
   agreementYetToRegisterCount = yetToRegisterRecords.length;
   agreementYetToRegisterValue = yetToRegisterRecords.reduce((a,r)=>a+(r.agreementValue||0),0);
-
   // ---- Collection ----
   // Unit-wise collection now comes from Sheet1 raw receipts, cumulated per unit — not Sheet6's own
   // pre-computed unit summary. Since Sheet1 has real receipt dates, this now respects Project + FY +
@@ -2176,10 +1993,8 @@ function applyFiltersAndRender(){
   collectionPeriodTotal = collectionReceiptsFiltered.reduce((a,r)=>a+r.amount,0);
   collectionPeriodByProject = {};
   collectionReceiptsFiltered.forEach(r=>{ collectionPeriodByProject[r.project] = (collectionPeriodByProject[r.project]||0) + r.amount; });
-
-  // ---- Outstanding Payments Report — snapshot "as on date", Project-only (no dates to filter by) ----
+  // ---- Debtor Ageing Report (Summary) — snapshot "as on date", Project-only (no dates to filter by) ----
   outstandingData = filterProjectOnly(RAW.outstandingRecords);
-
   // ---- Customer Cancellation Report — genuine cancellations only (Customer Requested + Due to Non
   // Payment; excludes ReBooking Cancellation [a unit transfer] and Other [data-entry mistakes]).
   // Filtered by the cancelled unit's own booking date, same basis as the Sold figures, so "gross"
@@ -2188,13 +2003,55 @@ function applyFiltersAndRender(){
   const genuineCancellations = filterFull(RAW.cancellationRecords.filter(r=>r.isGenuine), 'bookingDate');
   genuineCancelledUnits = genuineCancellations.length;
   genuineCancelledValue = genuineCancellations.reduce((a,r)=>a+r.unitValue, 0);
-
-
+  genuineCancelledArea = genuineCancellations.reduce((a,r)=>a+(r.unitArea||0), 0);
   // ---- Bookings — fully filterable ----
   bookingData = filterFull(RAW.bookingRecords, 'bookingDate');
   bookingFYData = aggregateBookingFY(filterProjectOnly(RAW.bookingRecords)); // trend — Project only
   bookingMonthData = aggregateBookingMonth(bookingData);
-
+  // ---- Merge Agreement / Collection / Outstanding project-level rollups onto the master table ----
+  // so the one "Project-wise Detail" table on the Overview tab covers every project-level metric that
+  // used to be split across separate Sales/Unsold/CRM project tables (all of which were pure subsets
+  // of, or directly derivable from, this same per-project data).
+  const agreementByProjectM = {};
+  agreementData.forEach(r=>{
+    if(!agreementByProjectM[r.project]) agreementByProjectM[r.project] = {units:0, pendingRegn:0};
+    agreementByProjectM[r.project].units += 1;
+    if(r.regnDate === '') agreementByProjectM[r.project].pendingRegn += 1;
+  });
+  const collectedByProjectM = {};
+  collectionData.forEach(r=>{ collectedByProjectM[r.project] = (collectedByProjectM[r.project]||0) + r.total; });
+  const outstandingByProjectM = {}; // from the Debtor Ageing Report: units, Total Cost, Total Received, Outstanding
+  outstandingData.forEach(r=>{
+    if(!outstandingByProjectM[r.project]) outstandingByProjectM[r.project] = {units:0, totalCost:0, totalReceived:0, outstanding:0};
+    const o = outstandingByProjectM[r.project];
+    o.units += 1; o.totalCost += r.totalCost; o.totalReceived += r.totalReceived; o.outstanding += r.netReceivable;
+  });
+  const masterByProjectM = {};
+  masterData.forEach(m=> masterByProjectM[m.project] = m);
+  const crmOnlyProjects = new Set([...Object.keys(agreementByProjectM), ...Object.keys(collectedByProjectM), ...Object.keys(outstandingByProjectM)]);
+  crmOnlyProjects.forEach(project=>{
+    if(!masterByProjectM[project]){
+      // A project with Agreement/Collection/Outstanding activity but no Stock Summary / Customer
+      // Details entry at all (rare) — add its own row so those figures aren't silently dropped.
+      const row = { project, totalUnits:0, soldUnits:0, availUnits:0, blockedUnits:0, totalArea:0, soldArea:0, availArea:0, blockedArea:0,
+        soldValue:0, availValue:0, totalValue:0, avgSoldPrice:null, avgAvailPrice:null,
+        beforeDiscount:null, afterDiscount:null, discountValue:null, discountPct:null, cancelledUnits:0,
+        discountActiveUnits:0, cancelBefore:0, cancelAfter:0, cancelDiscountValue:0 };
+      masterData.push(row);
+      masterByProjectM[project] = row;
+    }
+  });
+  masterData.forEach(m=>{
+    const ag = agreementByProjectM[m.project];
+    const od = outstandingByProjectM[m.project];
+    m.agreementUnits = ag ? ag.units : null;
+    m.pendingRegn = ag ? ag.pendingRegn : null;
+    m.collected = collectedByProjectM[m.project] !== undefined ? collectedByProjectM[m.project] : null;
+    m.totalCost = od ? od.totalCost : null;
+    m.totalReceived = od ? od.totalReceived : null;
+    m.outstandingBalance = od ? od.outstanding : null;
+    m.outstandingPct = (od && od.totalCost) ? (od.outstanding/od.totalCost*100) : null;
+  });
   renderFilterSummary();
   renderAll();
   // Defensive: a chart re-created while its tab is hidden (display:none) can size to 0 and never
@@ -2203,7 +2060,6 @@ function applyFiltersAndRender(){
     Object.values(charts).forEach(c=>{ if(c && c.resize) c.resize(); });
   });
 }
-
 function renderFilterSummary(){
   const chips = [];
   if(filterState.project) chips.push(filterState.project);
@@ -2217,7 +2073,6 @@ function renderFilterSummary(){
   el.innerHTML = chips.map(c=>`<span class="filter-chip">${c}</span>`).join('') +
     `<span class="filter-note">Applies to booking-dated activity. Unsold inventory and the Collection unit table stay at full history for the selected project. "By financial year" trend charts always show the full timeline for the selected project.</span>`;
 }
-
 document.getElementById('filterProject').addEventListener('change', function(){
   filterState.project = this.value;
   applyFiltersAndRender();
@@ -2240,7 +2095,6 @@ document.getElementById('filterClear').addEventListener('click', function(){
   document.getElementById('filterMonth').value = '';
   applyFiltersAndRender();
 });
-
 /* ============ FORMATTING ============ */
 function fmtINRCr(n){
   if(n === null || n === undefined) return '—';
@@ -2260,9 +2114,7 @@ function fmtPct(n){
   if(n === null || n === undefined) return '—';
   return n.toLocaleString('en-IN',{maximumFractionDigits:1}) + '%';
 }
-
 /* ============ RENDER ============ */
-
 function renderAll(){
   renderHero();
   renderKPIs();
@@ -2273,12 +2125,9 @@ function renderAll(){
   renderAgreementPage();
   renderCollectionPage();
   renderBookingPage();
-  renderSalesProjectTable();
-  renderCRMProjectTable();
   renderLocationWiseTable();
   renderPropertyWiseTable();
 }
-
 function grandTotals(){
   return masterData.reduce((acc,m)=>{
     acc.projects += 1;
@@ -2297,33 +2146,40 @@ function grandTotals(){
     return acc;
   },{projects:0,totalUnits:0,soldUnits:0,availUnits:0,blockedUnits:0,totalArea:0,soldArea:0,availArea:0,soldValue:0,availValue:0,totalValue:0,beforeDiscount:0,afterDiscount:0,cancelledUnits:0,activeBookedUnits:0});
 }
-
 function renderKPIs(){
   const t = grandTotals();
+  // Total Units here is a PERIOD total, not the static portfolio size: Sold Units already respects the
+  // FY/Month filter (only units sold within the selected period), while Unsold/Blocked stay snapshot
+  // counts (no transaction date to filter by), matching how the rest of this tile's own sub-text reads.
+  // This deliberately does NOT equal the project's true all-time unit count once a period is selected —
+  // units sold in other months still exist but drop out of this figure — see the Project-wise Detail
+  // table below (and the .xlsx export) for the true, unfiltered total per project.
+  // Mirrors the Sold page's "Booking Value" toggle: "All Bookings (Including Cancelled)" adds the
+  // genuinely-cancelled units back into Sold (and so into Total Units too), so this tile doesn't sit
+  // frozen while Sold Units/Sales Value/Sold Area all move with the toggle.
+  const hasCancellationReport = RAW.cancellationRecords.length > 0;
+  const showGross = hasCancellationReport && soldValueMode === 'gross';
+  const displaySoldUnits = showGross ? t.soldUnits + genuineCancelledUnits : t.soldUnits;
+  const periodTotalUnits = displaySoldUnits + t.availUnits + t.blockedUnits;
   const cards = [
     {lbl:'Projects', val: t.projects, sub: `${masterData.filter(m=>m.totalUnits>0).length} with active stock`},
-    {lbl:'Total Units', val: fmtNum(t.totalUnits), sub: `<b class="pos">${fmtNum(t.soldUnits)}</b> sold &middot; ${fmtNum(t.availUnits)} unsold`},
-    {lbl:'Sold Area', val: fmtNum(t.soldArea)+' <span style="font-size:13px;color:var(--muted);">sq.ft</span>', sub: `of ${fmtNum(t.totalArea)} sq.ft total saleable area`},
-    {lbl:'Unsold Area', val: fmtNum(t.availArea)+' <span style="font-size:13px;color:var(--muted);">sq.ft</span>', sub: `of ${fmtNum(t.totalArea)} sq.ft total saleable area`},
-    {lbl:'Sales Value', val: fmtINRCr(t.soldValue), sub: `of ${fmtINRCr(t.totalValue)} total portfolio value`},
-    {lbl:'Unsold Value', val: fmtINRCr(t.availValue), sub:'Unsold inventory at current rates'},
+    {lbl:'Total Units', val: fmtNum(periodTotalUnits), sub: `<b class="pos">${fmtNum(displaySoldUnits)}</b> sold &middot; ${fmtNum(t.availUnits)} unsold`},
   ];
-  if(RAW.agreementRecords.length){
-    cards.push(
-      {lbl:'Total Agreement Signed', val: fmtNum(agreementSignedCount), sub: `${fmtINRCr(agreementSignedValue)} booking value &middot; by Agreement Date`},
-      {lbl:'Yet to Sign', val: fmtNum(agreementYetToSignCount), sub: `${fmtINRCr(agreementYetToSignValue)} booking value &middot; current backlog`},
-      {lbl:'Total Unit Registered', val: fmtNum(agreementRegisteredCount), sub: `${fmtINRCr(agreementRegisteredValue)} booking value &middot; by Regn Date`},
-      {lbl:'Yet to be Registered', val: fmtNum(agreementYetToRegisterCount), sub: `${fmtINRCr(agreementYetToRegisterValue)} booking value &middot; current backlog`},
-    );
-  }
   document.getElementById('kpiGrid').innerHTML = cards.map(c=>`
     <div class="kpi"><div class="lbl">${c.lbl}</div><div class="val num">${c.val}</div><div class="sub">${c.sub}</div></div>
   `).join('');
 }
-
 function renderHero(){
   const t = grandTotals();
-  const availPct = t.totalValue ? (t.availValue/t.totalValue*100) : 0;
+  // Mirror the Sold page's "Booking Value" toggle here too — this banner previously always showed
+  // the net Sales Value regardless of the toggle, so switching to "All Bookings (Including Cancelled)"
+  // updated the KPI tile below but left this top figure looking frozen/wrong by comparison.
+  const hasCancellationReport = RAW.cancellationRecords.length > 0;
+  const showGross = hasCancellationReport && soldValueMode === 'gross';
+  const displayUnits = showGross ? t.soldUnits + genuineCancelledUnits : t.soldUnits;
+  const displayValue = showGross ? t.soldValue + genuineCancelledValue : t.soldValue;
+  const totalForSplit = t.availValue + displayValue;
+  const availPct = totalForSplit ? (t.availValue/totalForSplit*100) : 0;
   const soldPct = 100 - availPct;
   document.getElementById('heroSplit').innerHTML = `
     <div class="hero-half avail">
@@ -2334,15 +2190,13 @@ function renderHero(){
     </div>
     <div class="hero-half sold">
       <div class="lbl">Sales Value</div>
-      <div class="big num">${fmtINRCr(t.soldValue)}</div>
-      <div class="sub2">${fmtNum(t.soldUnits)} units &middot; ${soldPct.toFixed(1)}% of portfolio</div>
+      <div class="big num">${fmtINRCr(displayValue)}</div>
+      <div class="sub2">${fmtNum(displayUnits)} units &middot; ${soldPct.toFixed(1)}% of portfolio</div>
       <div class="hero-bar"><div class="fill" style="width:${soldPct}%"></div></div>
     </div>
   `;
 }
-
 function destroyChart(key){ if(charts[key]){ charts[key].destroy(); delete charts[key]; } }
-
 // Shows an explanatory message in place of a chart when the current filter leaves it with no data,
 // so an empty chart is never ambiguous between "broken" and "genuinely nothing matches the filter".
 function chartEmptyMessage(canvasId, message){
@@ -2364,14 +2218,12 @@ function chartClearEmptyMessage(canvasId){
   const msgEl = wrap.querySelector('.chart-empty-msg');
   if(msgEl) msgEl.remove();
 }
-
 function renderCharts(){
   const navy = getComputedStyle(document.documentElement).getPropertyValue('--navy').trim();
   const gold = getComputedStyle(document.documentElement).getPropertyValue('--gold').trim();
   const teal = getComputedStyle(document.documentElement).getPropertyValue('--teal').trim();
   const brick = getComputedStyle(document.documentElement).getPropertyValue('--brick').trim();
   const muted = getComputedStyle(document.documentElement).getPropertyValue('--muted').trim();
-
   // 1. Overall stock status donut
   const t = grandTotals();
   destroyChart('donut');
@@ -2392,7 +2244,6 @@ function renderCharts(){
     plugins:[ChartDataLabels]
   });
   }
-
   // 2. Sold vs Available area by project (top 15)
   const byArea = [...masterData].filter(m=>(m.soldArea+m.availArea)>0).sort((a,b)=>(b.soldArea+b.availArea)-(a.soldArea+a.availArea)).slice(0,15);
   destroyChart('soldAvailArea');
@@ -2416,7 +2267,6 @@ function renderCharts(){
     }
   });
   }
-
   // 2b. Unsold value by location (top-level Overview summary — detail table lives on Sales tab)
   const byLocation = [...locationWiseData].filter(l=>l.value>0).sort((a,b)=>b.value-a.value);
   destroyChart('unsoldLocation');
@@ -2438,7 +2288,6 @@ function renderCharts(){
     plugins:[ChartDataLabels]
   });
   }
-
   // 2c. Unsold value by property type
   const byProperty = [...propertyWiseData].filter(p=>p.value>0).sort((a,b)=>b.value-a.value);
   destroyChart('unsoldProperty');
@@ -2460,7 +2309,6 @@ function renderCharts(){
     plugins:[ChartDataLabels]
   });
   }
-
   // 2d. Unsold value by project (top 15)
   const byUnsoldProject = [...masterData].filter(m=>m.availValue>0).sort((a,b)=>b.availValue-a.availValue).slice(0,15);
   destroyChart('unsoldProject');
@@ -2483,34 +2331,38 @@ function renderCharts(){
   });
   }
 }
-
 /* ============ SOLD PAGE ============ */
-
 function renderSoldPage(){
   const t = grandTotals();
   const soldArea = masterData.reduce((a,m)=>a+(m.soldArea||0),0);
-  const periodActiveSold = !!(filterState.fy || filterState.month);
   const hasCancellationReport = RAW.cancellationRecords.length > 0;
   const showGross = hasCancellationReport && soldValueMode === 'gross';
-
   const toggleEl = document.getElementById('soldValueToggle');
   if(toggleEl) toggleEl.style.display = hasCancellationReport ? 'flex' : 'none';
-
   const displayUnits = showGross ? t.soldUnits + genuineCancelledUnits : t.soldUnits;
   const displayValue = showGross ? t.soldValue + genuineCancelledValue : t.soldValue;
+  // Sales Value = Total Booking Value (the 926 units matched to an actual Booking Report row) +
+  // an "in abeyance" remainder (the units that are genuinely Sold per Stock Summary but have no
+  // Booking Report row at all — same units flagged on the Units Tracked tile). Shown split out here
+  // instead of as a separate "Total Booking Value" tile, so the two figures are never presented as
+  // two unexplained numbers that don't match.
+  const totalBookingValue = bookingData.reduce((a,r)=>a+r.bookingValue, 0);
+  const inAbeyanceValue = t.soldValue - totalBookingValue;
   const soldValueSub = showGross
     ? `Incl. ${fmtNum(genuineCancelledUnits)} genuinely-cancelled bookings (${fmtINRCr(genuineCancelledValue)})`
-    : (periodActiveSold ? 'Booked in the selected period, net of cancellations' : 'Total booked value to date, net of cancellations');
-
+    : `Total booking value ${fmtINRCr(totalBookingValue)} and in abeyance ${fmtINRCr(inAbeyanceValue)}`;
+  // Sold Area mirrors Sold Units/Sales Value — "All Bookings (Including Cancelled)" adds back the
+  // Saleable Area of genuinely-cancelled units (from the Cancellation Report's own Super Area column),
+  // so this tile actually moves with the toggle instead of always showing the net figure.
+  const displayArea = showGross ? soldArea + genuineCancelledArea : soldArea;
+  const soldAreaSub = showGross ? `Incl. ${fmtNum(genuineCancelledArea)} sq.ft from genuinely-cancelled bookings` : 'Saleable area sold';
   document.getElementById('kpiGridSold').innerHTML = [
     {lbl:'Sold Units', val: fmtNum(displayUnits), sub: showGross ? `across ${masterData.filter(m=>m.soldUnits>0).length} projects, incl. cancellations` : `across ${masterData.filter(m=>m.soldUnits>0).length} projects`},
     {lbl:'Sales Value', val: fmtINRCr(displayValue), sub: soldValueSub},
-    {lbl:'Sold Area', val: fmtNum(soldArea)+' sq.ft', sub:'Saleable area sold'},
+    {lbl:'Sold Area', val: fmtNum(displayArea)+' sq.ft', sub: soldAreaSub},
   ].map(c=>`<div class="kpi"><div class="lbl">${c.lbl}</div><div class="val num">${c.val}</div><div class="sub">${c.sub}</div></div>`).join('');
-
   const navy = getComputedStyle(document.documentElement).getPropertyValue('--navy').trim();
   const teal = getComputedStyle(document.documentElement).getPropertyValue('--teal').trim();
-
   // Sold value by project (top 15)
   const bySold = [...masterData].filter(m=>m.soldValue>0).sort((a,b)=>b.soldValue-a.soldValue).slice(0,15);
   destroyChart('soldValue');
@@ -2532,7 +2384,6 @@ function renderSoldPage(){
     plugins:[ChartDataLabels]
   });
   }
-
   // Sold value by financial year (always Project-only — see note at top of file)
   destroyChart('soldFY');
   if(fyData.length === 0){
@@ -2553,25 +2404,8 @@ function renderSoldPage(){
     plugins:[ChartDataLabels]
   });
   }
-
-  renderGenericTable({
-    theadId:'soldTheadRow', tbodyId:'soldTbody', tfootId:'soldTfootRow', searchId:'soldSearchBox',
-    sortStateKey:'sold',
-    columns:[
-      {key:'project', label:'Project', align:'left'},
-      {key:'soldUnits', label:'Sold Units', fmt:fmtNum},
-      {key:'soldArea', label:'Sold Area (sq.ft)', fmt:fmtNum},
-      {key:'soldValue', label:'Sales Value', fmt:fmtINRCr},
-      {key:'soldRate', label:'Avg Rate (₹/sq.ft)', fmt:(n)=> n===null?'—':'₹'+Math.round(n).toLocaleString('en-IN')},
-    ],
-    rowsSource: masterData.filter(m=>m.soldUnits>0).map(m=>({...m, soldRate: m.soldArea ? m.soldValue/m.soldArea : null})),
-    defaultSort:{key:'soldValue', dir:-1},
-    totalsLabel:'projects with sold units'
-  });
 }
-
 /* ============ AVAILABLE PAGE ============ */
-
 function renderAvailablePage(){
   const t = grandTotals();
   const availArea = masterData.reduce((a,m)=>a+(m.availArea||0),0);
@@ -2581,10 +2415,8 @@ function renderAvailablePage(){
     {lbl:'Unsold Area', val: fmtNum(availArea)+' sq.ft', sub:'Saleable area unsold'},
     {lbl:'Avg Rate', val: availArea ? '₹'+Math.round(t.availValue/availArea).toLocaleString('en-IN') : '—', sub:'per sq.ft, unsold stock'},
   ].map(c=>`<div class="kpi"><div class="lbl">${c.lbl}</div><div class="val num">${c.val}</div><div class="sub">${c.sub}</div></div>`).join('');
-
   const navy = getComputedStyle(document.documentElement).getPropertyValue('--navy').trim();
   const gold = getComputedStyle(document.documentElement).getPropertyValue('--gold').trim();
-
   const byAvail = [...masterData].filter(m=>m.availValue>0).sort((a,b)=>b.availValue-a.availValue).slice(0,15);
   destroyChart('availValue');
   if(byAvail.length === 0){
@@ -2605,7 +2437,6 @@ function renderAvailablePage(){
     plugins:[ChartDataLabels]
   });
   }
-
   const byAvailArea = [...masterData].filter(m=>m.availArea>0).sort((a,b)=>b.availArea-a.availArea).slice(0,15);
   destroyChart('availArea');
   if(byAvailArea.length === 0){
@@ -2622,25 +2453,8 @@ function renderAvailablePage(){
     }
   });
   }
-
-  renderGenericTable({
-    theadId:'availTheadRow', tbodyId:'availTbody', tfootId:'availTfootRow', searchId:'availSearchBox',
-    sortStateKey:'avail',
-    columns:[
-      {key:'project', label:'Project', align:'left'},
-      {key:'availUnits', label:'Unsold Units', fmt:fmtNum},
-      {key:'availArea', label:'Unsold Area (sq.ft)', fmt:fmtNum},
-      {key:'availValue', label:'Unsold Value', fmt:fmtINRCr},
-      {key:'availRate', label:'Avg Rate (₹/sq.ft)', fmt:(n)=> n===null?'—':'₹'+Math.round(n).toLocaleString('en-IN')},
-    ],
-    rowsSource: masterData.filter(m=>m.availUnits>0).map(m=>({...m, availRate: m.availArea ? m.availValue/m.availArea : null})),
-    defaultSort:{key:'availValue', dir:-1},
-    totalsLabel:'projects with unsold units'
-  });
 }
-
 /* ============ AGREEMENT REGISTER PAGE ============ */
-
 function renderAgreementPage(){
   if(!agreementData.length){
     document.getElementById('kpiGridAgreement').innerHTML = RAW.agreementRecords.length
@@ -2652,29 +2466,33 @@ function renderAgreementPage(){
   const { statusList, projectPending } = buildAgreementSummary(agreementData);
   const total = agreementData.length;
   const regnRecorded = agreementData.filter(r=>r.regnDate!=='').length;
-  const pendingRegn = total - regnRecorded;
-
+  // Units Tracked (Agreement Register) runs ahead of Units Booked (Booking Report) by the units that
+  // have no matching Booking Report row at all — "in abeyance" here means "missing from Booking
+  // Report", NOT literally status = "In Abeyance" (that was tried first, but a unit can be missing
+  // from the Booking Report under any status — In Abeyance, Pending - Finance NOC, Agreement Prepared
+  // & Sent, etc. — so keying off the status text under-counted the gap). Matched by Project + Sub
+  // Project + Unit No, same key used for the Sales Value split, so "booked" + "in abeyance" always
+  // sums to exactly Units Tracked, however the filter is set.
+  const bookingKeySet = new Set(bookingData.map(r => r.project+'|'+(r.subProject||'').trim().toLowerCase()+'|'+String(r.unitNo).trim()));
+  const unitsBookedMatched = agreementData.filter(r => bookingKeySet.has(r.project+'|'+(r.subProject||'').trim().toLowerCase()+'|'+String(r.unitNo).trim())).length;
+  const inAbeyanceCount = total - unitsBookedMatched;
   document.getElementById('kpiGridAgreement').innerHTML = [
-    {lbl:'Units Tracked', val: fmtNum(total), sub:'From the Agreement Register report'},
-    {lbl:'Regn Date Pending', val: fmtNum(pendingRegn), sub:'Units with no Regn Date recorded yet'},
+    {lbl:'Units Tracked', val: fmtNum(total), sub:`Units booked ${fmtNum(unitsBookedMatched)} and in abeyance ${fmtNum(inAbeyanceCount)}`},
     {lbl:'Total Agreement Signed', val: fmtNum(agreementSignedCount), sub: `${fmtINRCr(agreementSignedValue)} booking value &middot; by Agreement Date`},
-    {lbl:'Yet to Sign', val: fmtNum(agreementYetToSignCount), sub: `${fmtINRCr(agreementYetToSignValue)} booking value &middot; current backlog`},
+    {lbl:'Yet to Sign', val: fmtNum(agreementYetToSignCount), sub: `${fmtINRCr(agreementYetToSignValue)} booking value &middot; no Agreement Date yet`},
     {lbl:'Total Unit Registered', val: fmtNum(agreementRegisteredCount), sub: `${fmtINRCr(agreementRegisteredValue)} booking value &middot; by Regn Date`},
-    {lbl:'Yet to be Registered', val: fmtNum(agreementYetToRegisterCount), sub: `${fmtINRCr(agreementYetToRegisterValue)} booking value &middot; current backlog`},
+    {lbl:'Yet to be Registered', val: fmtNum(agreementYetToRegisterCount), sub: `${fmtINRCr(agreementYetToRegisterValue)} booking value &middot; no Regn Date yet`},
   ].map(c=>`<div class="kpi"><div class="lbl">${c.lbl}</div><div class="val num">${c.val}</div><div class="sub">${c.sub}</div></div>`).join('');
-
   const navy = getComputedStyle(document.documentElement).getPropertyValue('--navy').trim();
   const gold = getComputedStyle(document.documentElement).getPropertyValue('--gold').trim();
   const teal = getComputedStyle(document.documentElement).getPropertyValue('--teal').trim();
   const brick = getComputedStyle(document.documentElement).getPropertyValue('--brick').trim();
-
   // populate status filter dropdown dynamically from the actual ERP status values present
   const stageFilterEl = document.getElementById('stageFilter');
   const currentFilterVal = stageFilterEl.value;
   stageFilterEl.innerHTML = '<option value="">All statuses</option>' +
     statusList.map(s=>`<option value="${s.status}">${s.status} (${s.count})</option>`).join('');
   if(statusList.some(s=>s.status===currentFilterVal)) stageFilterEl.value = currentFilterVal;
-
   destroyChart('stage');
   charts.stage = new Chart(document.getElementById('chartStage'), {
     type:'bar',
@@ -2692,7 +2510,6 @@ function renderAgreementPage(){
     },
     plugins:[ChartDataLabels]
   });
-
   const byPending = Object.entries(projectPending)
     .map(([project,p])=>({project, pendingRegn:p.pendingRegn}))
     .filter(p=>p.pendingRegn>0)
@@ -2717,7 +2534,6 @@ function renderAgreementPage(){
     plugins:[ChartDataLabels]
   });
   }
-
   renderGenericTable({
     theadId:'agreementTheadRow', tbodyId:'agreementTbody', tfootId:'agreementTfootRow', searchId:'agreementSearchBox',
     filterSelectId:'stageFilter', filterKey:'unitStatus',
@@ -2740,9 +2556,7 @@ function renderAgreementPage(){
     totalsLabel:'units'
   });
 }
-
 /* ============ COLLECTION PAGE ============ */
-
 function renderCollectionPage(){
   if(!collectionData.length && !outstandingData.length){
     document.getElementById('kpiGridCollection').innerHTML = (RAW.collectionReceiptRecords.length || RAW.outstandingRecords.length)
@@ -2753,28 +2567,25 @@ function renderCollectionPage(){
   const { projectTotals, allTimeCollected } = buildCollectionSummary(collectionData);
   const unitsRecorded = collectionData.length;
   const periodActive = !!(filterState.fy || filterState.month);
-
-  // Outstanding Balance / Collection %: prefer the ERP's own Outstanding Payments Report (Net
-  // Receivable) when it's been uploaded — it's authoritative, not an estimate. Falls back to the
-  // Sold-value-minus-Collected approximation otherwise. Either way this is always all-time /
-  // as-on-date, never FY/Month filtered (a snapshot balance, not a period transaction).
+  // Outstanding Balance: prefer the ERP's own Debtor Ageing Report (Summary) — Total Outstanding — when it's
+  // been uploaded — it's authoritative, not an estimate. Falls back to the Sold-value-minus-Collected
+  // approximation otherwise. Either way this is always all-time / as-on-date, never FY/Month filtered
+  // (a snapshot balance, not a period transaction).
   const hasOutstandingReport = outstandingData.length > 0;
-  let outstandingTotal, outstandingByProject, collectionPct, outstandingSub, asOnDateLabel;
+  let outstandingTotal, outstandingByProject, outstandingSub, asOnDateLabel;
   let projDetailByProject = {}; // project -> {units, totalCost, totalReceived, outstanding} — only when hasOutstandingReport
-
   if(hasOutstandingReport){
-    let totalCostSum = 0, totalReceivedSum = 0, netReceivableSum = 0;
+    let netReceivableSum = 0;
     outstandingData.forEach(r=>{
       if(!projDetailByProject[r.project]) projDetailByProject[r.project] = {units:0, totalCost:0, totalReceived:0, outstanding:0};
       const p = projDetailByProject[r.project];
       p.units += 1; p.totalCost += r.totalCost; p.totalReceived += r.totalReceived; p.outstanding += r.netReceivable;
-      totalCostSum += r.totalCost; totalReceivedSum += r.totalReceived; netReceivableSum += r.netReceivable;
+      netReceivableSum += r.netReceivable;
     });
     outstandingByProject = Object.entries(projDetailByProject).map(([project,d])=>({project, outstanding:d.outstanding})).filter(p=>p.outstanding>0);
     outstandingTotal = netReceivableSum;
-    collectionPct = totalCostSum ? (totalReceivedSum/totalCostSum*100) : 0;
     asOnDateLabel = outstandingData[0].asOnDate;
-    outstandingSub = 'Total Balance Outstanding, from Customer Outstanding Report';
+    outstandingSub = 'Total Outstanding — both new sales and CRM files';
   } else {
     const collectionProjects = Object.keys(projectTotals);
     let matchedSoldValue = 0;
@@ -2787,26 +2598,26 @@ function renderCollectionPage(){
         outstandingByProject.push({project:proj, outstanding, soldValue:sv, collected:projectTotals[proj].total});
       }
     });
-    collectionPct = matchedSoldValue ? (allTimeCollected/matchedSoldValue*100) : 0;
     outstandingTotal = matchedSoldValue - allTimeCollected;
     outstandingSub = 'Estimated: sold value not yet collected, all-time';
   }
-
   // "Total Collected" and the project chart DO respect Project + FY + Month, sourced from the dated
   // Sheet1 receipts rather than the dateless Sheet6 unit summary.
   const totalCollected = periodActive ? collectionPeriodTotal : allTimeCollected;
-
+  // Net Due as per Stage — from the Debtor Ageing Report's own NetDue column. Only exists once that
+  // report is uploaded (the estimated fallback below has no per-unit stage-due figures at all), so it
+  // reads as 0 with a prompt to upload it otherwise.
+  const netDueAsPerStage = hasOutstandingReport ? outstandingData.reduce((a,r)=>a+(r.netDue||0),0) : 0;
+  const debtorAgeingSub = hasOutstandingReport ? 'Demands raised till date' : 'Upload Debtor Ageing Report (Summary)';
   document.getElementById('kpiGridCollection').innerHTML = [
-    {lbl:'Total Collected', val: fmtINRCr(totalCollected), sub: periodActive ? 'Received in the selected period' : `${fmtNum(unitsRecorded)} units with collection recorded`},
-    {lbl:'Collection %', val: fmtPct(collectionPct), sub:(hasOutstandingReport?'':'Estimated — ') + 'of total cost, all-time (not affected by FY/Month)'},
+    {lbl:'Total Collected', val: fmtINRCr(totalCollected), sub: (periodActive ? 'Received in the selected period' : `${fmtNum(unitsRecorded)} units with collection recorded`) + ', including Govt charges and Registrations'},
+    {lbl:'Net Due as per Stage', val: fmtINRCr(netDueAsPerStage), sub: debtorAgeingSub},
     {lbl:'Outstanding Balance', val: fmtINRCr(outstandingTotal), sub: outstandingSub},
   ].map(c=>`<div class="kpi"><div class="lbl">${c.lbl}</div><div class="val num">${c.val}</div><div class="sub">${c.sub}</div></div>`).join('');
-
   const navy = getComputedStyle(document.documentElement).getPropertyValue('--navy').trim();
   const gold = getComputedStyle(document.documentElement).getPropertyValue('--gold').trim();
   const teal = getComputedStyle(document.documentElement).getPropertyValue('--teal').trim();
   const brick = getComputedStyle(document.documentElement).getPropertyValue('--brick').trim();
-
   // 1. Collected value by project (top 15) — respects Project + FY + Month
   const collectionSource = periodActive ? collectionPeriodByProject : Object.fromEntries(Object.entries(projectTotals).map(([p,d])=>[p,d.total]));
   const byCollection = Object.entries(collectionSource).map(([project,total])=>({project, total})).sort((a,b)=>b.total-a.total).slice(0,15);
@@ -2831,7 +2642,6 @@ function renderCollectionPage(){
     plugins:[ChartDataLabels]
   });
   }
-
   // 2. Collection by financial year (always Project-only — see note at top of file)
   destroyChart('collectionFY');
   if(collectionFYData.length === 0){
@@ -2852,7 +2662,6 @@ function renderCollectionPage(){
     plugins:[ChartDataLabels]
   });
   }
-
   // 3. Outstanding balance by project (top 15, always all-time / as-on-date)
   const outstandingChartTitle = document.querySelector('#chartOutstanding').closest('.chart-card').querySelector('h3');
   if(outstandingChartTitle) outstandingChartTitle.textContent = hasOutstandingReport
@@ -2878,7 +2687,6 @@ function renderCollectionPage(){
     plugins:[ChartDataLabels]
   });
   }
-
   // 4. Collected vs Outstanding by project (top 15, stacked) — replaces the old composition donut
   let byCombined;
   if(hasOutstandingReport){
@@ -2911,36 +2719,6 @@ function renderCollectionPage(){
     }
   });
   }
-
-  // ---- Outstanding — Project-wise Detail table (only meaningful with the Outstanding report) ----
-  if(hasOutstandingReport){
-    const outstandingRows = Object.entries(projDetailByProject).map(([project,d])=>({
-      project, units:d.units, totalCost:d.totalCost, totalReceived:d.totalReceived, outstanding:d.outstanding,
-      outstandingPct: d.totalCost ? (d.outstanding/d.totalCost*100) : null,
-    }));
-    renderGenericTable({
-      theadId:'outstandingTheadRow', tbodyId:'outstandingTbody', tfootId:'outstandingTfootRow', searchId:'outstandingSearchBox',
-      sortStateKey:'outstandingProject',
-      columns:[
-        {key:'project', label:'Project', align:'left'},
-        {key:'units', label:'Units', fmt:fmtNum},
-        {key:'totalCost', label:'Total Cost', fmt:fmtINRCr},
-        {key:'totalReceived', label:'Total Received', fmt:fmtINRCr},
-        {key:'outstanding', label:'Outstanding', fmt:fmtINRCr},
-        {key:'outstandingPct', label:'Outstanding %', fmt:fmtPct},
-      ],
-      rowsSource: outstandingRows,
-      defaultSort:{key:'outstanding', dir:-1},
-      totalsLabel:'projects'
-    });
-    document.getElementById('outstandingTable').closest('.table-card').style.display = '';
-    document.querySelector('#outstandingSearchBox').closest('.table-toolbar').style.display = '';
-  } else {
-    document.getElementById('outstandingTbody').innerHTML = '';
-    document.getElementById('outstandingTheadRow').innerHTML = '';
-    document.getElementById('outstandingTfootRow').innerHTML = `<td style="padding:14px;color:var(--muted);">Upload the Customer Outstanding Report to see project-wise outstanding detail here.</td>`;
-  }
-
   renderGenericTable({
     theadId:'collectionTheadRow', tbodyId:'collectionTbody', tfootId:'collectionTfootRow', searchId:'collectionSearchBox',
     searchFields:['project','unitNo','customer'],
@@ -2957,9 +2735,7 @@ function renderCollectionPage(){
     totalsLabel:'units'
   });
 }
-
 /* ============ BOOKINGS PAGE ============ */
-
 function renderBookingPage(){
   if(!bookingData.length){
     document.getElementById('kpiGridBookings').innerHTML = RAW.bookingRecords.length
@@ -2970,19 +2746,17 @@ function renderBookingPage(){
   const totalValue = bookingData.reduce((a,r)=>a+r.bookingValue,0);
   const totalUnits = bookingData.length;
   const avgValue = totalUnits ? totalValue/totalUnits : 0;
-  const projectsCount = new Set(bookingData.map(r=>r.project)).size;
-
+  // Units Booked and Total Booking Value are intentionally not shown as their own tiles here — Units
+  // Booked is folded into the "Units Tracked" tile (Agreement Register grid), and Total Booking Value
+  // is folded into the "Sales Value" tile (Sold grid) as its split "Total booking value + in abeyance"
+  // sub-text, so neither sits as an unexplained extra number next to Sold Units / Sales Value.
   document.getElementById('kpiGridBookings').innerHTML = [
-    {lbl:'Units Booked', val: fmtNum(totalUnits), sub:`across ${fmtNum(projectsCount)} projects`},
-    {lbl:'Total Booking Value', val: fmtINRCr(totalValue), sub:'Sum of all booking cost components'},
     {lbl:'Avg Booking Value', val: fmtINRCr(avgValue), sub:'per unit booked'},
     {lbl:'Months Covered', val: fmtNum(bookingMonthData.length), sub: bookingFYData.length ? `${bookingFYData[0].label} to ${bookingFYData[bookingFYData.length-1].label}` : ''},
   ].map(c=>`<div class="kpi"><div class="lbl">${c.lbl}</div><div class="val num">${c.val}</div><div class="sub">${c.sub}</div></div>`).join('');
-
   const navy = getComputedStyle(document.documentElement).getPropertyValue('--navy').trim();
   const gold = getComputedStyle(document.documentElement).getPropertyValue('--gold').trim();
   const teal = getComputedStyle(document.documentElement).getPropertyValue('--teal').trim();
-
   // Project-wise
   const projectTotals = {};
   bookingData.forEach(r=>{ projectTotals[r.project] = (projectTotals[r.project]||0) + r.bookingValue; });
@@ -3001,7 +2775,6 @@ function renderBookingPage(){
     },
     plugins:[ChartDataLabels]
   });
-
   // FY-wise
   destroyChart('bookingFY');
   charts.bookingFY = new Chart(document.getElementById('chartBookingFY'), {
@@ -3017,7 +2790,6 @@ function renderBookingPage(){
     },
     plugins:[ChartDataLabels]
   });
-
   // Booking value by unit type
   const unitTypeTotals = {};
   bookingData.forEach(r=>{
@@ -3039,7 +2811,6 @@ function renderBookingPage(){
     },
     plugins:[ChartDataLabels]
   });
-
   // Area booked by project (top 15)
   const projectAreaTotals = {};
   bookingData.forEach(r=>{ projectAreaTotals[r.project] = (projectAreaTotals[r.project]||0) + r.area; });
@@ -3058,7 +2829,6 @@ function renderBookingPage(){
     },
     plugins:[ChartDataLabels]
   });
-
   renderGenericTable({
     theadId:'bookingTheadRow', tbodyId:'bookingTbody', tfootId:'bookingTfootRow', searchId:'bookingSearchBox',
     searchFields:['project','unitNo','customer'],
@@ -3078,69 +2848,7 @@ function renderBookingPage(){
     totalsLabel:'units'
   });
 }
-
-/* ============ SALES: PROJECT-WISE SOLD & UNSOLD (merged Sales tab) ============ */
-
-function renderSalesProjectTable(){
-  renderGenericTable({
-    theadId:'salesProjectTheadRow', tbodyId:'salesProjectTbody', tfootId:'salesProjectTfootRow', searchId:'salesProjectSearchBox',
-    sortStateKey:'salesProject',
-    columns:[
-      {key:'project', label:'Project', align:'left'},
-      {key:'soldUnits', label:'Sold Units', fmt:fmtNum},
-      {key:'soldValue', label:'Sales Value', fmt:fmtINRCr},
-      {key:'availUnits', label:'Unsold Units', fmt:fmtNum},
-      {key:'availValue', label:'Unsold Value', fmt:fmtINRCr},
-    ],
-    rowsSource: periodFilterActive() ? masterData.filter(m=>m.soldUnits>0) : masterData,
-    defaultSort:{key:'soldValue', dir:-1},
-    totalsLabel:'projects'
-  });
-}
-
-/* ============ CRM: PROJECT-WISE DETAIL (merged CRM tab) ============ */
-
-function renderCRMProjectTable(){
-  // Combines whichever of Agreement Register / Collection / Outstanding have been uploaded, all
-  // rolled up to one row per project so a viewer doesn't have to cross-reference three tables.
-  const agreementByProject = {};
-  agreementData.forEach(r=>{
-    if(!agreementByProject[r.project]) agreementByProject[r.project] = {units:0, pendingRegn:0};
-    agreementByProject[r.project].units += 1;
-    if(r.regnDate === '') agreementByProject[r.project].pendingRegn += 1;
-  });
-  const collectedByProject = {};
-  collectionData.forEach(r=>{ collectedByProject[r.project] = (collectedByProject[r.project]||0) + r.total; });
-  const outstandingByProjectMap = {};
-  outstandingData.forEach(r=>{ outstandingByProjectMap[r.project] = (outstandingByProjectMap[r.project]||0) + r.netReceivable; });
-
-  const allProjects = new Set([...Object.keys(agreementByProject), ...Object.keys(collectedByProject), ...Object.keys(outstandingByProjectMap)]);
-  const rows = [...allProjects].map(project=>({
-    project,
-    agreementUnits: agreementByProject[project] ? agreementByProject[project].units : null,
-    pendingRegn: agreementByProject[project] ? agreementByProject[project].pendingRegn : null,
-    collected: collectedByProject[project] !== undefined ? collectedByProject[project] : null,
-    outstanding: outstandingByProjectMap[project] !== undefined ? outstandingByProjectMap[project] : null,
-  }));
-
-  renderGenericTable({
-    theadId:'crmProjectTheadRow', tbodyId:'crmProjectTbody', tfootId:'crmProjectTfootRow', searchId:'crmProjectSearchBox',
-    sortStateKey:'crmProject',
-    columns:[
-      {key:'project', label:'Project', align:'left'},
-      {key:'agreementUnits', label:'Agreement Units', fmt:fmtNum},
-      {key:'pendingRegn', label:'Pending Registration', fmt:fmtNum},
-      {key:'collected', label:'Collected', fmt:fmtINRCr},
-      {key:'outstanding', label:'Outstanding', fmt:fmtINRCr},
-    ],
-    rowsSource: rows,
-    defaultSort:{key:'outstanding', dir:-1},
-    totalsLabel:'projects'
-  });
-}
-
 /* ============ UNSOLD: LOCATION WISE & PROPERTY WISE (within Sales > Available) ============ */
-
 function renderLocationWiseTable(){
   const tbody = document.getElementById('locationWiseTbody');
   const sorted = [...locationWiseData].sort((a,b)=>b.value-a.value);
@@ -3157,7 +2865,6 @@ function renderLocationWiseTable(){
     ? `${fmtNum(unmapped.units)} unsold units aren't mapped to a location yet — tell me which projects and where, and I'll add them.`
     : '';
 }
-
 function renderPropertyWiseTable(){
   const tbody = document.getElementById('propertyWiseTbody');
   const sorted = [...propertyWiseData].sort((a,b)=>b.value-a.value);
@@ -3169,16 +2876,12 @@ function renderPropertyWiseTable(){
     <td class="proj">Total</td><td>${fmtNum(t.units)}</td><td>${fmtINRFull(t.value)}</td><td>${fmtNum(t.area)}</td>
   `;
 }
-
 /* ============ GENERIC TABLE (Sold / Available pages) ============ */
-
 const sortStates = {};
-
 function renderGenericTable(opts){
   const {theadId, columns, defaultSort, sortStateKey, searchId, filterSelectId} = opts;
   if(!sortStates[sortStateKey]) sortStates[sortStateKey] = {...defaultSort};
   const state = sortStates[sortStateKey];
-
   const thead = document.getElementById(theadId);
   thead.innerHTML = columns.map(c=>`<th data-key="${c.key}" style="text-align:${c.align||'right'}">${c.label}<span class="arrow">${state.key===c.key ? (state.dir>0?'▲':'▼') : ''}</span></th>`).join('');
   thead.querySelectorAll('th').forEach(th=>{
@@ -3188,7 +2891,6 @@ function renderGenericTable(opts){
       renderGenericTableBody(opts);
     });
   });
-
   const searchEl = document.getElementById(searchId);
   if(searchEl && !searchEl.dataset.wired){
     searchEl.addEventListener('input', ()=> renderGenericTableBody(opts));
@@ -3201,12 +2903,17 @@ function renderGenericTable(opts){
       filterEl.dataset.wired = '1';
     }
   }
-
   renderGenericTableBody(opts);
 }
-
 function renderGenericTableBody(opts){
   const {tbodyId, tfootId, searchId, sortStateKey, columns, rowsSource, totalsLabel, filterSelectId, filterKey, searchFields} = opts;
+  // The first column is always this table's row label (project, agent, etc.) — used below both to
+  // style each row's label cell (left-aligned, sticky, bold — the .proj class) and to build the
+  // footer's "Total (N label)" cell. Using columns[0].key (rather than assuming the label column is
+  // literally named 'project') matters: a table whose label column has a different key — e.g. the
+  // Vendor-wise table's 'agent' — would otherwise never get the .proj class on its row cells either,
+  // silently losing left-alignment/sticky positioning for every row (not just the footer).
+  const labelKey = columns[0].key;
   const state = sortStates[sortStateKey];
   const search = (document.getElementById(searchId).value||'').trim().toLowerCase();
   const fields = searchFields || ['project'];
@@ -3222,34 +2929,30 @@ function renderGenericTableBody(opts){
     bv = (bv===null||bv===undefined) ? -Infinity : bv;
     return state.dir * (av-bv);
   });
-
   document.getElementById(tbodyId).innerHTML = rows.map(r=>{
     return '<tr>' + columns.map(c=>{
       const v = r[c.key];
-      const cls = c.key==='project' ? 'proj' : ((v===null || v==='') ? 'muted-cell' : '');
+      const cls = c.key===labelKey ? 'proj' : ((v===null || v==='') ? 'muted-cell' : '');
       const display = c.fmt ? c.fmt(v) : (v===''||v===null||v===undefined ? '—' : v);
       return `<td class="${cls}">${display}</td>`;
     }).join('') + '</tr>';
   }).join('');
-
   const totals = {};
-  columns.forEach(c=>{ if(c.key !== 'project' && !c.noSum && !c.key.toLowerCase().includes('rate')) totals[c.key] = 0; });
+  columns.forEach(c=>{ if(c.key !== labelKey && !c.noSum && !c.key.toLowerCase().includes('rate')) totals[c.key] = 0; });
   rows.forEach(r=>{
     columns.forEach(c=>{
-      if(c.key === 'project' || c.noSum || c.key.toLowerCase().includes('rate')) return;
+      if(c.key === labelKey || c.noSum || c.key.toLowerCase().includes('rate')) return;
       totals[c.key] += (r[c.key]||0);
     });
   });
   const tfootCells = columns.map(c=>{
-    if(c.key === 'project') return `<td class="proj">Total (${rows.length} ${totalsLabel})</td>`;
+    if(c.key === labelKey) return `<td class="proj">Total (${rows.length} ${totalsLabel})</td>`;
     if(c.noSum || c.key.toLowerCase().includes('rate')) return `<td>—</td>`;
     return `<td>${c.fmt ? c.fmt(totals[c.key]) : totals[c.key]}</td>`;
   });
   document.getElementById(tfootId).innerHTML = tfootCells.join('');
 }
-
 /* ============ TABLE (Overview page) ============ */
-
 const columns = [
   {key:'project', label:'Project', align:'left'},
   {key:'totalUnits', label:'Total Units', fmt:fmtNum},
@@ -3257,16 +2960,23 @@ const columns = [
   {key:'availUnits', label:'Unsold', fmt:fmtNum},
   {key:'blockedUnits', label:'Blocked', fmt:fmtNum},
   {key:'totalArea', label:'Total Area (sq.ft)', fmt:fmtNum},
+  {key:'soldArea', label:'Sold Area (sq.ft)', fmt:fmtNum},
+  {key:'availArea', label:'Unsold Area (sq.ft)', fmt:fmtNum},
   {key:'soldValue', label:'Sales Value', fmt:fmtINRCr},
   {key:'availValue', label:'Unsold Value', fmt:fmtINRCr},
   {key:'totalValue', label:'Total Value', fmt:fmtINRCr},
   {key:'avgSoldPrice', label:'Avg Sold Price (₹/sq.ft)', fmt:(n)=> n===null?'—':'₹'+Math.round(n).toLocaleString('en-IN')},
   {key:'avgAvailPrice', label:'Avg Unsold Price (₹/sq.ft)', fmt:(n)=> n===null?'—':'₹'+Math.round(n).toLocaleString('en-IN')},
   {key:'cancelledUnits', label:'Cancelled', fmt:fmtNum},
+  {key:'agreementUnits', label:'Agreement Units', fmt:fmtNum},
+  {key:'pendingRegn', label:'Pending Registration', fmt:fmtNum},
+  {key:'collected', label:'Collected', fmt:fmtINRCr},
+  {key:'totalCost', label:'Total Cost', fmt:fmtINRCr},
+  {key:'totalReceived', label:'Total Received', fmt:fmtINRCr},
+  {key:'outstandingBalance', label:'Outstanding', fmt:fmtINRCr},
+  {key:'outstandingPct', label:'Outstanding %', fmt:fmtPct},
 ];
-
 let sortState = {key:'totalValue', dir:-1};
-
 function renderTable(){
   const thead = document.getElementById('theadRow');
   thead.innerHTML = columns.map(c=>`<th data-key="${c.key}" style="text-align:${c.align||'right'}">${c.label}<span class="arrow">${sortState.key===c.key ? (sortState.dir>0?'▲':'▼') : ''}</span></th>`).join('');
@@ -3277,7 +2987,6 @@ function renderTable(){
       renderTable();
     });
   });
-
   const search = document.getElementById('searchBox').value.trim().toLowerCase();
   const hideEmpty = document.getElementById('hideEmpty').checked;
   const periodActive = periodFilterActive();
@@ -3291,7 +3000,6 @@ function renderTable(){
     bv = (bv===null || bv===undefined) ? -Infinity : bv;
     return sortState.dir * (av - bv);
   });
-
   const tbody = document.getElementById('tbody');
   tbody.innerHTML = rows.map(m=>{
     return '<tr>' + columns.map(c=>{
@@ -3301,28 +3009,32 @@ function renderTable(){
       return `<td class="${cls}">${display}</td>`;
     }).join('') + '</tr>';
   }).join('');
-
   const t = rows.reduce((acc,m)=>{
     acc.totalUnits+=m.totalUnits||0; acc.soldUnits+=m.soldUnits||0; acc.availUnits+=m.availUnits||0; acc.blockedUnits+=m.blockedUnits||0;
     acc.totalArea+=m.totalArea||0; acc.soldValue+=m.soldValue||0; acc.availValue+=m.availValue||0; acc.totalValue+=m.totalValue||0;
     acc.soldArea+=m.soldArea||0; acc.availArea+=m.availArea||0;
     acc.cancelledUnits+=m.cancelledUnits||0;
+    acc.agreementUnits+=m.agreementUnits||0; acc.pendingRegn+=m.pendingRegn||0; acc.collected+=m.collected||0;
+    acc.totalCost+=m.totalCost||0; acc.totalReceived+=m.totalReceived||0; acc.outstandingBalance+=m.outstandingBalance||0;
     return acc;
-  },{totalUnits:0,soldUnits:0,availUnits:0,blockedUnits:0,totalArea:0,soldValue:0,availValue:0,totalValue:0,soldArea:0,availArea:0,cancelledUnits:0});
+  },{totalUnits:0,soldUnits:0,availUnits:0,blockedUnits:0,totalArea:0,soldValue:0,availValue:0,totalValue:0,soldArea:0,availArea:0,cancelledUnits:0,
+     agreementUnits:0,pendingRegn:0,collected:0,totalCost:0,totalReceived:0,outstandingBalance:0});
   const avgSoldPriceAll = t.soldArea ? t.soldValue/t.soldArea : null;
   const avgAvailPriceAll = t.availArea ? t.availValue/t.availArea : null;
-
+  const outstandingPctAll = t.totalCost ? (t.outstandingBalance/t.totalCost*100) : null;
   document.getElementById('tfootRow').innerHTML = `
     <td class="proj">Total (${rows.length} projects)</td>
     <td>${fmtNum(t.totalUnits)}</td><td>${fmtNum(t.soldUnits)}</td><td>${fmtNum(t.availUnits)}</td><td>${fmtNum(t.blockedUnits)}</td>
-    <td>${fmtNum(t.totalArea)}</td>
+    <td>${fmtNum(t.totalArea)}</td><td>${fmtNum(t.soldArea)}</td><td>${fmtNum(t.availArea)}</td>
     <td>${fmtINRCr(t.soldValue)}</td><td>${fmtINRCr(t.availValue)}</td><td>${fmtINRCr(t.totalValue)}</td>
     <td>${avgSoldPriceAll===null?'—':'₹'+Math.round(avgSoldPriceAll).toLocaleString('en-IN')}</td>
     <td>${avgAvailPriceAll===null?'—':'₹'+Math.round(avgAvailPriceAll).toLocaleString('en-IN')}</td>
     <td>${fmtNum(t.cancelledUnits)}</td>
+    <td>${fmtNum(t.agreementUnits)}</td><td>${fmtNum(t.pendingRegn)}</td><td>${fmtINRCr(t.collected)}</td>
+    <td>${fmtINRCr(t.totalCost)}</td><td>${fmtINRCr(t.totalReceived)}</td><td>${fmtINRCr(t.outstandingBalance)}</td>
+    <td>${fmtPct(outstandingPctAll)}</td>
   `;
 }
-
 document.getElementById('searchBox').addEventListener('input', renderTable);
 document.getElementById('hideEmpty').addEventListener('change', renderTable);
 document.querySelectorAll('.toggle-tab').forEach(btn=>{
@@ -3331,13 +3043,13 @@ document.querySelectorAll('.toggle-tab').forEach(btn=>{
     btn.classList.add('active');
     soldValueMode = btn.dataset.mode;
     renderSoldPage();
+    renderHero();
+    renderKPIs();
   });
 });
-
 /* ============ EXPORT ============ */
 document.getElementById('exportBtn').addEventListener('click', ()=>{
   const wb = XLSX.utils.book_new();
-
   // 1. Project Summary (every project's Sold/Unsold/Blocked/Value/Discount/Cancellation figures)
   const exportRows = masterData.map(m=>({
     'Project': m.project,
@@ -3348,19 +3060,16 @@ document.getElementById('exportBtn').addEventListener('click', ()=>{
     'Cancelled Bookings': m.cancelledUnits,
   }));
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(exportRows), 'Project Summary');
-
   // 2. Unsold — Location Wise
   if(locationWiseData.length){
     const locExport = locationWiseData.map(r=>({ 'Location': r.location, 'Units': r.units, 'Value (₹)': r.value, 'Area (sq.ft)': r.area }));
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(locExport), 'Unsold - Location Wise');
   }
-
   // 3. Unsold — Property Wise
   if(propertyWiseData.length){
     const propExport = propertyWiseData.map(r=>({ 'Property Type': r.property, 'Units': r.units, 'Value (₹)': r.value, 'Area (sq.ft)': r.area }));
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(propExport), 'Unsold - Property Wise');
   }
-
   // 4. Unit-wise Agreement Detail
   if(agreementData.length){
     const agreementExport = agreementData.map(r=>({
@@ -3370,7 +3079,6 @@ document.getElementById('exportBtn').addEventListener('click', ()=>{
     }));
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(agreementExport), 'Agreement Register');
   }
-
   // 5. Unit-wise Collection Detail
   if(collectionData.length){
     const collectionExport = collectionData.map(r=>({
@@ -3379,17 +3087,15 @@ document.getElementById('exportBtn').addEventListener('click', ()=>{
     }));
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(collectionExport), 'Collection Register');
   }
-
   // 6. Outstanding — Project-wise Detail
   if(outstandingData.length){
     const outstandingExport = outstandingData.map(r=>({
       'Project': r.project, 'Sub Project': r.subProject, 'Unit No': r.unitNo, 'Customer': r.customer,
-      'Booking Date': r.bookingDate, 'Status': r.status, 'Total Cost (₹)': r.totalCost, 'Total Received (₹)': r.totalReceived,
-      'Outstanding (₹)': r.netReceivable,
+      'Status': r.status, 'Total Cost (₹)': r.totalCost, 'Total Stage Due (₹)': r.dueAsOnDay, 'Total Received (₹)': r.totalReceived,
+      'Net Due as per Stage (₹)': r.netDue, 'Outstanding (₹)': r.netReceivable,
     }));
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(outstandingExport), 'Outstanding');
   }
-
   // 7. Unit-wise Booking Detail
   if(bookingData.length){
     const bookingExport = bookingData.map(r=>({
@@ -3398,7 +3104,6 @@ document.getElementById('exportBtn').addEventListener('click', ()=>{
     }));
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(bookingExport), 'Booking Report');
   }
-
   // 8. Customer Cancellation Report (every category, not just the genuine ones the dashboard totals use)
   const cancellationFiltered = filterFull(RAW.cancellationRecords, 'bookingDate');
   if(cancellationFiltered.length){
@@ -3409,7 +3114,6 @@ document.getElementById('exportBtn').addEventListener('click', ()=>{
     }));
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(cancellationExport), 'Cancellations');
   }
-
   // 9. CRM Project-wise Summary (Agreement + Collection + Outstanding rolled up per project)
   const agreementByProjectExp = {};
   agreementData.forEach(r=>{
@@ -3432,12 +3136,9 @@ document.getElementById('exportBtn').addEventListener('click', ()=>{
     }));
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(crmExport), 'CRM Project Summary');
   }
-
   XLSX.writeFile(wb, 'MP_Developers_All_Data_' + new Date().toISOString().slice(0,10) + '.xlsx');
 });
-
 </script>
 </div>
-
 </body>
 </html>
