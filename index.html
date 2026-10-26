@@ -247,7 +247,7 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
   <div class="s-logo">
     <img src="https://erp.mpdevelopers.com/images/%7Be0847889-8a54-4363-afdd-966dd480dfbb%7D.jpeg" alt="MP Developers" style="width:36px;height:36px;border-radius:8px;object-fit:contain;background:#fff;padding:2px;flex-shrink:0" onerror="this.style.display='none';document.getElementById('sidebarLogoFallback').style.display='flex'"/>
     <div id="sidebarLogoFallback" style="display:none;width:36px;height:36px;background:var(--teal);border-radius:8px;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0">HD</div>
-    <div><div class="s-brand">MP HelpDesk</div><div class="s-sub"><i class="ti ti-flame" style="font-size:10px"></i> Firebase · Build 2026-08-01</div></div>
+    <div><div class="s-brand">MP HelpDesk</div><div class="s-sub"><i class="ti ti-flame" style="font-size:10px"></i> Firebase · Build 2026-10-26 v2</div></div>
   </div>
   <div id="nav-admin" style="display:none">
     <div class="s-sec">Main</div>
@@ -399,6 +399,8 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
         </div>
         <div class="col-md-4"><label class="form-label">Priority</label><select class="form-select" id="ct-priority"></select></div>
         <div class="col-md-4"><label class="form-label">Ticket No</label><input class="form-control" id="ct-no" readonly/></div>
+        <div class="col-md-4"><label class="form-label">Ticket Submitted Date <span style="color:var(--red)">*</span></label><input type="date" class="form-control" id="ct-submittedDate"/></div>
+        <div class="col-md-4"><label class="form-label">Creation Date <span style="font-size:11px;color:var(--muted);font-weight:400">(automatic)</span></label><input class="form-control" id="ct-creationDate" readonly/></div>
         <div class="col-12"><label class="form-label">Subject <span style="color:var(--red)">*</span></label><input class="form-control" id="ct-subject" placeholder="Brief summary of the issue"/></div>
         <div class="col-12"><label class="form-label">Description</label><textarea class="form-control" id="ct-desc" rows="4" placeholder="Describe the issue in detail..."></textarea></div>
         <div class="col-12">
@@ -1834,6 +1836,13 @@ function initNewTicketForm(){
     document.getElementById('ctInfoTxt').textContent=`Submitting as ${p.name} · ${getDept(p.deptId)}`;
     if(p.deptId) document.getElementById('ct-dept').value=p.deptId;
   }
+  // Ticket Submitted Date — entered by the user (defaults to today, no future dates).
+  // Creation Date — read-only display; the real value is the server timestamp set on save.
+  const _now = new Date();
+  const _todayStr = `${_now.getFullYear()}-${String(_now.getMonth()+1).padStart(2,'0')}-${String(_now.getDate()).padStart(2,'0')}`;
+  const _sd = document.getElementById('ct-submittedDate');
+  _sd.max = _todayStr; _sd.value = _todayStr;
+  document.getElementById('ct-creationDate').value = fmtDate(_now);
   document.getElementById('ct-subject').value='';
   document.getElementById('ct-desc').value='';
   document.getElementById('ct-files').value='';
@@ -1898,6 +1907,13 @@ window.loadSubTypes=function(){
 window.submitTicket=async function(){
   const subject=document.getElementById('ct-subject').value.trim();
   if(!subject){toast('Subject is required','error');return;}
+  // Ticket Submitted Date: user-entered, required, cannot be in the future
+  const sdVal = document.getElementById('ct-submittedDate').value;
+  if(!sdVal){toast('Please enter the Ticket Submitted Date','error');return;}
+  const [sy,sm,sdd] = sdVal.split('-').map(Number);
+  const submittedDate = new Date(sy, sm-1, sdd, 12, 0, 0); // noon local → no timezone day-shift
+  if(isNaN(submittedDate.getTime())){toast('Invalid Ticket Submitted Date','error');return;}
+  if(submittedDate.getTime() > Date.now()){toast('Ticket Submitted Date cannot be a future date','error');return;}
   const uid=document.getElementById('ct-userId').value;
   if(!isAdmin()&&uid!==SESSION.user.uid){toast('Access denied','error');return;}
   // Extra safety: if user, ensure type/subtype dropdowns are set
@@ -1923,7 +1939,7 @@ window.submitTicket=async function(){
       description: document.getElementById('ct-desc').value.trim(),
       statusId:'s1',
       createdAt: serverTimestamp(),
-      submittedAt: serverTimestamp(),
+      submittedAt: submittedDate,   // entered by the user on the form (Firestore stores it as a Timestamp)
       createdBy: SESSION.user.uid,
       comments:[], activity:[{text:'Ticket created (Open)',by:SESSION.profile.name,date:today()}]
     };
