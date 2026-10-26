@@ -360,7 +360,7 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
     </div>
     <div style="overflow-x:auto">
       <table class="table table-hover mb-0">
-        <thead><tr><th>Ticket No</th><th>Subject</th><th id="th-by" style="display:none">Raised By</th><th>Department</th><th>Issue Type</th><th>Priority</th><th>Status</th><th id="th-assigned" style="display:none">Assigned To</th><th>Date</th><th>Action</th></tr></thead>
+        <thead><tr><th>Ticket No</th><th>Subject</th><th id="th-by" style="display:none">Raised By</th><th>Department</th><th>Issue Type</th><th>Priority</th><th>Status</th><th id="th-assigned" style="display:none">Assigned To</th><th>Creation Date</th><th>Submitted Date</th><th>Action</th></tr></thead>
         <tbody id="ticketBody"></tbody>
       </table>
     </div>
@@ -449,7 +449,8 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
             <div class="meta-item"><label>Priority</label><p id="td-pri">—</p></div>
             <div class="meta-item"><label>Status</label><p id="td-stat">—</p></div>
             <div class="meta-item" id="td-assignedToWrap"><label>Assigned To</label><p id="td-assignedTo">—</p></div>
-            <div class="meta-item"><label>Created On</label><p id="td-date">—</p></div>
+            <div class="meta-item"><label>Creation Date</label><p id="td-date">—</p></div>
+            <div class="meta-item"><label>Ticket Submitted Date</label><p id="td-submitted">—</p></div>
           </div>
           <div id="td-attachmentsWrap" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
             <label style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);font-weight:600">Attachments</label>
@@ -557,7 +558,12 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
     <div class="col-md-3"><select class="form-select" id="rPriority"><option value="">All Priority</option></select></div>
     <div class="col-md-3"><button class="btn-navy" style="width:100%;justify-content:center" onclick="runReport()"><i class="ti ti-search"></i> Run Report</button></div>
   </div>
-  <div class="card-box"><div style="overflow-x:auto"><table class="table table-hover mb-0"><thead><tr><th>Ticket No</th><th>Subject</th><th>Raised By</th><th>Dept</th><th>Priority</th><th>Status</th><th>Assigned To</th><th>Date</th></tr></thead><tbody id="rptBody"></tbody></table></div></div>
+  <div class="row g-3 mb-3">
+    <div class="col-md-3"><select class="form-select" id="rDateField"><option value="createdAt">Date filter: Creation Date</option><option value="submittedAt">Date filter: Ticket Submitted Date</option></select></div>
+    <div class="col-md-3"><input type="date" class="form-control" id="rDateFrom" title="From date"></div>
+    <div class="col-md-3"><input type="date" class="form-control" id="rDateTo" title="To date"></div>
+  </div>
+  <div class="card-box"><div style="overflow-x:auto"><table class="table table-hover mb-0"><thead><tr><th>Ticket No</th><th>Subject</th><th>Raised By</th><th>Dept</th><th>Priority</th><th>Status</th><th>Assigned To</th><th>Creation Date</th><th>Submitted Date</th></tr></thead><tbody id="rptBody"></tbody></table></div></div>
 </div>
 
 <!-- CHANGE PASSWORD -->
@@ -885,7 +891,7 @@ let unsubTickets = null;
 
 // ── HELPERS ───────────────────────────────────────────────────
 const isAdmin    = () => SESSION.profile?.role === 'Admin';
-const fmtDate    = ts => { if(!ts) return '—'; const d = ts.toDate ? ts.toDate() : new Date(ts); return d.toLocaleDateString('en-IN'); };
+const fmtDate    = (ts, fallback) => { const fb = fallback!==undefined?fallback:'—'; if(!ts) return fb; const d = ts.toDate ? ts.toDate() : new Date(ts); if(isNaN(d.getTime())) return fb; const dd=String(d.getDate()).padStart(2,'0'), mm=String(d.getMonth()+1).padStart(2,'0'); return `${dd}/${mm}/${d.getFullYear()}`; };
 const fmtDateFull= ts => { if(!ts) return '—'; const d = ts.toDate ? ts.toDate() : new Date(ts); return d.toLocaleString('en-IN'); };
 const getM       = (arr,id,key='name') => MASTERS[arr]?.find(x=>x.id===id)?.[key]||'—';
 const getDept    = id => MASTERS.departments.find(x=>x.id===id)?.name||'—';
@@ -1522,7 +1528,7 @@ window.renderTickets=function(){
   let data = admin ? _tickets : _tickets.filter(t=>t.userId===SESSION.user.uid);
   if(fs) data = data.filter(t=>t.statusId===fs);
   if(fp) data = data.filter(t=>t.priorityId===fp);
-  document.getElementById('ticketBody').innerHTML=data.length===0?emptyRow(9,'No tickets found.'):data.map(t=>`<tr><td><a href="#" onclick="viewTicket('${t.id}');return false" style="color:var(--blue);font-weight:500">${t.ticketNo}</a></td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.subject}</td>${isAdmin()?`<td>${getUser(t.userId)}</td>`:''}<td>${getDept(t.deptId)}</td><td>${getType(t.typeId)}</td><td>${priBadge(t.priorityId)}</td><td>${statBadge(t.statusId)}</td>${isAdmin()?`<td style="font-size:12px">${t.assignedTo?`<span style="font-weight:500">${getUser(t.assignedTo)}</span>`:'<span style="color:var(--muted)">Unassigned</span>'}</td>`:''}<td>${fmtDate(t.createdAt)}</td><td><button class="btn-icon" onclick="viewTicket('${t.id}')" title="View"><i class="ti ti-eye"></i></button>${isAdmin()?`<button class="btn-icon" onclick="delTicket('${t.id}')" title="Delete" style="color:var(--red)"><i class="ti ti-trash"></i></button>`:''}</td></tr>`).join('');
+  document.getElementById('ticketBody').innerHTML=data.length===0?emptyRow(10,'No tickets found.'):data.map(t=>`<tr><td><a href="#" onclick="viewTicket('${t.id}');return false" style="color:var(--blue);font-weight:500">${t.ticketNo}</a></td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.subject}</td>${isAdmin()?`<td>${getUser(t.userId)}</td>`:''}<td>${getDept(t.deptId)}</td><td>${getType(t.typeId)}</td><td>${priBadge(t.priorityId)}</td><td>${statBadge(t.statusId)}</td>${isAdmin()?`<td style="font-size:12px">${t.assignedTo?`<span style="font-weight:500">${getUser(t.assignedTo)}</span>`:'<span style="color:var(--muted)">Unassigned</span>'}</td>`:''}<td>${fmtDate(t.createdAt)}</td><td>${fmtDate(t.submittedAt,'Not Available')}</td><td><button class="btn-icon" onclick="viewTicket('${t.id}')" title="View"><i class="ti ti-eye"></i></button>${isAdmin()?`<button class="btn-icon" onclick="delTicket('${t.id}')" title="Delete" style="color:var(--red)"><i class="ti ti-trash"></i></button>`:''}</td></tr>`).join('');
 };
 
 // ── TICKET DETAIL ─────────────────────────────────────────────
@@ -1544,6 +1550,7 @@ window.viewTicket=async function(id){
   document.getElementById('td-pri').textContent    =getPri(t.priorityId);
   document.getElementById('td-stat').textContent   =getStat(t.statusId);
   document.getElementById('td-date').textContent   =fmtDate(t.createdAt);
+  document.getElementById('td-submitted').textContent =fmtDate(t.submittedAt,'Not Available');
   // Assigned To — only visible to Admin
   const assignedWrap = document.getElementById('td-assignedToWrap');
   const assignedEl   = document.getElementById('td-assignedTo');
@@ -1916,6 +1923,7 @@ window.submitTicket=async function(){
       description: document.getElementById('ct-desc').value.trim(),
       statusId:'s1',
       createdAt: serverTimestamp(),
+      submittedAt: serverTimestamp(),
       createdBy: SESSION.user.uid,
       comments:[], activity:[{text:'Ticket created (Open)',by:SESSION.profile.name,date:today()}]
     };
@@ -2310,12 +2318,27 @@ window.saveUser=async function(){
 // ── REPORTS ───────────────────────────────────────────────────
 window.runReport=function(){
   const fd=document.getElementById('rDept')?.value||'', fs=document.getElementById('rStatus')?.value||'', fp=document.getElementById('rPriority')?.value||'';
+  const dField=document.getElementById('rDateField')?.value||'createdAt';
+  const dFrom=document.getElementById('rDateFrom')?.value||'';
+  const dTo=document.getElementById('rDateTo')?.value||'';
   let data=_tickets;
   if(fd) data=data.filter(t=>t.deptId===fd);
   if(fs) data=data.filter(t=>t.statusId===fs);
   if(fp) data=data.filter(t=>t.priorityId===fp);
+  if(dFrom || dTo){
+    data=data.filter(t=>{
+      const ts=t[dField];
+      if(!ts) return false; // no reliable date for this field — excluded from a date-ranged report rather than guessed
+      const d = ts.toDate ? ts.toDate() : new Date(ts);
+      if(isNaN(d.getTime())) return false;
+      const dayStart = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      if(dFrom && dayStart < new Date(dFrom)) return false;
+      if(dTo && dayStart > new Date(dTo)) return false;
+      return true;
+    });
+  }
   window._rptData=data;
-  document.getElementById('rptBody').innerHTML=data.length===0?emptyRow(8,'No records found.'):data.map(t=>`<tr><td style="color:var(--blue);font-weight:500">${t.ticketNo}</td><td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.subject}</td><td>${getUser(t.userId)}</td><td>${getDept(t.deptId)}</td><td>${priBadge(t.priorityId)}</td><td>${statBadge(t.statusId)}</td><td>${t.assignedTo ? `<strong>${getUser(t.assignedTo)}</strong>` : '<span style="color:var(--muted)">—</span>'}</td><td>${fmtDate(t.createdAt)}</td></tr>`).join('');
+  document.getElementById('rptBody').innerHTML=data.length===0?emptyRow(9,'No records found.'):data.map(t=>`<tr><td style="color:var(--blue);font-weight:500">${t.ticketNo}</td><td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.subject}</td><td>${getUser(t.userId)}</td><td>${getDept(t.deptId)}</td><td>${priBadge(t.priorityId)}</td><td>${statBadge(t.statusId)}</td><td>${t.assignedTo ? `<strong>${getUser(t.assignedTo)}</strong>` : '<span style="color:var(--muted)">—</span>'}</td><td>${fmtDate(t.createdAt)}</td><td>${fmtDate(t.submittedAt,'Not Available')}</td></tr>`).join('');
 };
 
 // ── FIX DUPLICATE TICKET NUMBERS (one-time repair tool) ──
@@ -2378,7 +2401,7 @@ window.fixDuplicateTicketNumbers = async function(){
 };
 
 window.exportCSV=function(){
-  const rows=['Ticket No,Subject,Raised By,Department,Priority,Status,Assigned To,Date'].concat(window._rptData.map(t=>`"${t.ticketNo}","${t.subject}","${getUser(t.userId)}","${getDept(t.deptId)}","${getPri(t.priorityId)}","${getStat(t.statusId)}","${t.assignedTo?getUser(t.assignedTo):''}","${fmtDate(t.createdAt)}"`)).join('\n');
+  const rows=['Ticket No,Subject,Raised By,Department,Priority,Status,Assigned To,Creation Date,Ticket Submitted Date'].concat(window._rptData.map(t=>`"${t.ticketNo}","${t.subject}","${getUser(t.userId)}","${getDept(t.deptId)}","${getPri(t.priorityId)}","${getStat(t.statusId)}","${t.assignedTo?getUser(t.assignedTo):''}","${fmtDate(t.createdAt)}","${fmtDate(t.submittedAt,'Not Available')}"`)).join('\n');
   const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([rows],{type:'text/csv'})); a.download='helpdesk_report.csv'; a.click(); toast('CSV exported');
 };
 
