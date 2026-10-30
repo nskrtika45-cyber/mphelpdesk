@@ -442,7 +442,8 @@ input[type=checkbox]{accent-color:var(--navy)}
     <div class="cbh"><h2>Ticket Details</h2><div id="ctNoDisplay" style="font-size:12px;color:var(--muted)"></div></div>
     <div class="cbb">
       <div class="row g-3">
-        <div class="col-md-4"><label class="form-label">Raised By</label><div id="raisedByWrap"></div></div>
+        <input type="hidden" id="ct-userId">
+        <div class="col-md-4"><label class="form-label">Raised By <span style="font-size:11px;color:var(--muted);font-weight:400">(automatic)</span></label><input class="form-control" id="ct-raisedByName" readonly style="background:#F8F9FB"/></div>
         <div class="col-md-4"><label class="form-label">Employee ID <span style="font-size:11px;color:var(--muted);font-weight:400">(automatic)</span></label><input class="form-control" id="ct-empId" readonly style="background:#F8F9FB"/></div>
         <div class="col-md-4"><label class="form-label">Your Department</label><select class="form-select" id="ct-dept"></select></div>
 
@@ -2580,16 +2581,12 @@ function initNewTicketForm(){
   // Legacy badges / note from earlier versions — keep hidden
   ['ct-typeAdminBadge','ct-subtypeAdminBadge','ct-typeNote'].forEach(i=>{ const e=document.getElementById(i); if(e) e.style.display='none'; });
 
-  if(isAdmin()){
-    document.getElementById('raisedByWrap').innerHTML=`<select class="form-select" id="ct-userId" onchange="syncRaisedByDept()">${_users.map(u=>`<option value="${u.id}">${u.name}</option>`).join('')}</select>`;
-    document.getElementById('ct-userId').value=SESSION.user.uid;
-    document.getElementById('ctInfo').style.display='none';
-  } else {
-    const p=SESSION.profile;
-    document.getElementById('raisedByWrap').innerHTML=`<input class="form-control" readonly value="${p.name}"/><input type="hidden" id="ct-userId" value="${SESSION.user.uid}"/>`;
-    document.getElementById('ctInfo').style.display='flex';
-    document.getElementById('ctInfoTxt').textContent=`Submitting as ${p.name} · ${getDept(p.deptId)}`;
-  }
+  // Tickets are always raised by the signed-in user — there is no "Raised By" picker.
+  document.getElementById('ct-userId').value = SESSION.user.uid;
+  const p = SESSION.profile;
+  document.getElementById('ct-raisedByName').value = p.name;   // frozen — always the signed-in user
+  document.getElementById('ctInfo').style.display = isAdmin() ? 'none' : 'flex';
+  if(!isAdmin()) document.getElementById('ctInfoTxt').textContent = `Submitting as ${p.name} · ${getDept(p.deptId)}`;
   syncRaisedByDept(); // Department always follows the selected person's department
   // Creation Date — read-only display; the real value is the server timestamp set on save.
   const _now = new Date();
@@ -2618,7 +2615,7 @@ window.syncRaisedByDept=function(){
     dd.value = deptId;
     dd.disabled = true;
     dd.style.background = '#F8F9FB';
-    dd.title = 'Department is taken from the selected user\'s profile';
+    dd.title = 'Department is taken from your profile';
   } else {
     dd.disabled = false;
     dd.style.background = '';
