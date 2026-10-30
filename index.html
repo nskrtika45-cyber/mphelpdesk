@@ -255,23 +255,29 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
   <div class="s-logo">
     <img src="https://erp.mpdevelopers.com/images/%7Be0847889-8a54-4363-afdd-966dd480dfbb%7D.jpeg" alt="MP Developers" style="width:36px;height:36px;border-radius:8px;object-fit:contain;background:#fff;padding:2px;flex-shrink:0" onerror="this.style.display='none';document.getElementById('sidebarLogoFallback').style.display='flex'"/>
     <div id="sidebarLogoFallback" style="display:none;width:36px;height:36px;background:var(--teal);border-radius:8px;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0">HD</div>
-    <div><div class="s-brand">MP HelpDesk</div><div class="s-sub"><i class="ti ti-flame" style="font-size:10px"></i> Firebase · Build 2026-10-30 v2</div></div>
+    <div><div class="s-brand">MP HelpDesk</div><div class="s-sub"><i class="ti ti-flame" style="font-size:10px"></i> Firebase · Build 2026-10-30 V2-HelpDesk</div></div>
   </div>
   <div id="nav-admin" style="display:none">
+    <!-- Staff navigation. data-roles hides items per role (Admin sees everything). -->
     <div class="s-sec">Main</div>
     <div class="nav-item active" data-p="dashboard" onclick="showPage('dashboard',this)"><i class="ti ti-dashboard"></i> Dashboard</div>
-    <div class="nav-item" data-p="tickets" onclick="showPage('tickets',this)"><i class="ti ti-ticket"></i> All Tickets <span class="nav-badge" id="openBadge">0</span></div>
+    <div class="nav-item" data-p="tickets" onclick="showPage('tickets',this)"><i class="ti ti-ticket"></i> <span id="navTicketsLbl">All Tickets</span> <span class="nav-badge" id="openBadge">0</span></div>
     <div class="nav-item" data-p="newTicket" onclick="showPage('newTicket',this)"><i class="ti ti-plus"></i> New Ticket</div>
-    <div class="s-sec">Masters</div>
-    <div class="nav-item" data-p="mIssueType" onclick="showPage('mIssueType',this)"><i class="ti ti-tag"></i> Issue Type</div>
-    <div class="nav-item" data-p="mSubType" onclick="showPage('mSubType',this)"><i class="ti ti-tags"></i> Issue Sub-Type</div>
-    <div class="nav-item" data-p="mPriority" onclick="showPage('mPriority',this)"><i class="ti ti-flag"></i> Priority</div>
-    <div class="nav-item" data-p="mDept" onclick="showPage('mDept',this)"><i class="ti ti-building"></i> Department</div>
-    <div class="nav-item" data-p="mStatus" onclick="showPage('mStatus',this)"><i class="ti ti-circle-check"></i> Status</div>
-    <div class="s-sec">Admin</div>
-    <div class="nav-item" data-p="users" onclick="showPage('users',this)"><i class="ti ti-users"></i> Users</div>
-    <div class="nav-item" data-p="setUserPwd" onclick="showPage('setUserPwd',this)"><i class="ti ti-key"></i> Set User Password</div>
-    <div class="nav-item" data-p="reports" onclick="showPage('reports',this)"><i class="ti ti-chart-bar"></i> Reports</div>
+    <div class="nav-item" data-p="reports" data-roles="Admin,Management,DeptManager,DeptHead" onclick="showPage('reports',this)"><i class="ti ti-chart-bar"></i> Reports</div>
+    <div class="s-sec" data-roles="Admin">Masters</div>
+    <div class="nav-item" data-p="mIssueType" data-roles="Admin" onclick="showPage('mIssueType',this)"><i class="ti ti-tag"></i> Issue Type</div>
+    <div class="nav-item" data-p="mSubType" data-roles="Admin" onclick="showPage('mSubType',this)"><i class="ti ti-tags"></i> Issue Sub-Type</div>
+    <div class="nav-item" data-p="mCategory" data-roles="Admin" onclick="showPage('mCategory',this)"><i class="ti ti-category"></i> Ticket Category</div>
+    <div class="nav-item" data-p="mProject" data-roles="Admin" onclick="showPage('mProject',this)"><i class="ti ti-map-pin"></i> Project / Location</div>
+    <div class="nav-item" data-p="mPriority" data-roles="Admin" onclick="showPage('mPriority',this)"><i class="ti ti-flag"></i> Priority</div>
+    <div class="nav-item" data-p="mDept" data-roles="Admin" onclick="showPage('mDept',this)"><i class="ti ti-building"></i> Department</div>
+    <div class="nav-item" data-p="mStatus" data-roles="Admin" onclick="showPage('mStatus',this)"><i class="ti ti-circle-check"></i> Status</div>
+    <div class="s-sec" data-roles="Admin">Admin</div>
+    <div class="nav-item" data-p="users" data-roles="Admin" onclick="showPage('users',this)"><i class="ti ti-users"></i> Users</div>
+    <div class="nav-item" data-p="setUserPwd" data-roles="Admin" onclick="showPage('setUserPwd',this)"><i class="ti ti-key"></i> Set User Password</div>
+    <div class="nav-item" data-p="sla" data-roles="Admin" onclick="showPage('sla',this)"><i class="ti ti-clock-hour-4"></i> SLA / TAT Settings</div>
+    <div class="nav-item" data-p="hdSetup" data-roles="Admin" onclick="showPage('hdSetup',this)"><i class="ti ti-wand"></i> HelpDesk Setup</div>
+    <div class="s-sec">Account</div>
     <div class="nav-item" data-p="changePwd" onclick="showPage('changePwd',this)"><i class="ti ti-lock"></i> Change Password</div>
   </div>
   <div id="nav-user" style="display:none">
@@ -311,7 +317,9 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
 <!-- DASHBOARD -->
 <div class="page active" id="page-dashboard">
   <div class="ph"><h1 id="dashTitle">Dashboard</h1><span style="font-size:13px;color:var(--muted)" id="dashDate"></span></div>
-  <div class="row g-3 mb-4">
+  <div id="dashOverdueBanner" class="warn-panel mb-3" style="display:none;cursor:pointer" onclick="filterTicketsFromDash('overdue')"></div>
+  <div class="row g-3 mb-4" id="dashStaffCards" style="display:none"></div>
+  <div class="row g-3 mb-4" id="dashUserCards">
     <div class="col-md-3 col-6">
       <div class="stat-card" onclick="filterTicketsFromDash('all')" style="cursor:pointer;transition:.15s" onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,.1)'" onmouseout="this.style.boxShadow=''">
         <div class="stat-icon" style="background:var(--blue-bg);color:var(--blue)"><i class="ti ti-ticket"></i></div>
@@ -342,9 +350,9 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
     </div>
   </div>
   <div class="row g-3 mb-4" id="adminCharts" style="display:none">
-    <div class="col-md-6"><div class="card-box"><div class="cbh"><h2><i class="ti ti-building" style="margin-right:6px"></i>Department-wise</h2></div><div class="cbb" id="deptChart"></div></div></div>
+    <div class="col-md-6"><div class="card-box"><div class="cbh"><h2><i class="ti ti-building" style="margin-right:6px"></i>Department-wise Pending Tickets</h2></div><div class="cbb" id="deptChart"></div></div></div>
     <div class="col-md-6"><div class="card-box"><div class="cbh"><h2><i class="ti ti-flag" style="margin-right:6px"></i>Priority Breakdown</h2></div><div class="cbb" id="priChart"></div></div></div>
-    <div class="col-md-6"><div class="card-box"><div class="cbh"><h2><i class="ti ti-user-check" style="margin-right:6px"></i>Assigned To — Workload</h2></div><div class="cbb" id="assignChart"></div></div></div>
+    <div class="col-md-6"><div class="card-box"><div class="cbh"><h2><i class="ti ti-user-check" style="margin-right:6px"></i>Employee-wise Workload (pending)</h2></div><div class="cbb" id="assignChart"></div></div></div>
   </div>
   <div class="card-box">
     <div class="cbh"><h2>Recent Tickets</h2><button class="btn-outline" onclick="showPage('tickets',null)" style="font-size:12px;padding:5px 12px">View all</button></div>
@@ -361,14 +369,15 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
   <div class="card-box">
     <div class="cbh">
       <h2 id="ticketListSub">All Tickets</h2>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <span id="overdueFilterChip" style="display:none"><span class="b-overdue" style="font-size:11px;padding:4px 10px;cursor:pointer" onclick="clearOverdueFilter()" title="Click to clear">Overdue only ✕</span></span>
         <select class="form-select" id="fStatus"   style="width:130px;font-size:12px;padding:5px 8px" onchange="renderTickets()"><option value="">All Status</option></select>
         <select class="form-select" id="fPriority" style="width:120px;font-size:12px;padding:5px 8px" onchange="renderTickets()"><option value="">All Priority</option></select>
       </div>
     </div>
     <div style="overflow-x:auto">
       <table class="table table-hover mb-0">
-        <thead><tr><th>Ticket No</th><th>Subject</th><th id="th-by" style="display:none">Raised By</th><th>Department</th><th>Issue Type</th><th>Priority</th><th>Status</th><th id="th-assigned" style="display:none">Assigned To</th><th>Creation Date</th><th id="th-submitted" style="display:none">Submitted Date</th><th>Action</th></tr></thead>
+        <thead><tr><th>Ticket No</th><th>Subject</th><th id="th-by" style="display:none">Raised By</th><th>Department</th><th>Assigned Dept</th><th>Issue Type</th><th>Priority</th><th>Status</th><th id="th-assigned" style="display:none">Assigned To</th><th id="th-target" style="display:none">Target Date</th><th>Creation Date</th><th id="th-submitted" style="display:none">Submitted Date</th><th>Action</th></tr></thead>
         <tbody id="ticketBody"></tbody>
       </table>
     </div>
@@ -384,33 +393,30 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
     <div class="cbb">
       <div class="row g-3">
         <div class="col-md-4"><label class="form-label">Raised By</label><div id="raisedByWrap"></div></div>
-        <div class="col-md-4"><label class="form-label">Department</label><select class="form-select" id="ct-dept"></select></div>
+        <div class="col-md-4"><label class="form-label">Employee ID <span style="font-size:11px;color:var(--muted);font-weight:400">(automatic)</span></label><input class="form-control" id="ct-empId" readonly style="background:#F8F9FB"/></div>
+        <div class="col-md-4"><label class="form-label">Your Department</label><select class="form-select" id="ct-dept"></select></div>
+
+        <div class="col-md-4"><label class="form-label">Raise Ticket To (Department) <span style="color:var(--red)">*</span></label><select class="form-select" id="ct-adept" onchange="onRaiseToDeptChange()"></select></div>
+        <div class="col-md-4"><label class="form-label">Ticket Category <span style="color:var(--red)">*</span></label><select class="form-select" id="ct-cat"></select></div>
+        <div class="col-md-4" id="ct-projWrap"><label class="form-label">Project / Location <span id="ct-projReq" style="color:var(--red);display:none">*</span><span id="ct-projOpt" style="font-size:11px;color:var(--muted);font-weight:400">(optional)</span></label><select class="form-select" id="ct-proj"></select></div>
+
         <div class="col-md-4" id="ct-typeWrap">
-          <label class="form-label">
-            Issue Type
-            <span id="ct-typeAdminBadge" style="display:none;font-size:10px;background:var(--navy);color:#fff;padding:1px 7px;border-radius:10px;margin-left:6px;font-weight:600">ADMIN ONLY</span>
-          </label>
+          <label class="form-label">Issue Type <span style="color:var(--red)">*</span></label>
           <select class="form-select" id="ct-type" onchange="loadSubTypes()"></select>
         </div>
         <div class="col-md-4" id="ct-subtypeWrap">
-          <label class="form-label">
-            Issue Sub-Type
-            <span id="ct-subtypeAdminBadge" style="display:none;font-size:10px;background:var(--navy);color:#fff;padding:1px 7px;border-radius:10px;margin-left:6px;font-weight:600">ADMIN ONLY</span>
-          </label>
+          <label class="form-label">Issue Sub-Type <span style="color:var(--red)">*</span></label>
           <select class="form-select" id="ct-subtype"></select>
         </div>
-        <div id="ct-typeNote" class="col-12" style="display:none">
-          <div class="warn-panel" style="font-size:12.5px">
-            <i class="ti ti-lock" style="font-size:15px;flex-shrink:0"></i>
-            <span>Issue Type and Sub-Type are set by the support team. If your issue doesn't match the selected type, add a note in the description and the admin will update it.</span>
-          </div>
-        </div>
-        <div class="col-md-4"><label class="form-label">Priority</label><select class="form-select" id="ct-priority"></select></div>
+        <div class="col-md-4"><label class="form-label">Priority <span style="color:var(--red)">*</span></label><select class="form-select" id="ct-priority"></select></div>
+
         <div class="col-md-4"><label class="form-label">Ticket No</label><input class="form-control" id="ct-no" readonly/></div>
         <div class="col-md-4" id="ct-submittedWrap"><label class="form-label">Ticket Submitted Date <span style="color:var(--red)">*</span> <span style="display:inline-block;font-size:10px;background:var(--navy);color:#fff;padding:1px 7px;border-radius:10px;margin-left:4px;font-weight:600">ADMIN ONLY</span></label><input type="date" class="form-control" id="ct-submittedDate"/></div>
         <div class="col-md-4"><label class="form-label">Creation Date <span style="font-size:11px;color:var(--muted);font-weight:400">(automatic)</span></label><input class="form-control" id="ct-creationDate" readonly/></div>
+
+        <div class="col-md-4"><label class="form-label">Reference Number <span style="font-size:11px;color:var(--muted);font-weight:400">(optional)</span></label><input class="form-control" id="ct-ref" maxlength="60" placeholder="Booking / PO / Voucher no., Vendor code, Asset ID…"/></div>
         <div class="col-12"><label class="form-label">Subject <span style="color:var(--red)">*</span></label><input class="form-control" id="ct-subject" placeholder="Brief summary of the issue"/></div>
-        <div class="col-12"><label class="form-label">Description</label><textarea class="form-control" id="ct-desc" rows="4" placeholder="Describe the issue in detail..."></textarea></div>
+        <div class="col-12"><label class="form-label">Description <span style="color:var(--red)">*</span></label><textarea class="form-control" id="ct-desc" rows="4" placeholder="Describe the issue in detail..."></textarea></div>
         <div class="col-12">
           <label class="form-label">Attachments <span style="font-size:11px;color:var(--muted);font-weight:400">(optional — images, PDF, Word, Excel — max 3 files, 5MB each)</span></label>
           <input type="file" id="ct-files" class="form-control" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx" onchange="handleFileSelect()"/>
@@ -462,10 +468,58 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
             <div class="meta-item"><label>Creation Date</label><p id="td-date">—</p></div>
             <div class="meta-item" id="td-submittedWrap"><label>Ticket Submitted Date</label><p id="td-submitted">—</p></div>
           </div>
+          <div class="meta-row">
+            <div class="meta-item"><label>Assigned Department</label><p id="td-adept">—</p></div>
+            <div class="meta-item"><label>Ticket Category</label><p id="td-cat">—</p></div>
+            <div class="meta-item"><label>Project / Location</label><p id="td-proj">—</p></div>
+            <div class="meta-item"><label>Reference Number</label><p id="td-ref">—</p></div>
+            <div class="meta-item"><label>Employee ID</label><p id="td-empid">—</p></div>
+          </div>
+          <div class="meta-row staff-only" id="td-staffRow1">
+            <div class="meta-item"><label>Target Resolution Date</label><p id="td-target">—</p></div>
+            <div class="meta-item"><label>Resolution Date</label><p id="td-resdate">—</p></div>
+            <div class="meta-item"><label>SLA Status</label><p id="td-sla">—</p></div>
+            <div class="meta-item"><label>Acknowledged On</label><p id="td-ack">—</p></div>
+            <div class="meta-item"><label>Times Reopened</label><p id="td-reopenCnt">—</p></div>
+          </div>
+          <div class="meta-row staff-only" id="td-staffRow2">
+            <div class="meta-item"><label>Assigned Date</label><p id="td-assignedOn">—</p></div>
+            <div class="meta-item"><label>Checked By</label><p id="td-checked">—</p></div>
+            <div class="meta-item"><label>Approved By</label><p id="td-approved">—</p></div>
+          </div>
           <div id="td-attachmentsWrap" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
             <label style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);font-weight:600">Attachments</label>
             <div id="td-attachments" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:8px"></div>
           </div>
+        </div>
+      </div>
+      <div class="card-box mb-3" id="td-procCard" style="display:none">
+        <div class="cbh"><h2><i class="ti ti-adjustments" style="margin-right:6px"></i>Ticket Processing</h2><span style="font-size:11px;color:var(--muted)">Visible to the receiving department only</span></div>
+        <div class="cbb">
+          <div class="row g-3">
+            <div class="col-md-4"><label class="form-label">Assigned Department</label><select class="form-select" id="pr-dept" onchange="onProcDeptChange()"></select></div>
+            <div class="col-md-4"><label class="form-label">Assigned To</label><select class="form-select" id="pr-assign" onchange="onProcChange()"></select></div>
+            <div class="col-md-4"><label class="form-label">Target Resolution Date</label><input type="date" class="form-control" id="pr-target" oninput="onProcChange()"/></div>
+            <div class="col-md-4"><label class="form-label">Checked By</label><select class="form-select" id="pr-checked" onchange="onProcChange()"></select></div>
+            <div class="col-md-4"><label class="form-label">Approved By</label><select class="form-select" id="pr-approved" onchange="onProcChange()"></select></div>
+            <div class="col-md-4"><label class="form-label">Assigned Date <span style="font-size:11px;color:var(--muted);font-weight:400">(automatic)</span></label><input class="form-control" id="pr-assignedOn" readonly style="background:#F8F9FB"/></div>
+            <div class="col-12"><label class="form-label">Resolution Remarks <span style="font-size:11px;color:var(--muted);font-weight:400">(required to mark Resolved)</span></label><textarea class="form-control" id="pr-resRem" rows="2" oninput="onProcChange()" placeholder="Action taken…"></textarea></div>
+            <div class="col-12"><label class="form-label">Closure Remarks <span style="font-size:11px;color:var(--muted);font-weight:400">(required to Close)</span></label><textarea class="form-control" id="pr-cloRem" rows="2" oninput="onProcChange()" placeholder="Final closure comments…"></textarea></div>
+            <div class="col-md-6"><label class="form-label">Rejection Reason <span style="font-size:11px;color:var(--muted);font-weight:400">(required to Reject)</span></label><textarea class="form-control" id="pr-rejRem" rows="2" oninput="onProcChange()" placeholder="Why is this request rejected?"></textarea></div>
+            <div class="col-md-6"><label class="form-label">Reopen Reason <span style="font-size:11px;color:var(--muted);font-weight:400">(required to Reopen)</span></label><textarea class="form-control" id="pr-reopenRem" rows="2" oninput="onProcChange()" placeholder="Why is this ticket reopened?"></textarea></div>
+          </div>
+          <button class="btn-teal mt-3" id="pr-saveBtn" onclick="saveTicketUpdate()" style="display:none"><i class="ti ti-device-floppy"></i> Save Processing Details</button>
+        </div>
+      </div>
+      <div class="card-box mb-3" id="td-resultCard" style="display:none">
+        <div class="cbh"><h2><i class="ti ti-circle-check" style="margin-right:6px"></i>Resolution Details</h2></div>
+        <div class="cbb" id="td-resultBody" style="font-size:13.5px;line-height:1.7"></div>
+      </div>
+      <div class="card-box mb-3" id="td-reopenCard" style="display:none">
+        <div class="cbh"><h2><i class="ti ti-refresh" style="margin-right:6px"></i>Not resolved to your satisfaction?</h2></div>
+        <div class="cbb">
+          <textarea class="form-control mb-2" id="td-reopenReason" rows="2" placeholder="Tell us why this ticket needs to be reopened…"></textarea>
+          <button class="btn-navy" id="td-reopenBtn" onclick="reopenMyTicket()"><i class="ti ti-refresh"></i> Reopen Ticket</button>
         </div>
       </div>
       <div class="card-box">
@@ -488,7 +542,7 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
 <!-- MASTERS -->
 <div class="page" id="page-mIssueType">
   <div class="ph"><h1>Issue Type</h1><button class="btn-navy" onclick="openMM('issueType')"><i class="ti ti-plus"></i> Add</button></div>
-  <div class="card-box"><div style="overflow-x:auto"><table class="table table-hover mb-0"><thead><tr><th>#</th><th>Name</th><th>Active</th><th>Actions</th></tr></thead><tbody id="itBody"></tbody></table></div></div>
+  <div class="card-box"><div style="overflow-x:auto"><table class="table table-hover mb-0"><thead><tr><th>#</th><th>Name</th><th>Department</th><th>Active</th><th>Actions</th></tr></thead><tbody id="itBody"></tbody></table></div></div>
 </div>
 <div class="page" id="page-mSubType">
   <div class="ph"><h1>Issue Sub-Type</h1><button class="btn-navy" onclick="openMM('subType')"><i class="ti ti-plus"></i> Add</button></div>
@@ -505,6 +559,55 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
 <div class="page" id="page-mStatus">
   <div class="ph"><h1>Status</h1><button class="btn-navy" onclick="openMM('status')"><i class="ti ti-plus"></i> Add</button></div>
   <div class="card-box"><div style="overflow-x:auto"><table class="table table-hover mb-0"><thead><tr><th>#</th><th>Status</th><th>Order</th><th>Actions</th></tr></thead><tbody id="statBody"></tbody></table></div></div>
+</div>
+
+<div class="page" id="page-mCategory">
+  <div class="ph"><h1>Ticket Category</h1><button class="btn-navy" onclick="openMM('category')"><i class="ti ti-plus"></i> Add</button></div>
+  <div class="card-box"><div style="overflow-x:auto"><table class="table table-hover mb-0"><thead><tr><th>#</th><th>Category</th><th>Active</th><th>Actions</th></tr></thead><tbody id="catBody"></tbody></table></div></div>
+</div>
+<div class="page" id="page-mProject">
+  <div class="ph"><h1>Project / Location</h1><button class="btn-navy" onclick="openMM('project')"><i class="ti ti-plus"></i> Add</button></div>
+  <div class="info-panel mb-3"><i class="ti ti-info-circle" style="font-size:16px;flex-shrink:0"></i><span>Optional on the ticket form. To make it <strong>mandatory</strong> for a department, edit that department under Masters → Department and tick “Project / Location required”.</span></div>
+  <div class="card-box"><div style="overflow-x:auto"><table class="table table-hover mb-0"><thead><tr><th>#</th><th>Project / Location</th><th>Active</th><th>Actions</th></tr></thead><tbody id="projBody"></tbody></table></div></div>
+</div>
+
+<!-- SLA / TAT SETTINGS -->
+<div class="page" id="page-sla">
+  <div class="ph"><h1>SLA / TAT Settings</h1></div>
+  <div class="info-panel mb-3"><i class="ti ti-info-circle" style="font-size:16px;flex-shrink:0"></i><span>Set the Acknowledgement and Resolution turnaround time for each priority. Choose a department to give it its own targets; otherwise the <strong>Default</strong> row applies. “Working days” count Monday–Friday. Overdue tickets are flagged and escalated to the Department Manager.</span></div>
+  <div class="card-box">
+    <div class="cbh"><h2>Turnaround Times</h2>
+      <select class="form-select" id="sla-dept" style="width:260px;font-size:13px" onchange="renderSla()"></select>
+    </div>
+    <div class="cbb">
+      <div style="overflow-x:auto"><table class="table mb-0"><thead><tr><th>Priority</th><th>Acknowledgement TAT</th><th>Resolution TAT</th></tr></thead><tbody id="slaBody"></tbody></table></div>
+      <div id="sla-note" style="font-size:12px;color:var(--muted);margin-top:10px"></div>
+      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+        <button class="btn-teal" onclick="saveSla()"><i class="ti ti-device-floppy"></i> Save</button>
+        <button class="btn-outline" id="sla-resetBtn" onclick="resetSlaDept()" style="display:none"><i class="ti ti-restore"></i> Remove this department's override</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HELPDESK SETUP -->
+<div class="page" id="page-hdSetup">
+  <div class="ph"><h1>HelpDesk Setup</h1></div>
+  <div class="card-box mb-3">
+    <div class="cbh"><h2><i class="ti ti-wand" style="margin-right:6px"></i>1. Load recommended masters</h2></div>
+    <div class="cbb">
+      <p style="font-size:13px;line-height:1.7;margin-bottom:10px">Adds the new statuses (Acknowledged, On Hold, Pending Approval, Rejected), the 10 ticket categories, any missing departments, and the department-wise Issue Types and Sub-Types from the requirement list. Existing Issue Types with the same name are <strong>linked</strong> to the department instead of duplicated. Nothing is deleted and existing tickets are not touched. Safe to run more than once.</p>
+      <button class="btn-navy" id="hdSetupBtn" onclick="runHelpdeskSetup()"><i class="ti ti-player-play"></i> Review &amp; Run Setup</button>
+    </div>
+  </div>
+  <div class="card-box mb-3">
+    <div class="cbh"><h2><i class="ti ti-history" style="margin-right:6px"></i>2. Update existing tickets</h2></div>
+    <div class="cbb">
+      <p style="font-size:13px;line-height:1.7;margin-bottom:10px">Old tickets have no “Assigned Department”, so department users cannot see them. This sets the Assigned Department on old tickets <strong>only where it can be worked out from the ticket's Issue Type</strong> (after step 1), and marks tickets as not confidential so Management can view them. Nothing else on the tickets changes.</p>
+      <button class="btn-outline" id="hdBackfillBtn" onclick="runTicketBackfill()"><i class="ti ti-refresh"></i> Update Existing Tickets</button>
+    </div>
+  </div>
+  <div class="card-box"><div class="cbh"><h2>Result</h2></div><div class="cbb"><pre id="hdSetupLog" style="white-space:pre-wrap;font-size:12px;margin:0;color:var(--muted)">Nothing run yet.</pre></div></div>
 </div>
 
 <!-- USERS -->
@@ -558,22 +661,26 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
 <div class="page" id="page-reports">
   <div class="ph"><h1>Reports</h1>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn-outline" onclick="fixDuplicateTicketNumbers()" style="color:var(--amber);border-color:#FAC775"><i class="ti ti-tool"></i> Fix Duplicate Ticket Numbers</button>
+      <button class="btn-outline" id="fixDupBtn" onclick="fixDuplicateTicketNumbers()" style="color:var(--amber);border-color:#FAC775"><i class="ti ti-tool"></i> Fix Duplicate Ticket Numbers</button>
       <button class="btn-outline" onclick="exportCSV()"><i class="ti ti-download"></i> Export CSV</button>
     </div>
   </div>
   <div class="row g-3 mb-3">
-    <div class="col-md-3"><select class="form-select" id="rDept"><option value="">All Departments</option></select></div>
+    <div class="col-md-6"><select class="form-select" id="rType" onchange="runReport()"></select></div>
+    <div class="col-md-3"><select class="form-select" id="rDept"><option value="">All Departments (raised by)</option></select></div>
+    <div class="col-md-3"><select class="form-select" id="rADept"><option value="">All Assigned Departments</option></select></div>
+  </div>
+  <div class="row g-3 mb-3">
     <div class="col-md-3"><select class="form-select" id="rStatus"><option value="">All Status</option></select></div>
     <div class="col-md-3"><select class="form-select" id="rPriority"><option value="">All Priority</option></select></div>
+    <div class="col-md-3"><select class="form-select" id="rDateField"><option value="createdAt">Date filter: Creation Date</option><option value="submittedAt" id="rDateSubOpt">Date filter: Ticket Submitted Date</option></select></div>
     <div class="col-md-3"><button class="btn-navy" style="width:100%;justify-content:center" onclick="runReport()"><i class="ti ti-search"></i> Run Report</button></div>
   </div>
   <div class="row g-3 mb-3">
-    <div class="col-md-3"><select class="form-select" id="rDateField"><option value="createdAt">Date filter: Creation Date</option><option value="submittedAt">Date filter: Ticket Submitted Date</option></select></div>
     <div class="col-md-3"><input type="date" class="form-control" id="rDateFrom" title="From date"></div>
     <div class="col-md-3"><input type="date" class="form-control" id="rDateTo" title="To date"></div>
   </div>
-  <div class="card-box"><div style="overflow-x:auto"><table class="table table-hover mb-0"><thead><tr><th>Ticket No</th><th>Subject</th><th>Raised By</th><th>Dept</th><th>Priority</th><th>Status</th><th>Assigned To</th><th>Creation Date</th><th>Submitted Date</th></tr></thead><tbody id="rptBody"></tbody></table></div></div>
+  <div class="card-box"><div class="cbh"><h2 id="rptTitle">Report</h2><span id="rptCount" style="font-size:12px;color:var(--muted)"></span></div><div style="overflow-x:auto"><table class="table table-hover mb-0"><thead id="rptHead"></thead><tbody id="rptBody"></tbody></table></div></div>
 </div>
 
 <!-- CHANGE PASSWORD -->
@@ -620,7 +727,14 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
         <div class="col-md-6"><label class="form-label">Email (optional, for notifications)</label><input class="form-control" id="u-email" placeholder="email@company.com"/></div>
         <div class="col-md-6">
           <label class="form-label">Role</label>
-          <select class="form-select" id="u-role"><option value="User">User — own tickets only</option><option value="Admin">Admin — full access</option></select>
+          <select class="form-select" id="u-role">
+            <option value="User">Employee — raise &amp; view own tickets</option>
+            <option value="DeptExecutive">Department Executive — process tickets assigned to them</option>
+            <option value="DeptManager">Department Manager — all department tickets, assigns staff</option>
+            <option value="DeptHead">Department Head — view department tickets &amp; performance</option>
+            <option value="Management">Management — consolidated dashboard &amp; reports</option>
+            <option value="Admin">HelpDesk Admin — full access</option>
+          </select>
         </div>
         <div class="col-md-6"><label class="form-label">Department</label><select class="form-select" id="u-dept"></select></div>
         <div class="col-md-6" id="u-passWrap"><label class="form-label">Temporary Password <span style="color:var(--red)">*</span></label><input class="form-control" type="password" id="u-pass" placeholder="Min 6 characters"/></div>
@@ -677,6 +791,22 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
           <select class="form-select" id="et-raisedBy"></select>
         </div>
         <div class="col-md-4">
+          <label class="form-label">Raised To (Department)</label>
+          <select class="form-select" id="et-adept" onchange="onEditAdeptChange()"></select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Ticket Category</label>
+          <select class="form-select" id="et-cat"></select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Project / Location</label>
+          <select class="form-select" id="et-proj"></select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Reference Number</label>
+          <input class="form-control" id="et-ref" maxlength="60"/>
+        </div>
+        <div class="col-md-4">
           <label class="form-label">Issue Type</label>
           <select class="form-select" id="et-type" onchange="loadEditSubTypes()"></select>
         </div>
@@ -689,7 +819,7 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
           <select class="form-select" id="et-priority"></select>
         </div>
         <div class="col-md-4">
-          <label class="form-label">Department</label>
+          <label class="form-label">Raiser's Department</label>
           <select class="form-select" id="et-dept"></select>
         </div>
         <div class="col-md-4">
@@ -889,7 +1019,8 @@ function initFirebase(){
 
 // ── GLOBAL STATE ──────────────────────────────────────────────
 window.SESSION  = { user: null, profile: null };
-window.MASTERS  = { issueTypes:[], subTypes:[], priorities:[], departments:[], statuses:[] };
+window.MASTERS  = { issueTypes:[], subTypes:[], priorities:[], departments:[], statuses:[], categories:[], projects:[] };
+window.SLA      = { byDept:{} };   // slaSettings docs: { default:{p1:{ack,res},..}, <deptId>:{..} }
 window._tickets = [];
 window._users   = [];
 window._viewTicketId = null;
@@ -911,13 +1042,130 @@ const getPri     = id => MASTERS.priorities.find(x=>x.id===id)?.name||'—';
 const getStat    = id => MASTERS.statuses.find(x=>x.id===id)?.name||'—';
 const getUser    = id => _users.find(x=>x.id===id)?.name||'—';
 
+// ══════════════════════════════════════════════════════════════
+//  HELPDESK V2 — roles, access, SLA helpers
+// ══════════════════════════════════════════════════════════════
+// Stored role values: 'User' (Employee), 'DeptExecutive', 'DeptManager',
+// 'DeptHead', 'Management', 'Admin' (HelpDesk Admin).
+const ROLE_LABELS = { User:'Employee', DeptExecutive:'Dept Executive', DeptManager:'Dept Manager', DeptHead:'Dept Head', Management:'Management', Admin:'HelpDesk Admin' };
+const roleLabel  = r => ROLE_LABELS[r] || r || 'Employee';
+const myRole     = () => SESSION.profile?.role || 'User';
+const myDept     = () => SESSION.profile?.deptId || '';
+const isStaff    = () => myRole() !== 'User';          // any elevated role
+const isMgmt     = () => myRole() === 'Management';
+const isMgr      = () => myRole() === 'DeptManager';
+const isHead     = () => myRole() === 'DeptHead';
+const isExec     = () => myRole() === 'DeptExecutive';
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const toMs = ts => !ts ? 0 : (ts.toDate ? ts.toDate().getTime() : (ts instanceof Date ? ts.getTime() : new Date(ts).getTime()));
+const fmtDT = ts => { if(!ts) return '—'; const d = ts.toDate ? ts.toDate() : new Date(ts); if(isNaN(d.getTime())) return '—'; return fmtDate(d)+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); };
+const deptById = id => MASTERS.departments.find(x=>x.id===id);
+const getCat  = id => MASTERS.categories.find(x=>x.id===id)?.name || '—';
+const getProj = id => MASTERS.projects.find(x=>x.id===id)?.name || '—';
+const adeptOf = t => t.assignedDeptId || '';          // '' for tickets raised before V2
+
+// Status groups (ids created by HelpDesk Setup: s7–s10)
+const DONE_STATUSES    = ['s4','s5','s10'];           // Resolved, Closed, Rejected
+const PENDING_STATUSES = ['s1','s2','s3','s6','s7','s8','s9'];
+const NOT_ACKED        = ['s1','s2','s6'];            // Open, Assigned, Reopened
+const isDone = t => DONE_STATUSES.includes(t.statusId);
+
+// Who can see / process / assign a ticket
+function canViewTicket(t){
+  const uid = SESSION.user?.uid;
+  if(!t || !uid) return false;
+  if(isAdmin()) return true;
+  if(t.userId === uid) return true;
+  if(isMgmt())  return t.confidential !== true;
+  if(isMgr() || isHead()) return !!myDept() && t.assignedDeptId === myDept();
+  if(isExec())  return t.assignedTo === uid;
+  return false;
+}
+function canProcess(t){            // change status, remarks, checked/approved by, target date
+  const uid = SESSION.user?.uid;
+  if(!t) return false;
+  if(isAdmin()) return true;
+  if(isMgr())   return !!myDept() && t.assignedDeptId === myDept();
+  if(isExec())  return t.assignedTo === uid;
+  return false;
+}
+function canAssign(t){             // change assigned department / assignee
+  if(!t) return false;
+  if(isAdmin()) return true;
+  return isMgr() && !!myDept() && t.assignedDeptId === myDept();
+}
+// People who can be assigned a ticket of a given department
+function assignableUsers(deptId){
+  return _users.filter(u => u.active !== false && (
+    u.role === 'Admin' ||
+    (deptId ? (u.deptId === deptId && ['DeptExecutive','DeptManager','DeptHead'].includes(u.role)) : ['DeptExecutive','DeptManager','DeptHead'].includes(u.role))
+  ));
+}
+// Issue types shown for a department: types linked to it + types not linked to any department
+const typesForDept = deptId => MASTERS.issueTypes.filter(t => t.active !== false && (!t.deptId || t.deptId === deptId));
+
+// ── SLA / TAT ──
+const WORK_DAYS = [1,2,3,4,5];     // Mon–Fri count as working days
+const DEFAULT_SLA_BY_LEVEL = {
+  4:{ ack:{v:30,u:'min'}, res:{v:4,u:'hr'} },   // Critical
+  3:{ ack:{v:1, u:'hr'},  res:{v:8,u:'hr'} },   // High
+  2:{ ack:{v:4, u:'hr'},  res:{v:2,u:'wd'} },   // Medium
+  1:{ ack:{v:1, u:'wd'},  res:{v:5,u:'wd'} }    // Low
+};
+function addWorkingDays(d, n){
+  const x = new Date(d); let left = n;
+  while(left > 0){ x.setDate(x.getDate()+1); if(WORK_DAYS.includes(x.getDay())) left--; }
+  return x;
+}
+function addSla(start, rule){
+  const d = new Date(start);
+  if(rule.u === 'min') return new Date(d.getTime() + rule.v*60000);
+  if(rule.u === 'hr')  return new Date(d.getTime() + rule.v*3600000);
+  return addWorkingDays(d, rule.v);
+}
+function getSlaRule(deptId, priorityId){
+  const lvl = MASTERS.priorities.find(p=>p.id===priorityId)?.level || 2;
+  return SLA.byDept?.[deptId]?.[priorityId] || SLA.byDept?.default?.[priorityId] || DEFAULT_SLA_BY_LEVEL[lvl] || DEFAULT_SLA_BY_LEVEL[2];
+}
+function computeSla(deptId, priorityId, start){
+  const r = getSlaRule(deptId, priorityId);
+  return { ackDueAt: addSla(start, r.ack), targetDate: addSla(start, r.res) };
+}
+const isOverdue    = t => !isDone(t) && !!t.targetDate && toMs(t.targetDate) < Date.now();
+const isAckOverdue = t => !isDone(t) && NOT_ACKED.includes(t.statusId) && !t.acknowledgedAt && !!t.ackDueAt && toMs(t.ackDueAt) < Date.now();
+const anyOverdue   = t => isOverdue(t) || isAckOverdue(t);
+const doneMs       = t => toMs(t.resolvedAt) || toMs(t.closedAt);
+function fmtDuration(ms){
+  if(!ms || ms < 0) return '—';
+  const mins = Math.round(ms/60000);
+  if(mins < 60) return mins+' min';
+  const hrs = mins/60;
+  if(hrs < 48) return (Math.round(hrs*10)/10)+' hrs';
+  return (Math.round(hrs/24*10)/10)+' days';
+}
+function slaBadge(t){
+  if(isDone(t)){
+    if(t.targetDate && doneMs(t)) return doneMs(t) <= toMs(t.targetDate) ? '<span class="b-ontrack">SLA met</span>' : '<span class="b-overdue">SLA breached</span>';
+    return '—';
+  }
+  if(!t.targetDate) return '—';
+  return isOverdue(t) ? '<span class="b-overdue">Overdue</span>' : '<span class="b-ontrack">On track</span>';
+}
+
+// Reads a collection but never breaks the app if the Firestore rules don't cover it yet
+async function safeGetDocs(name){
+  try{ return (await getDocs(collection(db,name))).docs; }
+  catch(e){ console.warn('Could not read '+name+':', e.code||e.message); return []; }
+}
+
 function priBadge(id){
   const m={1:'low',2:'medium',3:'high',4:'critical'};
-  const n=getPri(id); return `<span class="b-${m[id]||'low'}">${n}</span>`;
+  const lvl = MASTERS.priorities.find(x=>x.id===id)?.level;
+  const n=getPri(id); return `<span class="b-${m[lvl]||'low'}">${n}</span>`;
 }
 function statBadge(id){
   const nm=getStat(id).toLowerCase().replace(/ /g,'');
-  const m={'open':'open','assigned':'assigned','inprogress':'inprogress','resolved':'resolved','closed':'closed','reopened':'reopened'};
+  const m={'open':'open','assigned':'assigned','inprogress':'inprogress','resolved':'resolved','closed':'closed','reopened':'reopened','acknowledged':'acknowledged','onhold':'onhold','pendingapproval':'pendingapproval','rejected':'rejected'};
   return `<span class="b-${m[nm]||'open'}">${getStat(id)}</span>`;
 }
 
@@ -1274,18 +1522,25 @@ window.sendReset=async function(){
 
 // ── LOAD MASTERS ──────────────────────────────────────────────
 async function loadMasters(){
-  const [it,st,pr,dp,ss] = await Promise.all([
+  const [it,st,pr,dp,ss,cat,prj,sla] = await Promise.all([
     getDocs(collection(db,'issueTypes')),
     getDocs(collection(db,'subTypes')),
     getDocs(collection(db,'priorities')),
     getDocs(collection(db,'departments')),
-    getDocs(collection(db,'statuses'))
+    getDocs(collection(db,'statuses')),
+    safeGetDocs('categories'),
+    safeGetDocs('projects'),
+    safeGetDocs('slaSettings')
   ]);
   MASTERS.issueTypes   = it.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.name.localeCompare(b.name));
   MASTERS.subTypes     = st.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.name.localeCompare(b.name));
   MASTERS.priorities   = pr.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.level-b.level);
   MASTERS.departments  = dp.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.name.localeCompare(b.name));
   MASTERS.statuses     = ss.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.order-b.order);
+  MASTERS.categories   = cat.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.order||0)-(b.order||0) || a.name.localeCompare(b.name));
+  MASTERS.projects     = prj.map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.name.localeCompare(b.name));
+  SLA.byDept = {};
+  sla.forEach(d => { SLA.byDept[d.id] = d.data().rules || {}; });
 }
 
 async function loadUsers(){
@@ -1298,20 +1553,27 @@ async function loadUsers(){
 function initAppUI(){
   const p  = SESSION.profile;
   const av = (p.name||'U').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  const staff = isStaff();
 
   document.getElementById('sidebar').style.display='flex';
   document.getElementById('topbar').style.display='flex';
   document.getElementById('main').style.display='block';
-  document.getElementById('nav-admin').style.display=isAdmin()?'block':'none';
-  document.getElementById('nav-user').style.display =isAdmin()?'none':'block';
+  document.getElementById('nav-admin').style.display=staff?'block':'none';
+  document.getElementById('nav-user').style.display =staff?'none':'block';
+  // Show only the menu items this role may use
+  document.querySelectorAll('#nav-admin [data-roles]').forEach(el=>{
+    el.style.display = el.dataset.roles.split(',').includes(myRole()) ? '' : 'none';
+  });
+  const navLbl = document.getElementById('navTicketsLbl');
+  if(navLbl) navLbl.textContent = isAdmin()||isMgmt() ? 'All Tickets' : 'Department Tickets';
   document.getElementById('sidebarAv').textContent=av;
   document.getElementById('sidebarAv').className='avatar'+(isAdmin()?'':' av-user');
   document.getElementById('sidebarName').textContent=p.name||'User';
   document.getElementById('sidebarEmail').textContent = p.empId ? ('Emp ID: '+p.empId) : emailToEmp(p.email||SESSION.user.email);
-  document.getElementById('roleChip').innerHTML=`<span class="rp ${isAdmin()?'rp-admin':'rp-user'}">${isAdmin()?'Administrator':'User'}</span>`;
+  document.getElementById('roleChip').innerHTML=`<span class="rp ${isAdmin()?'rp-admin':'rp-user'}">${isAdmin()?'Administrator':roleLabel(myRole())}</span>`;
   document.getElementById('topbarAv').textContent=av;
   document.getElementById('topbarAv').className='avatar'+(isAdmin()?'':' av-user');
-  document.getElementById('topbarRole').innerHTML=`<span style="font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;background:${isAdmin()?'var(--navy)':'#2A5298'};color:#fff">${isAdmin()?'ADMIN':'USER'}</span>`;
+  document.getElementById('topbarRole').innerHTML=`<span style="font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;background:${isAdmin()?'var(--navy)':'#2A5298'};color:#fff">${isAdmin()?'ADMIN':roleLabel(myRole()).toUpperCase()}</span>`;
   document.getElementById('dashDate').textContent=new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 
   populateFilters();
@@ -1319,32 +1581,31 @@ function initAppUI(){
   startAutoLogout();
   // Set base history state so browser back doesn't leave the app
   history.replaceState({ page:'dashboard', ticketId:null }, '', '#dashboard');
-  showPage('dashboard', document.querySelector(isAdmin()?'#nav-admin .nav-item':'#nav-user .nav-item'), true);
+  showPage('dashboard', document.querySelector(staff?'#nav-admin .nav-item':'#nav-user .nav-item'), true);
 }
 
 // ── REAL-TIME TICKET SUBSCRIPTION ─────────────────────────────
 function subscribeTickets(){
-  if(unsubTickets){ unsubTickets(); }
-  let q;
-  if(isAdmin()){
-    q = query(collection(db,'tickets'), orderBy('createdAt','desc'));
-  } else {
-    // No orderBy here on purpose — combining where(userId==) with
-    // orderBy(createdAt) requires a Firestore composite index that isn't
-    // set up. Sorting happens client-side below instead, which needs no
-    // index at all and works identically for a small per-user ticket list.
-    q = query(collection(db,'tickets'), where('userId','==',SESSION.user.uid));
+  if(unsubTickets){ unsubTickets(); unsubTickets=null; }
+  const col = collection(db,'tickets');
+  const uid = SESSION.user.uid;
+  // Each role only asks Firestore for the tickets it is allowed to see.
+  // (No orderBy on filtered queries — that would need composite indexes;
+  //  everything is sorted client-side below.)
+  const qs = [];
+  if(isAdmin())      qs.push(query(col, orderBy('createdAt','desc')));
+  else if(isMgmt())  qs.push(query(col, where('confidential','==',false)));
+  else {
+    qs.push(query(col, where('userId','==',uid)));                              // tickets I raised
+    if((isMgr()||isHead()) && myDept()) qs.push(query(col, where('assignedDeptId','==',myDept())));  // my department's tickets
+    else if(isExec())                   qs.push(query(col, where('assignedTo','==',uid)));           // tickets assigned to me
   }
-  unsubTickets = onSnapshot(q, snap => {
-    _tickets = snap.docs.map(d=>({id:d.id,...d.data()}));
-    if(!isAdmin()){
-      // Client-side sort, newest first
-      _tickets.sort((a,b)=>{
-        const ta = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0;
-        const tb = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0;
-        return tb - ta;
-      });
-    }
+  const buckets = qs.map(()=>[]);
+
+  const onChange = () => {
+    const map = new Map();
+    buckets.flat().forEach(t => map.set(t.id, t));
+    _tickets = [...map.values()].filter(canViewTicket).sort((a,b)=>toMs(b.createdAt)-toMs(a.createdAt));
     window._tickets = _tickets;
     updateBadges();
     // Refresh current page if it's a ticket-related page
@@ -1353,25 +1614,27 @@ function subscribeTickets(){
     else if(activePage==='page-tickets')   renderTickets();
     else if(activePage==='page-reports')   runReport();
     else if(activePage==='page-ticketDetail' && window._viewTicketId){
-      // Re-render ticket detail silently to reflect latest status/assignment
+      // Re-render ticket detail silently to reflect latest status/assignment —
+      // but never while the person is typing in the processing form.
       const t = _tickets.find(x=>x.id===window._viewTicketId);
-      if(t){
-        document.getElementById('td-sBadge').innerHTML  = statBadge(t.statusId);
-        document.getElementById('td-stat').textContent  = getStat(t.statusId);
-        const assignEl = document.getElementById('td-assignedTo');
-        if(assignEl) assignEl.textContent = t.assignedTo ? getUser(t.assignedTo) : 'Unassigned';
-        // Assigned To only shown to admin
-        const assignedWrapRT = document.getElementById('td-assignedToWrap');
-        if(assignedWrapRT) assignedWrapRT.style.display = isAdmin() ? '' : 'none';
-        renderActivity(t);
-      }
+      if(t && !window._procDirty) fillTicketDetail(t);
+      else if(t){ document.getElementById('td-sBadge').innerHTML = statBadge(t.statusId); renderActivity(t); renderComments(t); }
     }
-  }, err => { toast('Firestore error: '+err.message,'error'); });
+    maybeRunEscalation();
+  };
+  const unsubs = qs.map((q,i)=> onSnapshot(q, snap => {
+    buckets[i] = snap.docs.map(d=>({id:d.id,...d.data()}));
+    onChange();
+  }, err => { toast('Firestore error: '+err.message,'error'); }));
+  unsubTickets = () => unsubs.forEach(u=>u());
 }
 
 // ── NAVIGATION ────────────────────────────────────────────────
-const PAGE_TITLES={dashboard:'Dashboard',tickets:'Tickets',newTicket:'New Ticket',ticketDetail:'Ticket Detail',mIssueType:'Issue Type',mSubType:'Issue Sub-Type',mPriority:'Priority',mDept:'Department',mStatus:'Status',users:'User Management',setUserPwd:'Set User Password',reports:'Reports',changePwd:'Change Password'};
+const PAGE_TITLES={dashboard:'Dashboard',tickets:'Tickets',newTicket:'New Ticket',ticketDetail:'Ticket Detail',mIssueType:'Issue Type',mSubType:'Issue Sub-Type',mCategory:'Ticket Category',mProject:'Project / Location',mPriority:'Priority',mDept:'Department',mStatus:'Status',users:'User Management',setUserPwd:'Set User Password',sla:'SLA / TAT Settings',hdSetup:'HelpDesk Setup',reports:'Reports',changePwd:'Change Password'};
+// Pages restricted to certain roles (everything else is open to every signed-in role)
+const PAGE_ROLES={mIssueType:['Admin'],mSubType:['Admin'],mCategory:['Admin'],mProject:['Admin'],mPriority:['Admin'],mDept:['Admin'],mStatus:['Admin'],users:['Admin'],setUserPwd:['Admin'],sla:['Admin'],hdSetup:['Admin'],reports:['Admin','Management','DeptManager','DeptHead']};
 window.showPage=function(id,el,skipHistory){
+  if(PAGE_ROLES[id] && !PAGE_ROLES[id].includes(myRole())){ toast('You do not have access to that page','error'); id='dashboard'; el=null; }
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-'+id)?.classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
@@ -1389,7 +1652,7 @@ window.showPage=function(id,el,skipHistory){
     }
   }
 
-  const fn={dashboard:renderDashboard,tickets:renderTickets,newTicket:initNewTicketForm,mIssueType:renderIssueTypes,mSubType:renderSubTypes,mPriority:renderPriorities,mDept:renderDepts,mStatus:renderStatuses,users:renderUsers,setUserPwd:renderSetUserPwd,reports:runReport};
+  const fn={dashboard:renderDashboard,tickets:renderTickets,newTicket:initNewTicketForm,mIssueType:renderIssueTypes,mSubType:renderSubTypes,mCategory:renderCategories,mProject:renderProjects,mPriority:renderPriorities,mDept:renderDepts,mStatus:renderStatuses,users:renderUsers,setUserPwd:renderSetUserPwd,sla:renderSla,reports:initReportPage};
   fn[id]?.();
 };
 
@@ -1413,77 +1676,104 @@ window.addEventListener('popstate', function(ev){
 
 // ── BADGES ────────────────────────────────────────────────────
 function updateBadges(){
-  // Admin badge = all non-closed tickets
-  const allActive = _tickets.filter(t=>!['s5'].includes(t.statusId)).length;
+  // Staff badge = all tickets still pending in the list the person can see
+  const allActive = _tickets.filter(t=>!isDone(t)).length;
   document.getElementById('openBadge').textContent = allActive;
-  // User badge = their own non-closed tickets
-  const myActive  = _tickets.filter(t=>t.userId===SESSION.user?.uid && !['s5'].includes(t.statusId)).length;
+  // Employee badge = their own pending tickets
+  const myActive  = _tickets.filter(t=>t.userId===SESSION.user?.uid && !isDone(t)).length;
   document.getElementById('openBadgeU').textContent = myActive;
 }
 
 // ── DASHBOARD ─────────────────────────────────────────────────
+function dashCard(label, value, icon, bg, fg, onclick){
+  return `<div class="col-md-3 col-6"><div class="stat-card" onclick="${onclick}" style="cursor:pointer;transition:.15s" onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,.1)'" onmouseout="this.style.boxShadow=''">
+    <div class="stat-icon" style="background:${bg};color:${fg}"><i class="ti ${icon}"></i></div>
+    <div><div class="stat-val">${value}</div><div class="stat-lbl">${label}</div></div>
+    <i class="ti ti-arrow-right" style="margin-left:auto;color:var(--muted);font-size:14px"></i></div></div>`;
+}
+
 function renderDashboard(){
   updateBadges(); // always keep sidebar badge in sync with what's on screen
-  const myT = isAdmin() ? _tickets : _tickets.filter(t=>t.userId===SESSION.user.uid);
-  const activeT = myT.filter(t=>!['s5'].includes(t.statusId));
+  const staff = isStaff();
+  const myT = staff ? _tickets : _tickets.filter(t=>t.userId===SESSION.user.uid);
 
+  // ── Employee cards (unchanged) ──
+  document.getElementById('dashUserCards').style.display = staff ? 'none' : '';
   document.getElementById('ds-total').textContent    = myT.length;
   document.getElementById('ds-open').textContent     = myT.filter(t=>['s1','s6'].includes(t.statusId)).length;
-  document.getElementById('ds-progress').textContent = myT.filter(t=>['s2','s3'].includes(t.statusId)).length;
-  document.getElementById('ds-4th').textContent     = isAdmin()
-    ? myT.filter(t=>t.priorityId==='p4').length
-    : myT.filter(t=>t.statusId==='s5').length;
-  document.getElementById('ds-4thLbl').textContent  = isAdmin() ? 'Critical' : 'Closed';
-
-  // Update label for 3rd stat card
+  document.getElementById('ds-progress').textContent = myT.filter(t=>['s2','s3','s7','s8','s9'].includes(t.statusId)).length;
+  document.getElementById('ds-4th').textContent      = myT.filter(t=>t.statusId==='s5').length;
+  document.getElementById('ds-4thLbl').textContent   = 'Closed';
   const progLbl = document.getElementById('ds-progressLbl');
-  if(progLbl) progLbl.textContent = isAdmin() ? 'In Progress' : 'Assigned / In Progress';
+  if(progLbl) progLbl.textContent = 'Assigned / In Progress';
 
-  // User welcome message on dashboard
-  if(!isAdmin()){
-    const openC   = myT.filter(t=>['s1','s6'].includes(t.statusId)).length;
-    const inProgC = myT.filter(t=>['s2','s3'].includes(t.statusId)).length;
-    const resolvedC = myT.filter(t=>t.statusId==='s4').length;
-    const closedC = myT.filter(t=>t.statusId==='s5').length;
-    // Update labels to be user-friendly
-    document.getElementById('ds-open').textContent     = openC;
-    document.getElementById('ds-progress').textContent = inProgC;
-  }
-  document.getElementById('adminCharts').style.display=isAdmin()?'flex':'none';
-  document.getElementById('th-recBy').style.display=isAdmin()?'':'none';
+  // ── Staff cards + charts ──
+  const staffCards = document.getElementById('dashStaffCards');
+  const overdueBanner = document.getElementById('dashOverdueBanner');
+  staffCards.style.display = staff ? '' : 'none';
+  document.getElementById('adminCharts').style.display = staff ? 'flex' : 'none';
+  document.getElementById('th-recBy').style.display = staff ? '' : 'none';
 
-  if(isAdmin()&&_tickets.length){
-    const dC={},pC={},aC={};
-    _tickets.forEach(t=>{
-      dC[t.deptId]=(dC[t.deptId]||0)+1;
-      pC[t.priorityId]=(pC[t.priorityId]||0)+1;
-      const aKey = t.assignedTo || '__unassigned__';
-      aC[aKey]=(aC[aKey]||0)+1;
+  if(staff){
+    const cnt = ids => myT.filter(t=>ids.includes(t.statusId)).length;
+    const overdue = myT.filter(isOverdue).length;
+    const ackOver = myT.filter(isAckOverdue).length;
+    const doneT   = myT.filter(t=>['s4','s5'].includes(t.statusId) && doneMs(t) && t.createdAt);
+    const avgMs   = doneT.length ? doneT.reduce((sum,t)=>sum+(doneMs(t)-toMs(t.createdAt)),0)/doneT.length : 0;
+    const f = k => `filterTicketsFromDash('${k}')`;
+    staffCards.innerHTML =
+      dashCard('Total Tickets', myT.length, 'ti-ticket', 'var(--blue-bg)', 'var(--blue)', f('all')) +
+      dashCard('Open', cnt(['s1','s6']), 'ti-circle-dot', 'var(--teal-bg)', 'var(--teal)', f('status:s1')) +
+      dashCard('Assigned', cnt(['s2','s7']), 'ti-user-check', 'var(--amber-bg)', '#633806', f('status:s2')) +
+      dashCard('In Progress', cnt(['s3']), 'ti-clock', '#EDE9FE', '#5B21B6', f('status:s3')) +
+      dashCard('On Hold', cnt(['s8']), 'ti-player-pause', '#F3E8D6', '#6B4A12', f('status:s8')) +
+      dashCard('Pending Approval', cnt(['s9']), 'ti-hourglass', '#FEF3C7', '#92400E', f('status:s9')) +
+      dashCard('Resolved', cnt(['s4']), 'ti-circle-check', 'var(--teal-bg)', '#085041', f('status:s4')) +
+      dashCard('Closed', cnt(['s5']), 'ti-lock', '#F1EFE8', '#444441', f('status:s5')) +
+      dashCard('Overdue Tickets', overdue, 'ti-alarm', 'var(--red-bg)', 'var(--red)', f('overdue')) +
+      dashCard('Critical Priority', myT.filter(t=>t.priorityId==='p4').length, 'ti-alert-circle', 'var(--red-bg)', 'var(--red)', f('critical')) +
+      dashCard('Rejected', cnt(['s10']), 'ti-ban', '#FCE7F3', '#9D174D', f('status:s10')) +
+      dashCard('Avg Resolution Time', avgMs ? fmtDuration(avgMs) : '—', 'ti-stopwatch', 'var(--blue-bg)', 'var(--blue)', f('all'));
+    if(overdue + ackOver > 0){
+      overdueBanner.style.display = 'flex';
+      overdueBanner.innerHTML = `<i class="ti ti-alarm" style="font-size:16px;flex-shrink:0"></i><span><strong>${overdue}</strong> ticket${overdue===1?' is':'s are'} past the target resolution date${ackOver?` and <strong>${ackOver}</strong> not acknowledged in time`:''}. Click to view overdue tickets.</span>`;
+    } else overdueBanner.style.display = 'none';
+
+    // Charts (only when there are tickets)
+    const pending = myT.filter(t=>!isDone(t));
+    const dC={}, pC={}, aC={};
+    myT.forEach(t=>{ pC[t.priorityId]=(pC[t.priorityId]||0)+1; });
+    pending.forEach(t=>{
+      const dk = adeptOf(t) || t.deptId || '__none__';
+      dC[dk]=(dC[dk]||0)+1;
+      const ak = t.assignedTo || '__unassigned__';
+      aC[ak]=(aC[ak]||0)+1;
     });
     const maxD=Math.max(...Object.values(dC),1);
-    document.getElementById('deptChart').innerHTML=Object.entries(dC).map(([id,c])=>`<div class="bar-wrap"><div class="bar-label">${getDept(id)}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(c/maxD*100)}%"></div></div><div class="bar-val">${c}</div></div>`).join('');
+    document.getElementById('deptChart').innerHTML = Object.keys(dC).length
+      ? Object.entries(dC).sort((a,b)=>b[1]-a[1]).map(([id,c])=>`<div class="bar-wrap"><div class="bar-label">${id==='__none__'?'Not set':esc(getDept(id))}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(c/maxD*100)}%"></div></div><div class="bar-val">${c}</div></div>`).join('')
+      : '<div style="color:var(--muted);font-size:13px">No pending tickets.</div>';
     const priC=['#888780','#378ADD','#EF9F27','#E24B4A'];
-    document.getElementById('priChart').innerHTML=MASTERS.priorities.map(p=>`<div class="bar-wrap"><div class="bar-label">${p.name}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round((pC[p.id]||0)/Math.max(_tickets.length,1)*100)}%;background:${p.color||priC[p.level-1]}"></div></div><div class="bar-val">${pC[p.id]||0}</div></div>`).join('');
-
-    // Assigned To — workload per admin/support person, sorted busiest first
+    document.getElementById('priChart').innerHTML = MASTERS.priorities.map(p=>`<div class="bar-wrap"><div class="bar-label">${p.name}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round((pC[p.id]||0)/Math.max(myT.length,1)*100)}%;background:${p.color||priC[p.level-1]}"></div></div><div class="bar-val">${pC[p.id]||0}</div></div>`).join('');
     const maxA = Math.max(...Object.values(aC), 1);
-    const assignEntries = Object.entries(aC).sort((a,b)=>b[1]-a[1]);
-    document.getElementById('assignChart').innerHTML = assignEntries.map(([id,c])=>{
-      const label = id==='__unassigned__' ? 'Unassigned' : getUser(id);
-      const barColor = id==='__unassigned__' ? '#888780' : 'var(--navy)';
-      return `<div class="bar-wrap"><div class="bar-label">${label}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(c/maxA*100)}%;background:${barColor}"></div></div><div class="bar-val">${c}</div></div>`;
-    }).join('');
-  }
+    document.getElementById('assignChart').innerHTML = Object.keys(aC).length
+      ? Object.entries(aC).sort((a,b)=>b[1]-a[1]).map(([id,c])=>{
+          const label = id==='__unassigned__' ? 'Unassigned' : esc(getUser(id));
+          const barColor = id==='__unassigned__' ? '#888780' : 'var(--navy)';
+          return `<div class="bar-wrap"><div class="bar-label">${label}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(c/maxA*100)}%;background:${barColor}"></div></div><div class="bar-val">${c}</div></div>`;
+        }).join('')
+      : '<div style="color:var(--muted);font-size:13px">No pending tickets.</div>';
+  } else overdueBanner.style.display = 'none';
 
   const recent=myT.slice(0,5);
   document.getElementById('recentBody').innerHTML = recent.length===0
     ? emptyRow(6,'No tickets yet. <a href="#" onclick="showPage(\'newTicket\',null);return false" style="color:var(--blue)">Raise your first ticket →</a>')
     : recent.map(t=>`<tr style="cursor:pointer" onclick="viewTicket('${t.id}')">
-        <td><a href="#" onclick="return false" style="color:var(--blue);font-weight:500">${t.ticketNo}</a></td>
-        <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.subject}</td>
-        ${isAdmin()?`<td>${getUser(t.userId)}</td>`:''}
+        <td><a href="#" onclick="return false" style="color:var(--blue);font-weight:500">${esc(t.ticketNo)}</a></td>
+        <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(t.subject)}</td>
+        ${staff?`<td>${esc(getUser(t.userId))}</td>`:''}
         <td>${priBadge(t.priorityId)}</td>
-        <td>${statBadge(t.statusId)}</td>
+        <td>${statBadge(t.statusId)}${staff&&anyOverdue(t)?'<span class="b-overdue">Overdue</span>':''}</td>
         <td>${fmtDate(t.createdAt)}</td>
       </tr>`).join('');
 }
@@ -1491,88 +1781,135 @@ function renderDashboard(){
 // ── TICKET LIST ───────────────────────────────────────────────
 function populateFilters(){
   const fs=document.getElementById('fStatus'),fp=document.getElementById('fPriority');
-  if(fs.options.length===1) MASTERS.statuses.forEach(s=>{const o=document.createElement('option');o.value=s.id;o.textContent=s.name;fs.appendChild(o);});
-  if(fp.options.length===1) MASTERS.priorities.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=p.name;fp.appendChild(o);});
-  ['rDept','rStatus','rPriority'].forEach(id=>{
-    const el=document.getElementById(id); if(!el||el.options.length>1)return;
-    if(id==='rDept')     MASTERS.departments.forEach(d=>{const o=document.createElement('option');o.value=d.id;o.textContent=d.name;el.appendChild(o);});
-    if(id==='rStatus')   MASTERS.statuses.forEach(s=>{const o=document.createElement('option');o.value=s.id;o.textContent=s.name;el.appendChild(o);});
-    if(id==='rPriority') MASTERS.priorities.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=p.name;el.appendChild(o);});
-  });
+  // rebuild so newly added statuses appear after Setup
+  fs.innerHTML='<option value="">All Status</option>'+MASTERS.statuses.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
+  fp.innerHTML='<option value="">All Priority</option>'+MASTERS.priorities.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
+  const opts = (arr,first)=>`<option value="">${first}</option>`+arr.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('');
+  const set = (id,html)=>{ const el=document.getElementById(id); if(el){ const cur=el.value; el.innerHTML=html; el.value=cur; } };
+  set('rDept',    opts(MASTERS.departments,'All Departments (raised by)'));
+  set('rADept',   opts(MASTERS.departments,'All Assigned Departments'));
+  set('rStatus',  opts(MASTERS.statuses,'All Status'));
+  set('rPriority',opts(MASTERS.priorities,'All Priority'));
 }
 
 // ── Dashboard card click → navigate to ticket list with filter ──
+window._ticketOverdueOnly = false;
+window.clearOverdueFilter = function(){ window._ticketOverdueOnly=false; renderTickets(); };
 window.filterTicketsFromDash = function(type){
   // Reset filters first
   const fStatus   = document.getElementById('fStatus');
   const fPriority = document.getElementById('fPriority');
   fStatus.value   = '';
   fPriority.value = '';
+  window._ticketOverdueOnly = false;
 
-  if(type === 'open'){
-    // Show Open + Reopened
-    fStatus.value = 's1';
-  } else if(type === 'inprogress'){
-    // Show Assigned + In Progress
-    fStatus.value = 's3';
-  } else if(type === 'critical'){
-    // Show Critical priority
-    fPriority.value = 'p4';
-  }
+  if(type === 'open')            fStatus.value = 's1';
+  else if(type === 'inprogress') fStatus.value = 's3';
+  else if(type === 'critical')   fPriority.value = 'p4';
+  else if(type === 'overdue')    window._ticketOverdueOnly = true;
+  else if(type.startsWith('status:')) fStatus.value = type.slice(7);
   // 'all' = no filter, show everything
 
-  // Navigate to tickets page
   showPage('tickets', document.querySelector('.nav-item[data-p="tickets"]'));
 };
 
 window.renderTickets=function(){
   updateBadges(); // always keep sidebar badge in sync with what's on screen
-  const admin = isAdmin();
-  document.getElementById('ticketListTitle').textContent = admin ? 'All Tickets' : 'My Tickets';
-  document.getElementById('ticketListSub').textContent   = admin ? 'All Tickets' : 'My Tickets';
-  document.getElementById('th-by').style.display         = admin ? '' : 'none';
-  const thAssigned = document.getElementById('th-assigned');
-  if(thAssigned) thAssigned.style.display = admin ? '' : 'none';
-  const thSubmitted = document.getElementById('th-submitted');
-  if(thSubmitted) thSubmitted.style.display = admin ? '' : 'none';
+  const staff = isStaff(), admin = isAdmin();
+  document.getElementById('ticketListTitle').textContent = admin||isMgmt() ? 'All Tickets' : (staff ? 'Department Tickets' : 'My Tickets');
+  document.getElementById('ticketListSub').textContent   = document.getElementById('ticketListTitle').textContent;
+  document.getElementById('th-by').style.display         = staff ? '' : 'none';
+  const show = (id,on)=>{ const e=document.getElementById(id); if(e) e.style.display = on?'':'none'; };
+  show('th-assigned', staff); show('th-target', staff); show('th-submitted', admin);
+  document.getElementById('overdueFilterChip').style.display = window._ticketOverdueOnly ? '' : 'none';
   const fs = document.getElementById('fStatus').value;
   const fp = document.getElementById('fPriority').value;
-  let data = admin ? _tickets : _tickets.filter(t=>t.userId===SESSION.user.uid);
+  let data = staff ? _tickets : _tickets.filter(t=>t.userId===SESSION.user.uid);
   if(fs) data = data.filter(t=>t.statusId===fs);
   if(fp) data = data.filter(t=>t.priorityId===fp);
-  document.getElementById('ticketBody').innerHTML=data.length===0?emptyRow(10,'No tickets found.'):data.map(t=>`<tr><td><a href="#" onclick="viewTicket('${t.id}');return false" style="color:var(--blue);font-weight:500">${t.ticketNo}</a></td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.subject}</td>${isAdmin()?`<td>${getUser(t.userId)}</td>`:''}<td>${getDept(t.deptId)}</td><td>${getType(t.typeId)}</td><td>${priBadge(t.priorityId)}</td><td>${statBadge(t.statusId)}</td>${isAdmin()?`<td style="font-size:12px">${t.assignedTo?`<span style="font-weight:500">${getUser(t.assignedTo)}</span>`:'<span style="color:var(--muted)">Unassigned</span>'}</td>`:''}<td>${fmtDate(t.createdAt)}</td>${isAdmin()?`<td>${fmtDate(t.submittedAt,'Not Available')}</td>`:''}<td><button class="btn-icon" onclick="viewTicket('${t.id}')" title="View"><i class="ti ti-eye"></i></button>${isAdmin()?`<button class="btn-icon" onclick="delTicket('${t.id}')" title="Delete" style="color:var(--red)"><i class="ti ti-trash"></i></button>`:''}</td></tr>`).join('');
+  if(window._ticketOverdueOnly) data = data.filter(anyOverdue);
+  document.getElementById('ticketBody').innerHTML = data.length===0 ? emptyRow(13,'No tickets found.') : data.map(t=>{
+    const conf = t.confidential ? '<span class="b-conf" title="Restricted visibility">Confidential</span>' : '';
+    const od   = staff && anyOverdue(t) ? '<span class="b-overdue">Overdue</span>' : '';
+    return `<tr><td><a href="#" onclick="viewTicket('${t.id}');return false" style="color:var(--blue);font-weight:500">${esc(t.ticketNo)}</a></td>`
+      + `<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(t.subject)}${conf}</td>`
+      + (staff?`<td>${esc(getUser(t.userId))}</td>`:'')
+      + `<td>${esc(getDept(t.deptId))}</td><td>${t.assignedDeptId?esc(getDept(t.assignedDeptId)):'<span style="color:var(--muted)">—</span>'}</td>`
+      + `<td>${esc(getType(t.typeId))}</td><td>${priBadge(t.priorityId)}</td><td>${statBadge(t.statusId)}${od}</td>`
+      + (staff?`<td style="font-size:12px">${t.assignedTo?`<span style="font-weight:500">${esc(getUser(t.assignedTo))}</span>`:'<span style="color:var(--muted)">Unassigned</span>'}</td>`:'')
+      + (staff?`<td style="font-size:12px;white-space:nowrap">${t.targetDate?fmtDT(t.targetDate):'—'}</td>`:'')
+      + `<td>${fmtDate(t.createdAt)}</td>`
+      + (admin?`<td>${fmtDate(t.submittedAt,'Not Available')}</td>`:'')
+      + `<td><button class="btn-icon" onclick="viewTicket('${t.id}')" title="View"><i class="ti ti-eye"></i></button>${admin?`<button class="btn-icon" onclick="delTicket('${t.id}')" title="Delete" style="color:var(--red)"><i class="ti ti-trash"></i></button>`:''}</td></tr>`;
+  }).join('');
 };
 
 // ── TICKET DETAIL ─────────────────────────────────────────────
+const $id = id => document.getElementById(id);
+const ymd = ts => { if(!ts) return ''; const d = ts.toDate ? ts.toDate() : new Date(ts); if(isNaN(d.getTime())) return ''; return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+window._procDirty = false;
+
 window.viewTicket=async function(id){
   const t=_tickets.find(x=>x.id===id);
   if(!t){toast('Ticket not found','error');return;}
-  if(!isAdmin()&&t.userId!==SESSION.user.uid){toast('Access denied','error');return;}
+  if(!canViewTicket(t)){toast('Access denied','error');return;}
   window._viewTicketId=id;
+  window._procDirty=false;
+  $id('td-reopenReason').value='';
+  fillTicketDetail(t);
+  showPage('ticketDetail',null);
+};
 
-  document.getElementById('td-no').textContent     =t.ticketNo||'—';
-  document.getElementById('td-subject').textContent=t.subject||'—';
-  document.getElementById('td-desc').textContent   =t.description||'';
-  document.getElementById('td-by').textContent     =getUser(t.userId);
-  document.getElementById('td-dept').textContent   =getDept(t.deptId);
-  document.getElementById('td-type').textContent   =getType(t.typeId);
-  document.getElementById('td-sub').textContent    =getSub(t.subTypeId)||'—';
-  document.getElementById('td-pBadge').innerHTML   =priBadge(t.priorityId);
-  document.getElementById('td-sBadge').innerHTML   =statBadge(t.statusId);
-  document.getElementById('td-pri').textContent    =getPri(t.priorityId);
-  document.getElementById('td-stat').textContent   =getStat(t.statusId);
-  document.getElementById('td-date').textContent   =fmtDate(t.createdAt);
-  document.getElementById('td-submitted').textContent =fmtDate(t.submittedAt,'Not Available');
-  document.getElementById('td-submittedWrap').style.display = isAdmin() ? '' : 'none'; // Admin only
-  // Assigned To — only visible to Admin
-  const assignedWrap = document.getElementById('td-assignedToWrap');
-  const assignedEl   = document.getElementById('td-assignedTo');
-  if(assignedWrap) assignedWrap.style.display = isAdmin() ? '' : 'none';
-  if(assignedEl)   assignedEl.textContent = t.assignedTo ? getUser(t.assignedTo) : 'Unassigned';
+function fillOptions(sel, items, selectedId, blank){
+  sel.innerHTML = (blank!==undefined ? `<option value="">${blank}</option>` : '') +
+    items.map(u=>`<option value="${u.id}" ${u.id===selectedId?'selected':''}>${esc(u.name)}</option>`).join('');
+}
+function staffOptionsFor(deptId, keepId){
+  const list = assignableUsers(deptId);
+  if(keepId && !list.find(u=>u.id===keepId)){ const u=_users.find(x=>x.id===keepId); if(u) list.push(u); }
+  return list;
+}
+
+function fillTicketDetail(t){
+  const staff = isStaff();
+  const txt = (id,v)=>{ const e=$id(id); if(e) e.textContent = v; };
+  txt('td-no', t.ticketNo||'—');
+  txt('td-subject', t.subject||'—');
+  txt('td-desc', t.description||'');
+  txt('td-by', getUser(t.userId));
+  txt('td-dept', getDept(t.deptId));
+  txt('td-type', getType(t.typeId));
+  txt('td-sub', getSub(t.subTypeId)||'—');
+  $id('td-pBadge').innerHTML = priBadge(t.priorityId);
+  $id('td-sBadge').innerHTML = statBadge(t.statusId) + (staff&&anyOverdue(t)?'<span class="b-overdue">Overdue</span>':'');
+  txt('td-pri', getPri(t.priorityId));
+  txt('td-stat', getStat(t.statusId));
+  txt('td-date', fmtDate(t.createdAt));
+  txt('td-submitted', fmtDate(t.submittedAt,'Not Available'));
+  $id('td-submittedWrap').style.display = isAdmin() ? '' : 'none'; // Admin only
+  // New V2 fields
+  const raiser = _users.find(u=>u.id===t.userId);
+  txt('td-adept', t.assignedDeptId ? getDept(t.assignedDeptId) : '—');
+  txt('td-cat',   t.categoryId ? getCat(t.categoryId) : '—');
+  txt('td-proj',  t.projectId ? getProj(t.projectId) : '—');
+  txt('td-ref',   t.refNo || '—');
+  txt('td-empid', raiser ? (raiser.empId || emailToEmp(raiser.email)) : '—');
+  // Staff-only details
+  $id('td-assignedToWrap').style.display = staff ? '' : 'none';
+  txt('td-assignedTo', t.assignedTo ? getUser(t.assignedTo) : 'Unassigned');
+  document.querySelectorAll('.staff-only').forEach(el=>{ el.style.display = staff ? '' : 'none'; });
+  txt('td-target', t.targetDate ? fmtDT(t.targetDate) : '—');
+  txt('td-resdate', doneMs(t) ? fmtDT(t.resolvedAt||t.closedAt) : '—');
+  $id('td-sla').innerHTML = slaBadge(t);
+  txt('td-ack', t.acknowledgedAt ? fmtDT(t.acknowledgedAt) : '—');
+  txt('td-reopenCnt', t.reopenCount || 0);
+  txt('td-assignedOn', t.assignedOn ? fmtDT(t.assignedOn) : '—');
+  txt('td-checked', t.checkedBy ? getUser(t.checkedBy) : '—');
+  txt('td-approved', t.approvedBy ? getUser(t.approvedBy) : '—');
 
   // Attachments — visible to everyone who can view the ticket
-  const attWrap = document.getElementById('td-attachmentsWrap');
-  const attBody = document.getElementById('td-attachments');
+  const attWrap = $id('td-attachmentsWrap');
+  const attBody = $id('td-attachments');
   const attachments = t.attachments || [];
   if(attachments.length > 0 && attWrap && attBody){
     attWrap.style.display = 'block';
@@ -1581,7 +1918,7 @@ window.viewTicket=async function(id){
       const icon  = isImg ? 'ti-photo' : /\.pdf$/i.test(a.name||'') ? 'ti-file-type-pdf' : /\.(doc|docx)$/i.test(a.name||'') ? 'ti-file-type-doc' : /\.(xls|xlsx)$/i.test(a.name||'') ? 'ti-file-type-xls' : 'ti-file';
       return `<a href="${a.url}" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:6px;padding:7px 12px;background:var(--gray);border-radius:8px;font-size:12.5px;color:var(--text);text-decoration:none;border:1px solid var(--border)">
         <i class="ti ${icon}" style="color:var(--blue)"></i>
-        <span>${a.name}</span>
+        <span>${esc(a.name)}</span>
         <i class="ti ti-external-link" style="font-size:12px;color:var(--muted)"></i>
       </a>`;
     }).join('');
@@ -1589,123 +1926,203 @@ window.viewTicket=async function(id){
     attWrap.style.display = 'none';
   }
 
-  const sw=document.getElementById('td-statusWrap'), ub=document.getElementById('td-userBanner');
-  const editBar = document.getElementById('td-editBtnWrap');
-  if(isAdmin()){
-    ub.style.display='none';
-    if(editBar) editBar.style.display='flex';
+  // Header: status selector for people who can process this ticket
+  const sw=$id('td-statusWrap'), ub=$id('td-userBanner');
+  const editBar = $id('td-editBtnWrap');
+  const processor = canProcess(t);
+  if(processor){
     sw.innerHTML=`<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
       <div style="display:flex;align-items:center;gap:6px">
         <label style="font-size:12px;color:var(--muted);font-weight:500;white-space:nowrap">Status:</label>
-        <select class="form-select" id="statSel" style="width:150px;font-size:12px" onchange="onStatusChange()">
-          ${MASTERS.statuses.map(s=>`<option value="${s.id}" ${s.id===t.statusId?'selected':''}>${s.name}</option>`).join('')}
+        <select class="form-select" id="statSel" style="width:170px;font-size:12px" onchange="onStatusChange()">
+          ${MASTERS.statuses.map(s=>`<option value="${s.id}" ${s.id===t.statusId?'selected':''}>${esc(s.name)}</option>`).join('')}
         </select>
       </div>
-      <button class="btn-teal" id="updateTicketBtn" onclick="saveTicketUpdate()" style="display:none;padding:7px 16px;font-size:12px">
+      <button class="btn-teal" id="updateTicketBtn" onclick="saveTicketUpdate()" style="display:${window._procDirty?'inline-flex':'none'};padding:7px 16px;font-size:12px">
         <i class="ti ti-device-floppy"></i> Save Changes
       </button>
     </div>`;
-  } else {
-    ub.style.display='flex';
-    sw.innerHTML='';
-    if(editBar) editBar.style.display='none';
-  }
+  } else sw.innerHTML='';
+  if(editBar) editBar.style.display = isAdmin() ? 'flex' : 'none';
+  ub.style.display = (t.userId===SESSION.user.uid && !processor) ? 'flex' : 'none';
+
+  fillProcessing(t);
+
+  // Read-only resolution details for people who cannot edit the processing section
+  const rc = $id('td-resultCard');
+  const parts = [];
+  if(t.resolutionRemarks) parts.push(`<div style="margin-bottom:8px"><strong>Resolution Remarks:</strong> ${esc(t.resolutionRemarks)}</div>`);
+  if(t.closureRemarks)    parts.push(`<div style="margin-bottom:8px"><strong>Closure Remarks:</strong> ${esc(t.closureRemarks)}</div>`);
+  if(t.rejectionReason)   parts.push(`<div style="margin-bottom:8px"><strong>Rejection Reason:</strong> ${esc(t.rejectionReason)}</div>`);
+  if(t.reopenReason && t.statusId==='s6') parts.push(`<div><strong>Reopen Reason:</strong> ${esc(t.reopenReason)}</div>`);
+  rc.style.display = (!processor && parts.length) ? '' : 'none';
+  $id('td-resultBody').innerHTML = parts.join('');
+  // Employee can reopen a resolved / closed ticket they raised
+  $id('td-reopenCard').style.display = (t.userId===SESSION.user.uid && ['s4','s5'].includes(t.statusId)) ? '' : 'none';
 
   renderComments(t); renderActivity(t);
-  showPage('ticketDetail',null);
+}
+
+function fillProcessing(t){
+  const card = $id('td-procCard');
+  if(!canProcess(t)){ card.style.display='none'; return; }
+  card.style.display='';
+  const mayAssign = canAssign(t);
+  const adept = t.assignedDeptId || '';
+  $id('pr-dept').innerHTML = '<option value="">— Not set —</option>' + MASTERS.departments.filter(d=>d.active!==false || d.id===adept).map(d=>`<option value="${d.id}" ${d.id===adept?'selected':''}>${esc(d.name)}</option>`).join('');
+  $id('pr-dept').disabled = !mayAssign;
+  fillOptions($id('pr-assign'), staffOptionsFor(adept, t.assignedTo), t.assignedTo, '— Unassigned —');
+  $id('pr-assign').disabled = !mayAssign;
+  fillOptions($id('pr-checked'),  staffOptionsFor(adept, t.checkedBy),  t.checkedBy,  '— None —');
+  fillOptions($id('pr-approved'), staffOptionsFor(adept, t.approvedBy), t.approvedBy, '— None —');
+  $id('pr-target').value = ymd(t.targetDate);
+  $id('pr-assignedOn').value = t.assignedOn ? fmtDT(t.assignedOn) : '—';
+  $id('pr-resRem').value = t.resolutionRemarks || '';
+  $id('pr-cloRem').value = t.closureRemarks || '';
+  $id('pr-rejRem').value = t.rejectionReason || '';
+  $id('pr-reopenRem').value = t.reopenReason || '';
+  $id('pr-saveBtn').style.display = window._procDirty ? '' : 'none';
+}
+
+window.onProcDeptChange = function(){
+  const nd = $id('pr-dept').value;
+  const t  = _tickets.find(x=>x.id===window._viewTicketId);
+  fillOptions($id('pr-assign'),   staffOptionsFor(nd, null), null, '— Unassigned —');
+  fillOptions($id('pr-checked'),  staffOptionsFor(nd, t?.checkedBy),  t?.checkedBy,  '— None —');
+  fillOptions($id('pr-approved'), staffOptionsFor(nd, t?.approvedBy), t?.approvedBy, '— None —');
+  onProcChange();
 };
+// Show the Save buttons as soon as anything is edited — nothing is saved automatically
+window.onProcChange = function(){
+  window._procDirty = true;
+  const b1=$id('updateTicketBtn'), b2=$id('pr-saveBtn');
+  if(b1) b1.style.display='inline-flex';
+  if(b2) b2.style.display='';
+};
+window.onStatusChange = window.onProcChange;
+window.onAssignChange = window.onProcChange;
 
 function renderComments(t){
   const d=document.getElementById('td-comments');
   const comments=t.comments||[];
-  d.innerHTML=comments.length===0?'<div style="color:var(--muted);font-size:13px;padding:4px 0">No comments yet.</div>':comments.map(c=>{const u=_users.find(x=>x.id===c.by); const isAdm=u?.role==='Admin'; return`<div class="comment-item"><div class="comment-av ${isAdm?'':'ua'}">${(u?.name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)}</div><div><div class="comment-meta">${u?.name||'User'} ${isAdm?'<span style="font-size:10px;background:var(--navy);color:#fff;padding:1px 6px;border-radius:10px;font-weight:600;margin-left:4px">Support</span>':''} · ${c.date||'—'}</div><div class="comment-txt">${c.text}</div></div></div>`;}).join('');
+  d.innerHTML=comments.length===0?'<div style="color:var(--muted);font-size:13px;padding:4px 0">No comments yet.</div>':comments.map(c=>{const u=_users.find(x=>x.id===c.by); const isSup=!!u && u.role!=='User'; return`<div class="comment-item"><div class="comment-av ${isSup?'':'ua'}">${(u?.name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)}</div><div><div class="comment-meta">${esc(u?.name||'User')} ${isSup?'<span style="font-size:10px;background:var(--navy);color:#fff;padding:1px 6px;border-radius:10px;font-weight:600;margin-left:4px">Support</span>':''} · ${c.date||'—'}</div><div class="comment-txt">${esc(c.text)}</div></div></div>`;}).join('');
 }
 
 function renderActivity(t){
   const acts=t.activity||[];
-  document.getElementById('td-activity').innerHTML=acts.length===0?'<div style="color:var(--muted);font-size:13px">No activity yet.</div>':acts.map(a=>`<div class="tl-item"><div class="tl-dot"></div><span>${a.text} · <em>${a.by||'System'}</em> · ${a.date||'—'}</span></div>`).join('');
+  document.getElementById('td-activity').innerHTML=acts.length===0?'<div style="color:var(--muted);font-size:13px">No activity yet.</div>':acts.map(a=>`<div class="tl-item"><div class="tl-dot"></div><span>${esc(a.text)} · <em>${esc(a.by||'System')}</em> · ${a.date||'—'}</span></div>`).join('');
 }
 
-// Show Save button when status or assign changes — does NOT auto-save
-window.onStatusChange = function(){
-  if(!isAdmin()) return;
-  document.getElementById('updateTicketBtn').style.display = 'inline-flex';
-};
+// Timestamps that depend on the status a ticket moves into (shared by every save path)
+function applyStatusTimestamps(t, newStatusId, updates){
+  if(!NOT_ACKED.includes(newStatusId) && !t.acknowledgedAt) updates.acknowledgedAt = serverTimestamp();
+  if(!DONE_STATUSES.includes(newStatusId)){
+    if(t.resolvedAt) updates.resolvedAt = null;
+    if(t.closedAt)   updates.closedAt   = null;
+  }
+  if(newStatusId === 's4'){ updates.resolvedAt = serverTimestamp(); if(!t.firstResolvedAt) updates.firstResolvedAt = serverTimestamp(); }
+  if(newStatusId === 's5'){ updates.closedAt = serverTimestamp(); if(!t.resolvedAt) updates.resolvedAt = serverTimestamp(); }
+  if(newStatusId === 's10'){ updates.closedAt = serverTimestamp(); }
+  if(newStatusId === 's6' && t.statusId !== 's6'){
+    updates.reopenCount = (t.reopenCount||0) + 1;
+    updates.reopenedAt  = serverTimestamp();
+  }
+}
 
-window.onAssignChange = function(){
-  if(!isAdmin()) return;
-  document.getElementById('updateTicketBtn').style.display = 'inline-flex';
-};
-
-// Save both assignment + status together
+// One save for status + assignment + processing fields
 window.saveTicketUpdate = async function(){
-  if(!isAdmin()) return;
   const id = window._viewTicketId;
   const t  = _tickets.find(x=>x.id===id);
-  if(!t) return;
+  if(!t || !canProcess(t)) return;
 
-  const newStatusId  = document.getElementById('statSel').value;
-  const newAssignId  = t.assignedTo || null; // assignment handled via Modify Ticket modal
-  const btn          = document.getElementById('updateTicketBtn');
+  const btns = [$id('updateTicketBtn'), $id('pr-saveBtn')].filter(Boolean);
+  const val  = i => ($id(i)?.value ?? '').trim();
+  const newStatusId = $id('statSel')?.value || t.statusId;
+  const resRem = val('pr-resRem'), cloRem = val('pr-cloRem'), rejRem = val('pr-rejRem'), reopenRem = val('pr-reopenRem');
 
-  btn.innerHTML = '<span class="spinner"></span> Saving…'; btn.disabled = true;
-  setSyncStatus('saving');
+  // Remarks required for the statuses that need them
+  if(newStatusId !== t.statusId){
+    if(newStatusId==='s4'  && !resRem){ toast('Enter Resolution Remarks before marking the ticket Resolved','error'); return; }
+    if(newStatusId==='s5'  && !cloRem){ toast('Enter Closure Remarks before closing the ticket','error'); return; }
+    if(newStatusId==='s10' && !rejRem){ toast('Enter the Rejection Reason before rejecting the ticket','error'); return; }
+    if(newStatusId==='s6'  && !reopenRem){ toast('Enter the Reopen Reason before reopening the ticket','error'); return; }
+  }
 
-  try{
-    const activity = [...(t.activity||[])];
-    const updates  = { updatedAt: serverTimestamp() };
+  const updates  = { updatedAt: serverTimestamp(), updatedBy: SESSION.user.uid };
+  const activity = [...(t.activity||[])];
+  const log = text => activity.push({ text, by:SESSION.profile.name, date:today() });
+  let statusFinal = t.statusId;
 
-    // Status changed?
-    if(newStatusId !== t.statusId){
-      updates.statusId = newStatusId;
-      activity.push({ text:`Status → ${getStat(newStatusId)}`, by:SESSION.profile.name, date:today() });
-    }
+  if(newStatusId !== t.statusId){
+    updates.statusId = newStatusId; statusFinal = newStatusId;
+    log(`Status → ${getStat(newStatusId)}`);
+    applyStatusTimestamps(t, newStatusId, updates);
+  }
 
-    // Assignment changed?
-    const assignedUser = _users.find(u=>u.id===newAssignId);
-    if(newAssignId !== (t.assignedTo||null)){
-      updates.assignedTo  = newAssignId;
-      updates.assignedOn  = newAssignId ? serverTimestamp() : null;
-      // Auto-set status to Assigned if currently Open and assigning someone
-      if(newAssignId && t.statusId === 's1'){
-        updates.statusId = 's2';
-        activity.push({ text:`Status → Assigned`, by:SESSION.profile.name, date:today() });
-        document.getElementById('statSel').value = 's2';
+  // Assignment (Admin / Department Manager only)
+  let mergedAssigned = t.assignedTo || null, mergedDept = t.assignedDeptId || '';
+  if(canAssign(t)){
+    const nd = val('pr-dept');
+    const na = val('pr-assign') || null;
+    if(nd && nd !== (t.assignedDeptId||'')){
+      updates.assignedDeptId = nd; mergedDept = nd;
+      updates.confidential = !!deptById(nd)?.confidential;
+      log(`Assigned Department → ${getDept(nd)}`);
+      if(!isDone(t)){
+        const sla = computeSla(nd, t.priorityId, new Date(toMs(t.createdAt)||Date.now()));
+        updates.ackDueAt = sla.ackDueAt; updates.targetDate = sla.targetDate;
       }
-      const assignName = assignedUser?.name || 'Unassigned';
-      activity.push({ text:`Assigned to ${assignName}`, by:SESSION.profile.name, date:today() });
     }
+    if(na !== (t.assignedTo||null)){
+      updates.assignedTo = na; mergedAssigned = na;
+      updates.assignedOn = na ? serverTimestamp() : null;
+      log(`Assigned to ${na ? getUser(na) : 'Unassigned'}`);
+      // Auto-set status to Assigned if still Open
+      if(na && statusFinal === 's1'){ updates.statusId = 's2'; statusFinal = 's2'; log('Status → Assigned'); }
+    }
+  }
 
-    updates.activity = activity;
+  // Checked By / Approved By
+  const nc = val('pr-checked') || null, nap = val('pr-approved') || null;
+  if(nc  !== (t.checkedBy||null))  { updates.checkedBy  = nc;  log(`Checked By → ${nc ? getUser(nc) : 'None'}`); }
+  if(nap !== (t.approvedBy||null)) { updates.approvedBy = nap; log(`Approved By → ${nap ? getUser(nap) : 'None'}`); }
+
+  // Target resolution date (manual override)
+  const tgt = val('pr-target');
+  if(tgt && tgt !== ymd(t.targetDate)){
+    const [y,m,d] = tgt.split('-').map(Number);
+    updates.targetDate = new Date(y, m-1, d, 23, 59, 0);
+    log(`Target resolution date set to ${fmtDate(updates.targetDate)}`);
+  }
+
+  // Remarks / reasons
+  if(resRem !== (t.resolutionRemarks||'')){ updates.resolutionRemarks = resRem; log('Resolution remarks updated'); }
+  if(cloRem !== (t.closureRemarks||''))   { updates.closureRemarks = cloRem;    log('Closure remarks updated'); }
+  if(rejRem !== (t.rejectionReason||''))  { updates.rejectionReason = rejRem;   log('Rejection reason updated'); }
+  if(newStatusId === 's6' && newStatusId !== t.statusId) updates.reopenReason = reopenRem;
+
+  if(Object.keys(updates).length === 2){ toast('No changes to save'); return; }
+
+  updates.activity = activity;
+  btns.forEach(b=>{ b.disabled = true; });
+  setSyncStatus('saving');
+  try{
     await updateDoc(doc(db,'tickets',id), updates);
+    window._procDirty = false;
+    btns.forEach(b=>{ b.disabled = false; b.style.display = 'none'; });
 
-    // Update UI badges
-    const finalStatus = updates.statusId || newStatusId;
-    document.getElementById('td-sBadge').innerHTML   = statBadge(finalStatus);
-    document.getElementById('td-stat').textContent   = getStat(finalStatus);
-    document.getElementById('td-by').textContent     = getUser(t.userId);
-
-    // Update assigned to in meta section
-    const assignedToEl = document.getElementById('td-assignedTo');
-    if(assignedToEl) assignedToEl.textContent = assignedUser?.name || 'Unassigned';
-
-    renderActivity({...t, activity});
-
-    // Hide save button
-    btn.innerHTML = '<i class="ti ti-device-floppy"></i> Save Changes'; btn.disabled = false;
-    btn.style.display = 'none';
-
-    // Email notifications
+    // Email notifications (use the values just saved, not the stale cache)
+    const merged = { ...t, id, statusId: statusFinal, assignedTo: mergedAssigned, assignedDeptId: mergedDept, activity };
     try{
-      if(updates.statusId) await sendEmailNotification(id,'status_changed');
-      if(updates.assignedTo) await sendEmailNotification(id,'ticket_assigned');
+      if(statusFinal !== t.statusId) await sendEmailNotification(merged,'status_changed');
+      if(mergedAssigned && mergedAssigned !== (t.assignedTo||null)) await sendEmailNotification(merged,'ticket_assigned');
     } catch(e){}
 
     setSyncStatus('synced');
     toast('Ticket updated successfully');
   } catch(e){
     setSyncStatus('err');
-    btn.innerHTML = '<i class="ti ti-device-floppy"></i> Save Changes'; btn.disabled = false;
+    btns.forEach(b=>{ b.disabled = false; });
     toast('Update failed: '+e.message,'error');
   }
 };
@@ -1713,12 +2130,57 @@ window.saveTicketUpdate = async function(){
 // Keep old changeStatus as alias (not used but safe)
 window.changeStatus = window.saveTicketUpdate;
 
+// Employee reopens their own resolved/closed ticket
+window.reopenMyTicket = async function(){
+  const id = window._viewTicketId;
+  const t  = _tickets.find(x=>x.id===id);
+  if(!t || t.userId !== SESSION.user.uid || !['s4','s5'].includes(t.statusId)) return;
+  const reason = $id('td-reopenReason').value.trim();
+  if(!reason){ toast('Please tell us why the ticket is being reopened','error'); return; }
+  const btn = $id('td-reopenBtn');
+  btn.disabled = true; setSyncStatus('saving');
+  try{
+    const sla = computeSla(t.assignedDeptId||'', t.priorityId, new Date());
+    const activity = [...(t.activity||[]), { text:`Ticket reopened by ${SESSION.profile.name}: ${reason}`, by:SESSION.profile.name, date:today() }];
+    await updateDoc(doc(db,'tickets',id), {
+      statusId:'s6', reopenReason:reason, reopenCount:(t.reopenCount||0)+1, reopenedAt:serverTimestamp(),
+      resolvedAt:null, closedAt:null, acknowledgedAt:null,
+      ackDueAt:sla.ackDueAt, targetDate:sla.targetDate, escalated:false,
+      activity, updatedAt:serverTimestamp(), updatedBy:SESSION.user.uid
+    });
+    $id('td-reopenReason').value='';
+    try{ await sendEmailNotification({ ...t, id, statusId:'s6', reopenReason:reason }, 'ticket_reopened'); } catch(e){}
+    setSyncStatus('synced'); toast('Ticket reopened');
+  } catch(e){ setSyncStatus('err'); toast('Failed: '+e.message,'error'); }
+  finally{ btn.disabled = false; }
+};
+
+// Overdue escalation — runs when an Admin / Department Manager has the app open.
+// (There is no server-side scheduler yet, so this is checked on every ticket update.)
+let _escRunning = false; const _escDone = new Set();
+async function maybeRunEscalation(){
+  if(_escRunning || !(isAdmin() || isMgr())) return;
+  const list = _tickets.filter(t => anyOverdue(t) && !t.escalated && !_escDone.has(t.id) && (isAdmin() || t.assignedDeptId === myDept())).slice(0,10);
+  if(!list.length) return;
+  _escRunning = true;
+  try{
+    for(const t of list){
+      _escDone.add(t.id);
+      const reason = isOverdue(t) ? 'past the target resolution date' : 'not acknowledged within the SLA';
+      const activity = [...(t.activity||[]), { text:`Escalated to Department Manager — ${reason}`, by:'System', date:today() }];
+      await updateDoc(doc(db,'tickets',t.id), { escalated:true, escalatedAt:serverTimestamp(), activity });
+      try{ await sendEmailNotification({ ...t, activity, escalated:true, escalationReason:reason }, 'ticket_escalated'); } catch(e){}
+    }
+  } catch(e){ console.warn('Escalation failed:', e); }
+  finally{ _escRunning = false; }
+}
+
 window.addComment=async function(){
   const id=window._viewTicketId;
   const t=_tickets.find(x=>x.id===id);
   const text=document.getElementById('newComment').value.trim();
   if(!text)return;
-  if(!isAdmin()&&t.userId!==SESSION.user.uid){toast('Access denied','error');return;}
+  if(!canViewTicket(t)){toast('Access denied','error');return;}
   const btn=document.getElementById('commentBtn');
   btn.innerHTML='<span class="spinner"></span>'; btn.disabled=true;
   const comments=[...(t.comments||[]),{by:SESSION.user.uid,text,date:today()}];
@@ -1761,22 +2223,32 @@ async function sendEmailNotification(ticketIdOrData, eventType){
   let message = '';
   let subjectLine = `MP HelpDesk — ${t.ticketNo}`;
 
+  const addRecipient = (u) => { const e=getRealEmail(u); if(e && !recipients.some(r=>r.email===e)) recipients.push({email:e, name:u.name}); };
+  const deptManagers = t.assignedDeptId ? _users.filter(u=>u.role==='DeptManager' && u.deptId===t.assignedDeptId && u.active!==false) : [];
+
   if(eventType === 'ticket_created'){
-    adminUsers.forEach(a => { const e=getRealEmail(a); if(e) recipients.push({email:e, name:a.name}); });
+    adminUsers.forEach(addRecipient);
+    deptManagers.forEach(addRecipient);
     subjectLine = `🎫 New Ticket Raised — ${t.ticketNo}`;
-    message = `A new ticket has been raised by ${raiser?.name||'a user'}.\n\nTicket No: ${t.ticketNo}\nSubject: ${t.subject}\nDepartment: ${getDept(t.deptId)}\nPriority: ${getPri(t.priorityId)}\n\nLog in to MP HelpDesk to view and assign this ticket.`;
+    message = `A new ticket has been raised by ${raiser?.name||'a user'}.\n\nTicket No: ${t.ticketNo}\nRaised To: ${t.assignedDeptId?getDept(t.assignedDeptId):'—'}\nCategory: ${t.categoryId?getCat(t.categoryId):'—'}\nSubject: ${t.subject}\nPriority: ${getPri(t.priorityId)}\nTarget Resolution: ${t.targetDate?fmtDT(t.targetDate):'—'}\n\nLog in to MP HelpDesk to view and assign this ticket.`;
   } else if(eventType === 'ticket_assigned'){
-    const e = getRealEmail(assignedUser);
-    if(e) recipients.push({email:e, name:assignedUser.name});
-    message = `A ticket has been assigned to you.\n\nSubject: ${t.subject}\nRaised by: ${raiser?.name||'User'}`;
+    addRecipient(assignedUser);
+    message = `A ticket has been assigned to you.\n\nTicket No: ${t.ticketNo}\nSubject: ${t.subject}\nRaised by: ${raiser?.name||'User'}\nTarget Resolution: ${t.targetDate?fmtDT(t.targetDate):'—'}`;
   } else if(eventType === 'status_changed'){
-    const e = getRealEmail(raiser);
-    if(e) recipients.push({email:e, name:raiser.name});
+    addRecipient(raiser);
     message = `Your ticket status has been updated.\n\nSubject: ${t.subject}\nNew Status: ${getStat(t.statusId)}`;
   } else if(eventType === 'comment_added'){
-    const e = getRealEmail(raiser);
-    if(e) recipients.push({email:e, name:raiser.name});
+    addRecipient(raiser);
     message = `A new comment has been added to your ticket.\n\nSubject: ${t.subject}`;
+  } else if(eventType === 'ticket_reopened'){
+    addRecipient(assignedUser); deptManagers.forEach(addRecipient);
+    subjectLine = `🔄 Ticket Reopened — ${t.ticketNo}`;
+    message = `${raiser?.name||'The user'} has reopened a ticket.\n\nTicket No: ${t.ticketNo}\nSubject: ${t.subject}\nReason: ${t.reopenReason||'—'}`;
+  } else if(eventType === 'ticket_escalated'){
+    deptManagers.forEach(addRecipient);
+    if(!recipients.length) adminUsers.forEach(addRecipient);
+    subjectLine = `⏰ Overdue Ticket Escalation — ${t.ticketNo}`;
+    message = `This ticket needs attention — it is ${t.escalationReason||'overdue'}.\n\nTicket No: ${t.ticketNo}\nSubject: ${t.subject}\nRaised To: ${t.assignedDeptId?getDept(t.assignedDeptId):'—'}\nAssigned To: ${assignedUser?.name||'Unassigned'}\nTarget Resolution: ${t.targetDate?fmtDT(t.targetDate):'—'}\nStatus: ${getStat(t.statusId)}`;
   }
 
   // Send real emails via EmailJS
@@ -1807,35 +2279,28 @@ async function sendEmailNotification(ticketIdOrData, eventType){
 function initNewTicketForm(){
   document.getElementById('ct-no').value='Auto-assigned on submit';
   document.getElementById('ctNoDisplay').textContent='';
-  document.getElementById('ct-dept').innerHTML=MASTERS.departments.map(d=>`<option value="${d.id}">${d.name}</option>`).join('');
-  document.getElementById('ct-priority').innerHTML=MASTERS.priorities.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+  document.getElementById('ct-dept').innerHTML=MASTERS.departments.map(d=>`<option value="${d.id}">${esc(d.name)}</option>`).join('');
+  document.getElementById('ct-priority').innerHTML=MASTERS.priorities.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
   const med=MASTERS.priorities.find(p=>p.level===2);
   if(med) document.getElementById('ct-priority').value=med.id;
 
-  // Issue Type & Sub-Type — editable dropdowns for everyone (Admin and User)
+  // Raise To (department) → drives Issue Type → Sub-Type
+  document.getElementById('ct-adept').innerHTML='<option value="">— Select department —</option>'+MASTERS.departments.filter(d=>d.active!==false).map(d=>`<option value="${d.id}">${esc(d.name)}</option>`).join('');
+  const cats = MASTERS.categories.filter(c=>c.active!==false);
+  document.getElementById('ct-cat').innerHTML = cats.length ? '<option value="">— Select category —</option>'+cats.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('') : '<option value="">— Not configured —</option>';
+  const projs = MASTERS.projects.filter(x=>x.active!==false);
+  document.getElementById('ct-proj').innerHTML = '<option value="">— None —</option>'+projs.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('');
+  document.getElementById('ct-projWrap').style.display = projs.length ? '' : 'none';
+  document.getElementById('ct-ref').value = '';
+
   const ctType    = document.getElementById('ct-type');
   const ctSubtype = document.getElementById('ct-subtype');
+  ctType.disabled = false; ctSubtype.disabled = false;
+  onRaiseToDeptChange();
 
-  ctType.innerHTML   = MASTERS.issueTypes.filter(t=>t.active!==false).map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
-  ctType.disabled    = false;
-  ctType.style.background = '';
-  ctType.style.color      = '';
-  ctType.style.cursor     = '';
-  ctSubtype.disabled = false;
-  ctSubtype.style.background = '';
-  ctSubtype.style.color      = '';
-  ctSubtype.style.cursor     = '';
+  // Legacy badges / note from earlier versions — keep hidden
+  ['ct-typeAdminBadge','ct-subtypeAdminBadge','ct-typeNote'].forEach(i=>{ const e=document.getElementById(i); if(e) e.style.display='none'; });
 
-  // ADMIN ONLY badges no longer apply — hide them
-  const ab1 = document.getElementById('ct-typeAdminBadge');
-  const ab2 = document.getElementById('ct-subtypeAdminBadge');
-  if(ab1) ab1.style.display = 'none';
-  if(ab2) ab2.style.display = 'none';
-  // Lock note no longer applies — hide it
-  const typeNote = document.getElementById('ct-typeNote');
-  if(typeNote) typeNote.style.display = 'none';
-
-  loadSubTypes();
   if(isAdmin()){
     document.getElementById('raisedByWrap').innerHTML=`<select class="form-select" id="ct-userId" onchange="syncRaisedByDept()">${_users.map(u=>`<option value="${u.id}">${u.name}</option>`).join('')}</select>`;
     document.getElementById('ct-userId').value=SESSION.user.uid;
@@ -1873,6 +2338,8 @@ window.syncRaisedByDept=function(){
   if(!dd) return;
   const person = uid===SESSION.user.uid ? SESSION.profile : _users.find(x=>x.id===uid);
   const deptId = person?.deptId;
+  const empEl = document.getElementById('ct-empId');
+  if(empEl) empEl.value = person?.empId || '—';
   if(deptId && MASTERS.departments.some(d=>d.id===deptId)){
     dd.value = deptId;
     dd.disabled = true;
@@ -1935,12 +2402,40 @@ async function uploadTicketAttachments(ticketId, files){
 window.loadSubTypes=function(){
   const tid   = document.getElementById('ct-type').value;
   const ctSub = document.getElementById('ct-subtype');
-  ctSub.innerHTML = MASTERS.subTypes.filter(s=>s.typeId===tid&&s.active!==false).map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+  const subs  = MASTERS.subTypes.filter(s=>s.typeId===tid&&s.active!==false);
+  ctSub.innerHTML = !tid ? '<option value="">— Select issue type first —</option>'
+    : subs.length ? '<option value="">— Select sub-type —</option>'+subs.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('')
+    : '<option value="">— Not applicable —</option>';
+};
+
+// Department chosen → only that department's Issue Types appear, then its Sub-Types
+window.onRaiseToDeptChange=function(){
+  const did = document.getElementById('ct-adept').value;
+  const ctType = document.getElementById('ct-type');
+  if(!did){
+    ctType.innerHTML = '<option value="">— Select department first —</option>';
+  } else {
+    const list = typesForDept(did);
+    ctType.innerHTML = list.length ? '<option value="">— Select issue type —</option>'+list.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('')
+                                   : '<option value="">— No issue types for this department —</option>';
+  }
+  loadSubTypes();
+  const req = !!deptById(did)?.projectRequired;
+  document.getElementById('ct-projReq').style.display = req ? '' : 'none';
+  document.getElementById('ct-projOpt').style.display = req ? 'none' : '';
 };
 
 window.submitTicket=async function(){
-  const subject=document.getElementById('ct-subject').value.trim();
+  const $v = i => (document.getElementById(i)?.value ?? '').trim();
+  const subject = $v('ct-subject');
+  const adept = $v('ct-adept'), typeId = $v('ct-type'), subTypeId = $v('ct-subtype'), catId = $v('ct-cat'), projId = $v('ct-proj');
+  if(!adept){toast('Please select the department to raise this ticket to','error');return;}
+  if(MASTERS.categories.some(c=>c.active!==false) && !catId){toast('Please select a Ticket Category','error');return;}
+  if(!typeId){toast('Please select an Issue Type','error');return;}
+  if(MASTERS.subTypes.some(s=>s.typeId===typeId && s.active!==false) && !subTypeId){toast('Please select an Issue Sub-Type','error');return;}
+  if(deptById(adept)?.projectRequired && !projId){toast('Project / Location is required for '+getDept(adept),'error');return;}
   if(!subject){toast('Subject is required','error');return;}
+  if(!$v('ct-desc')){toast('Description is required','error');return;}
   // Ticket Submitted Date: user-entered, required, cannot be in the future
   // Admin enters it; for normal users the field is hidden and it is simply today.
   let submittedDate = new Date();
@@ -1959,18 +2454,12 @@ window.submitTicket=async function(){
   }
   const uid=document.getElementById('ct-userId').value;
   if(!isAdmin()&&uid!==SESSION.user.uid){toast('Access denied','error');return;}
-  // Extra safety: if user, ensure type/subtype dropdowns are set
-  if(!isAdmin()){
-    const typeEl = document.getElementById('ct-type');
-    const subEl  = document.getElementById('ct-subtype');
-    if(!typeEl.value){ toast('Please select an Issue Type','error'); return; }
-    if(!subEl.value)  { toast('Please select an Issue Sub-Type','error'); return; }
-  }
   const btn=document.getElementById('submitBtn');
   btn.innerHTML='<span class="spinner"></span> Submitting…'; btn.disabled=true;
   setSyncStatus('saving');
   try{
     const ticketNo = await genTicketNo();
+    const sla = computeSla(adept, document.getElementById('ct-priority').value, new Date());
     const ticketData={
       ticketNo,
       userId:   uid,
@@ -1981,6 +2470,13 @@ window.submitTicket=async function(){
       subject,
       description: document.getElementById('ct-desc').value.trim(),
       statusId:'s1',
+      assignedDeptId: adept,
+      categoryId: catId || null,
+      projectId: projId || null,
+      refNo: $v('ct-ref'),
+      confidential: !!deptById(adept)?.confidential,
+      ackDueAt: sla.ackDueAt,
+      targetDate: sla.targetDate,
       createdAt: serverTimestamp(),
       submittedAt: submittedDate,   // entered by the user on the form (Firestore stores it as a Timestamp)
       createdBy: SESSION.user.uid,
@@ -2041,7 +2537,10 @@ window.toggleMasterActive = async function(collectionName, docId, currentActive,
   }
 };
 
-window.renderIssueTypes =function(){ document.getElementById('itBody').innerHTML=MASTERS.issueTypes.map((r,i)=>`<tr><td>${i+1}</td><td><strong>${r.name}</strong></td><td>${activeToggleBtn('issueTypes', r.id, r.active!==false, 'renderIssueTypes')}</td><td><button class="btn-icon" onclick='openMM("issueType",${JSON.stringify(r)})' title="Edit"><i class="ti ti-edit"></i></button> <button class="btn-icon" onclick='deleteIssueType("${r.id}","${r.name.replace(/"/g,'')}")' title="Delete" style="color:var(--red)"><i class="ti ti-trash"></i></button></td></tr>`).join(''); };
+window.renderIssueTypes = function(){
+  const list = [...MASTERS.issueTypes].sort((a,b)=> (a.deptId?getDept(a.deptId):'~').localeCompare(b.deptId?getDept(b.deptId):'~') || a.name.localeCompare(b.name));
+  document.getElementById('itBody').innerHTML = list.length ? list.map((r,i)=>`<tr><td>${i+1}</td><td><strong>${esc(r.name)}</strong></td><td>${r.deptId ? esc(getDept(r.deptId)) : '<span style="color:var(--muted)">All Departments</span>'}</td><td>${activeToggleBtn('issueTypes', r.id, r.active!==false, 'renderIssueTypes')}</td><td><button class="btn-icon" onclick="editMM('issueType','${r.id}')" title="Edit"><i class="ti ti-edit"></i></button> <button class="btn-icon" onclick="deleteIssueType('${r.id}','${esc(r.name).replace(/'/g,'')}')" title="Delete" style="color:var(--red)"><i class="ti ti-trash"></i></button></td></tr>`).join('') : emptyRow(5,'No issue types yet.');
+};
 
 // ── DELETE ISSUE TYPE (with ticket + sub-type validation) ──
 window.deleteIssueType = async function(typeId, typeName){
@@ -2074,7 +2573,13 @@ window.deleteIssueType = async function(typeId, typeName){
     toast('Delete failed: '+e.message,'error');
   }
 };
-window.renderSubTypes   =function(){ document.getElementById('stBody').innerHTML=MASTERS.subTypes.map((r,i)=>`<tr><td>${i+1}</td><td>${getType(r.typeId)}</td><td>${r.name}</td><td>${activeToggleBtn('subTypes', r.id, r.active!==false, 'renderSubTypes')}</td><td><button class="btn-icon" onclick='openMM("subType",${JSON.stringify(r)})' title="Edit"><i class="ti ti-edit"></i></button> <button class="btn-icon" onclick='deleteSubType("${r.id}","${r.name.replace(/"/g,'')}")' title="Delete" style="color:var(--red)"><i class="ti ti-trash"></i></button></td></tr>`).join(''); };
+window.renderSubTypes = function(){
+  const list = [...MASTERS.subTypes].sort((a,b)=> getType(a.typeId).localeCompare(getType(b.typeId)) || a.name.localeCompare(b.name));
+  document.getElementById('stBody').innerHTML = list.length ? list.map((r,i)=>{
+    const ty = MASTERS.issueTypes.find(x=>x.id===r.typeId);
+    return `<tr><td>${i+1}</td><td>${esc(getType(r.typeId))}${ty?.deptId?` <span style="color:var(--muted);font-size:11px">(${esc(getDept(ty.deptId))})</span>`:''}</td><td>${esc(r.name)}</td><td>${activeToggleBtn('subTypes', r.id, r.active!==false, 'renderSubTypes')}</td><td><button class="btn-icon" onclick="editMM('subType','${r.id}')" title="Edit"><i class="ti ti-edit"></i></button> <button class="btn-icon" onclick="deleteSubType('${r.id}','${esc(r.name).replace(/'/g,'')}')" title="Delete" style="color:var(--red)"><i class="ti ti-trash"></i></button></td></tr>`;
+  }).join('') : emptyRow(5,'No sub-types yet.');
+};
 
 // ── DELETE ISSUE SUB-TYPE (with ticket validation) ──
 window.deleteSubType = async function(subTypeId, subTypeName){
@@ -2103,14 +2608,39 @@ window.deleteSubType = async function(subTypeId, subTypeName){
   }
 };
 window.renderPriorities =function(){ const m={1:'b-low',2:'b-medium',3:'b-high',4:'b-critical'}; document.getElementById('priBody').innerHTML=MASTERS.priorities.map((r,i)=>`<tr><td>${i+1}</td><td>${r.name}</td><td><span class="${m[r.level]||'b-low'}">${r.name}</span></td><td><button class="btn-icon" onclick='openMM("priority",${JSON.stringify(r)})'><i class="ti ti-edit"></i></button></td></tr>`).join(''); };
-window.renderDepts      =function(){ document.getElementById('deptBody').innerHTML=MASTERS.departments.map((r,i)=>`<tr><td>${i+1}</td><td>${r.name}</td><td>${activeToggleBtn('departments', r.id, r.active!==false, 'renderDepts')}</td><td><button class="btn-icon" onclick='openMM("dept",${JSON.stringify(r)})' title="Edit"><i class="ti ti-edit"></i></button> <button class="btn-icon" onclick='deleteDept("${r.id}","${r.name.replace(/"/g,'')}")' title="Delete" style="color:var(--red)"><i class="ti ti-trash"></i></button></td></tr>`).join(''); };
+window.renderDepts = function(){
+  document.getElementById('deptBody').innerHTML = MASTERS.departments.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.name)}${r.confidential?' <span class="b-conf">Confidential</span>':''}${r.projectRequired?' <span class="b-role">Project required</span>':''}</td><td>${activeToggleBtn('departments', r.id, r.active!==false, 'renderDepts')}</td><td><button class="btn-icon" onclick="editMM('dept','${r.id}')" title="Edit"><i class="ti ti-edit"></i></button> <button class="btn-icon" onclick="deleteDept('${r.id}','${esc(r.name).replace(/'/g,'')}')" title="Delete" style="color:var(--red)"><i class="ti ti-trash"></i></button></td></tr>`).join('');
+};
+
+// ── TICKET CATEGORY + PROJECT / LOCATION masters ──
+window.renderCategories = function(){
+  document.getElementById('catBody').innerHTML = MASTERS.categories.length ? MASTERS.categories.map((r,i)=>`<tr><td>${i+1}</td><td><strong>${esc(r.name)}</strong></td><td>${activeToggleBtn('categories', r.id, r.active!==false, 'renderCategories')}</td><td><button class="btn-icon" onclick="editMM('category','${r.id}')" title="Edit"><i class="ti ti-edit"></i></button> <button class="btn-icon" onclick="deleteCategory('${r.id}','${esc(r.name).replace(/'/g,'')}')" title="Delete" style="color:var(--red)"><i class="ti ti-trash"></i></button></td></tr>`).join('') : emptyRow(4,'No categories yet. Use Admin → HelpDesk Setup to load the recommended 10, or click Add.');
+};
+window.renderProjects = function(){
+  document.getElementById('projBody').innerHTML = MASTERS.projects.length ? MASTERS.projects.map((r,i)=>`<tr><td>${i+1}</td><td><strong>${esc(r.name)}</strong></td><td>${activeToggleBtn('projects', r.id, r.active!==false, 'renderProjects')}</td><td><button class="btn-icon" onclick="editMM('project','${r.id}')" title="Edit"><i class="ti ti-edit"></i></button> <button class="btn-icon" onclick="deleteProject('${r.id}','${esc(r.name).replace(/'/g,'')}')" title="Delete" style="color:var(--red)"><i class="ti ti-trash"></i></button></td></tr>`).join('') : emptyRow(4,'No projects / locations yet. Click Add to create the first one.');
+};
+async function deleteSimpleMaster(col, id, name, label, field, renderFn){
+  if(!isAdmin()) return;
+  const n = _tickets.filter(t=>t[field]===id).length;
+  if(n>0){ showMasterBlockPopup(name, n, 'ticket', label, col, id, renderFn); return; }
+  if(!confirm(`Delete ${label} "${name}"?\n\nThis cannot be undone.`)) return;
+  setSyncStatus('saving');
+  try{
+    await deleteDoc(doc(db,col,id));
+    await loadMasters(); populateFilters(); window[renderFn]();
+    setSyncStatus('synced'); toast(`${label} "${name}" deleted`);
+  } catch(e){ setSyncStatus('err'); toast('Delete failed: '+e.message,'error'); }
+}
+window.deleteCategory = (id,name)=>deleteSimpleMaster('categories',id,name,'Ticket Category','categoryId','renderCategories');
+window.deleteProject  = (id,name)=>deleteSimpleMaster('projects',id,name,'Project / Location','projectId','renderProjects');
 
 // ── DELETE DEPARTMENT (with ticket validation) ──
 window.deleteDept = async function(deptId, deptName){
   if(!isAdmin()) return;
 
   // Check if any tickets exist for this department
-  const ticketsInDept = _tickets.filter(t => t.deptId === deptId);
+  const ticketsInDept = _tickets.filter(t => t.deptId === deptId || t.assignedDeptId === deptId);
+  const typesInDept = MASTERS.issueTypes.filter(t => t.deptId === deptId);
   // Check if any users belong to this department
   const usersInDept = _users.filter(u => u.deptId === deptId);
 
@@ -2120,6 +2650,10 @@ window.deleteDept = async function(deptId, deptName){
   }
   if(usersInDept.length > 0){
     showMasterBlockPopup(deptName, usersInDept.length, 'user', 'department', 'departments', deptId, 'renderDepts');
+    return;
+  }
+  if(typesInDept.length > 0){
+    showMasterBlockPopup(deptName, typesInDept.length, 'itype', 'department', 'departments', deptId, 'renderDepts');
     return;
   }
 
@@ -2155,6 +2689,9 @@ window.showMasterBlockPopup = function(itemName, count, blockedBy, entityLabel, 
   } else if(blockedBy === 'user'){
     reason = `<strong>${count} user${count>1?'s belong':' belongs'}</strong> to this ${lower}.`;
     advice = `Move those users to another ${lower} first, or mark this ${lower} as <strong>Inactive</strong> instead.`;
+  } else if(blockedBy === 'itype'){
+    reason = `<strong>${count} issue type${count>1?'s are':' is'}</strong> linked to this ${lower}.`;
+    advice = `Move or delete those issue types first, or mark this ${lower} as <strong>Inactive</strong> instead.`;
   } else { // subtype
     reason = `<strong>${count} sub-type${count>1?'s exist':' exists'}</strong> under this ${lower}.`;
     advice = `Delete those sub-types first, or mark this ${lower} as <strong>Inactive</strong> instead.`;
@@ -2208,18 +2745,34 @@ window.showDeptBlockPopup = function(deptName, count, type){
 window.closeDeptBlockModal = function(){
   document.getElementById('deptBlockModal').classList.remove('show');
 };
-window.renderStatuses   =function(){ document.getElementById('statBody').innerHTML=MASTERS.statuses.map((r,i)=>`<tr><td>${i+1}</td><td>${statBadge(r.id)}</td><td>${r.order}</td><td><button class="btn-icon" onclick='openMM("status",${JSON.stringify(r)})'><i class="ti ti-edit"></i></button></td></tr>`).join(''); };
+window.renderStatuses = function(){ document.getElementById('statBody').innerHTML=MASTERS.statuses.map((r,i)=>`<tr><td>${i+1}</td><td>${statBadge(r.id)}</td><td>${r.order}</td><td><button class="btn-icon" onclick="editMM('status','${r.id}')"><i class="ti ti-edit"></i></button></td></tr>`).join(''); };
 
+const MM_COLLECTION = {issueType:'issueTypes',subType:'subTypes',priority:'priorities',dept:'departments',status:'statuses',category:'categories',project:'projects'};
+const MM_KEY        = {issueType:'issueTypes',subType:'subTypes',priority:'priorities',dept:'departments',status:'statuses',category:'categories',project:'projects'};
+window.editMM = function(type,id){
+  const rec = MASTERS[MM_KEY[type]]?.find(x=>x.id===id);
+  if(rec) openMM(type, rec);
+};
 window.openMM=function(type,rec=null){
   window._mmType=type; window._mmRec=rec;
-  const lbl={issueType:'Issue Type',subType:'Issue Sub-Type',priority:'Priority',dept:'Department',status:'Status'};
+  const lbl={issueType:'Issue Type',subType:'Issue Sub-Type',priority:'Priority',dept:'Department',status:'Status',category:'Ticket Category',project:'Project / Location'};
   document.getElementById('mmTitle').textContent=(rec?'Edit ':'Add ')+lbl[type];
+  const activeBox = `<div class="mt-3"><label style="display:flex;align-items:center;gap:8px;font-size:13px"><input type="checkbox" id="mm-a" ${rec?.active!==false?'checked':''}/> Active</label></div>`;
+  const nameVal = esc(rec?.name||'');
   let html='';
-  if(type==='issueType') html=`<label class="form-label">Name</label><input class="form-control" id="mm-n" value="${rec?.name||''}"/><div class="mt-3"><label style="display:flex;align-items:center;gap:8px;font-size:13px"><input type="checkbox" id="mm-a" ${rec?.active!==false?'checked':''}/> Active</label></div>`;
-  else if(type==='subType') html=`<div class="mb-3"><label class="form-label">Issue Type</label><select class="form-select" id="mm-tid">${MASTERS.issueTypes.map(t=>`<option value="${t.id}" ${rec&&rec.typeId===t.id?'selected':''}>${t.name}</option>`).join('')}</select></div><label class="form-label">Sub-Type Name</label><input class="form-control" id="mm-n" value="${rec?.name||''}"/>`;
-  else if(type==='priority') html=`<label class="form-label">Name</label><input class="form-control" id="mm-n" value="${rec?.name||''}"/><div class="mt-3"><label class="form-label">Level (1=Low→4=Critical)</label><input class="form-control" type="number" id="mm-lv" min="1" max="10" value="${rec?.level||1}"/></div>`;
-  else if(type==='dept') html=`<label class="form-label">Department Name</label><input class="form-control" id="mm-n" value="${rec?.name||''}"/><div class="mt-3"><label style="display:flex;align-items:center;gap:8px;font-size:13px"><input type="checkbox" id="mm-a" ${rec?.active!==false?'checked':''}/> Active</label></div>`;
-  else if(type==='status') html=`<label class="form-label">Status Name</label><input class="form-control" id="mm-n" value="${rec?.name||''}"/><div class="mt-3"><label class="form-label">Display Order</label><input class="form-control" type="number" id="mm-ord" value="${rec?.order||MASTERS.statuses.length+1}"/></div>`;
+  if(type==='issueType'){
+    html=`<label class="form-label">Name</label><input class="form-control" id="mm-n" value="${nameVal}"/>
+      <div class="mt-3"><label class="form-label">Department</label>
+        <select class="form-select" id="mm-d"><option value="">All Departments (shown for every department)</option>${MASTERS.departments.map(d=>`<option value="${d.id}" ${rec?.deptId===d.id?'selected':''}>${esc(d.name)}</option>`).join('')}</select>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:4px">When a department is chosen, this Issue Type appears only when a ticket is raised to that department.</div></div>${activeBox}`;
+  }
+  else if(type==='subType') html=`<div class="mb-3"><label class="form-label">Issue Type</label><select class="form-select" id="mm-tid">${[...MASTERS.issueTypes].sort((a,b)=>(a.deptId?getDept(a.deptId):'~').localeCompare(b.deptId?getDept(b.deptId):'~')||a.name.localeCompare(b.name)).map(t=>`<option value="${t.id}" ${rec&&rec.typeId===t.id?'selected':''}>${t.deptId?esc(getDept(t.deptId))+' — ':''}${esc(t.name)}</option>`).join('')}</select></div><label class="form-label">Sub-Type Name</label><input class="form-control" id="mm-n" value="${nameVal}"/>`;
+  else if(type==='priority') html=`<label class="form-label">Name</label><input class="form-control" id="mm-n" value="${nameVal}"/><div class="mt-3"><label class="form-label">Level (1=Low→4=Critical)</label><input class="form-control" type="number" id="mm-lv" min="1" max="10" value="${rec?.level||1}"/></div>`;
+  else if(type==='dept') html=`<label class="form-label">Department Name</label><input class="form-control" id="mm-n" value="${nameVal}"/>${activeBox}
+      <div class="mt-2"><label style="display:flex;align-items:center;gap:8px;font-size:13px"><input type="checkbox" id="mm-pr" ${rec?.projectRequired?'checked':''}/> Project / Location required when a ticket is raised to this department</label></div>
+      <div class="mt-2"><label style="display:flex;align-items:center;gap:8px;font-size:13px"><input type="checkbox" id="mm-cf" ${rec?.confidential?'checked':''}/> Confidential — tickets raised to this department are hidden from Management</label></div>`;
+  else if(type==='status') html=`<label class="form-label">Status Name</label><input class="form-control" id="mm-n" value="${nameVal}"/><div class="mt-3"><label class="form-label">Display Order</label><input class="form-control" type="number" id="mm-ord" value="${rec?.order||MASTERS.statuses.length+1}"/></div>`;
+  else html=`<label class="form-label">${lbl[type]} Name</label><input class="form-control" id="mm-n" value="${nameVal}"/>${activeBox}`;   // category / project
   document.getElementById('mmBody').innerHTML=html;
   document.getElementById('masterModal').classList.add('show');
   setTimeout(()=>document.getElementById('mm-n')?.focus(),100);
@@ -2227,29 +2780,40 @@ window.openMM=function(type,rec=null){
 window.closeMM=function(){ document.getElementById('masterModal').classList.remove('show'); };
 
 window.saveMM=async function(){
+  if(!isAdmin()) return;
   const n=document.getElementById('mm-n')?.value.trim();
   if(!n){toast('Name is required','error');return;}
+  const type=window._mmType, rec=window._mmRec;
+  const col=MM_COLLECTION[type];
+  const norm = x => String(x||'').toLowerCase().replace(/\s+/g,' ').trim();
+  // Duplicate-name guard
+  const dupPool = {dept:MASTERS.departments, category:MASTERS.categories, project:MASTERS.projects}[type];
+  if(dupPool && dupPool.some(x=>x.id!==rec?.id && norm(x.name)===norm(n))){ toast('"'+n+'" already exists','error'); return; }
+  if(type==='issueType'){
+    const dId = document.getElementById('mm-d').value || null;
+    if(MASTERS.issueTypes.some(x=>x.id!==rec?.id && norm(x.name)===norm(n) && (x.deptId||null)===dId)){ toast('That Issue Type already exists for this department','error'); return; }
+  }
   const btn=document.getElementById('mmSaveBtn');
   btn.innerHTML='<span class="spinner"></span>'; btn.disabled=true;
   setSyncStatus('saving');
   try{
-    const type=window._mmType, rec=window._mmRec;
-    const colMap={issueType:'issueTypes',subType:'subTypes',priority:'priorities',dept:'departments',status:'statuses'};
-    const col=colMap[type];
+    const act = document.getElementById('mm-a')?.checked ?? true;
     let data={};
-    if(type==='issueType') data={name:n,active:document.getElementById('mm-a')?.checked??true};
-    else if(type==='subType') data={name:n,typeId:document.getElementById('mm-tid').value,active:true};
+    if(type==='issueType') data={name:n,active:act,deptId:document.getElementById('mm-d').value||null};
+    else if(type==='subType') data={name:n,typeId:document.getElementById('mm-tid').value,active:rec?rec.active!==false:true};
     else if(type==='priority') data={name:n,level:parseInt(document.getElementById('mm-lv').value)};
-    else if(type==='dept') data={name:n,active:document.getElementById('mm-a')?.checked??true};
+    else if(type==='dept') data={name:n,active:act,projectRequired:!!document.getElementById('mm-pr')?.checked,confidential:!!document.getElementById('mm-cf')?.checked};
     else if(type==='status') data={name:n,order:parseInt(document.getElementById('mm-ord').value)};
+    else if(type==='category') data={name:n,active:act,order:rec?.order ?? (MASTERS.categories.reduce((m,c)=>Math.max(m,c.order||0),0)+1)};
+    else if(type==='project') data={name:n,active:act};
 
     if(rec?.id){ await updateDoc(doc(db,col,rec.id),data); }
     else { await addDoc(collection(db,col),data); }
 
     await loadMasters(); populateFilters();
     setSyncStatus('synced'); closeMM(); toast('Saved successfully');
-    const rfn={issueType:renderIssueTypes,subType:renderSubTypes,priority:renderPriorities,dept:renderDepts,status:renderStatuses};
-    window['render'+type.charAt(0).toUpperCase()+type.slice(1)]?.() || rfn[type]?.();
+    const rfn={issueType:renderIssueTypes,subType:renderSubTypes,priority:renderPriorities,dept:renderDepts,status:renderStatuses,category:renderCategories,project:renderProjects};
+    rfn[type]?.();
   } catch(e){ setSyncStatus('err'); toast('Save failed: '+e.message,'error'); }
   finally{ btn.innerHTML='<i class="ti ti-check"></i> Save'; btn.disabled=false; }
 };
@@ -2274,7 +2838,7 @@ window.renderUsers=function(){
     }
   }
 
-  document.getElementById('usersBody').innerHTML=_users.map((u,i)=>`<tr><td>${i+1}</td><td><span style="font-weight:600;font-family:monospace">${u.empId||'—'}</span></td><td><div style="display:flex;align-items:center;gap:8px"><div style="width:28px;height:28px;border-radius:50%;background:${u.role==='Admin'?'var(--navy)':'#2A5298'};color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">${(u.name||'U').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)}</div><div><div style="font-size:13px;font-weight:500">${u.name}</div><div style="font-size:11px;color:var(--muted)">${getDept(u.deptId)}</div></div></div></td><td style="font-size:12px">${u.notifyEmail ? u.notifyEmail : '<span style="color:var(--muted)">—</span>'}</td><td><span class="${u.role==='Admin'?'b-admin':'b-user'}">${u.role}</span></td><td>${getDept(u.deptId)}</td><td>${u.active?'<span class="b-resolved">Active</span>':'<span class="b-closed">Inactive</span>'}</td><td><button class="btn-icon" onclick='openUserModal(${JSON.stringify(u)})' title="Edit"><i class="ti ti-edit"></i></button> ${u.notifyEmail ? `<button class="btn-icon" onclick="adminResetPassword('${u.notifyEmail}','${u.name.replace(/'/g,'')}')" title="Send password reset email" style="color:var(--blue)"><i class="ti ti-key"></i></button>` : `<button class="btn-icon" disabled title="Add an email first to enable password reset" style="color:var(--muted);cursor:not-allowed"><i class="ti ti-key"></i></button>`}</td></tr>`).join('');
+  document.getElementById('usersBody').innerHTML=_users.map((u,i)=>`<tr><td>${i+1}</td><td><span style="font-weight:600;font-family:monospace">${u.empId||'—'}</span></td><td><div style="display:flex;align-items:center;gap:8px"><div style="width:28px;height:28px;border-radius:50%;background:${u.role==='Admin'?'var(--navy)':'#2A5298'};color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">${(u.name||'U').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)}</div><div><div style="font-size:13px;font-weight:500">${u.name}</div><div style="font-size:11px;color:var(--muted)">${getDept(u.deptId)}</div></div></div></td><td style="font-size:12px">${u.notifyEmail ? u.notifyEmail : '<span style="color:var(--muted)">—</span>'}</td><td><span class="${u.role==='Admin'?'b-admin':((!u.role||u.role==='User')?'b-user':'b-role')}">${roleLabel(u.role)}</span></td><td>${getDept(u.deptId)}</td><td>${u.active?'<span class="b-resolved">Active</span>':'<span class="b-closed">Inactive</span>'}</td><td><button class="btn-icon" onclick='openUserModal(${JSON.stringify(u)})' title="Edit"><i class="ti ti-edit"></i></button> ${u.notifyEmail ? `<button class="btn-icon" onclick="adminResetPassword('${u.notifyEmail}','${u.name.replace(/'/g,'')}')" title="Send password reset email" style="color:var(--blue)"><i class="ti ti-key"></i></button>` : `<button class="btn-icon" disabled title="Add an email first to enable password reset" style="color:var(--muted);cursor:not-allowed"><i class="ti ti-key"></i></button>`}</td></tr>`).join('');
 };
 
 window.openUserModal=function(user=null){
@@ -2328,6 +2892,8 @@ window.saveUser=async function(){
   const active = document.getElementById('u-active').checked;
   const pwd    = document.getElementById('u-pass').value;
   if(!name){toast('Name is required','error');return;}
+  if(['DeptExecutive','DeptManager','DeptHead'].includes(role) && !deptId){toast('Select a department for a department role','error');return;}
+  if(window._editUserId && window._editUserId===SESSION.user.uid && role!=='Admin'){toast('You cannot remove your own HelpDesk Admin role','error');return;}
   if(!window._editUserId){
     if(!/^\d{3}$/.test(empId)){toast('Employee ID must be exactly 3 digits (e.g. 101)','error');return;}
     if(_users.find(u=>u.empId===empId)){toast('Employee ID '+empId+' already exists','error');return;}
@@ -2392,29 +2958,159 @@ window.saveUser=async function(){
 };
 
 // ── REPORTS ───────────────────────────────────────────────────
+const REPORT_TYPES = [
+  ['register','Ticket Register (all tickets)'],
+  ['dept','Department-wise Ticket Report'],
+  ['emp','Employee-wise Ticket Report'],
+  ['assigned','Assigned Employee Report'],
+  ['pending','Pending Ticket Report'],
+  ['overdue','Overdue Ticket Report'],
+  ['tat','Resolution TAT Report'],
+  ['priority','Priority-wise Report'],
+  ['reopened','Reopened Ticket Report'],
+  ['monthly','Monthly Ticket Summary']
+];
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const tatMs = t => { const e = toMs(t.firstResolvedAt)||toMs(t.resolvedAt)||toMs(t.closedAt); const st = toMs(t.createdAt); return (e && st && e>=st && t.statusId!=='s10') ? e-st : 0; };
+const avgTat = list => { const v = list.map(tatMs).filter(x=>x>0); return v.length ? fmtDuration(v.reduce((x,y)=>x+y,0)/v.length) : '—'; };
+const isSolved = t => t.statusId==='s4' || t.statusId==='s5';
+const groupBy = (arr, fn) => { const m = new Map(); arr.forEach(t=>{ const k = fn(t); if(!m.has(k)) m.set(k,[]); m.get(k).push(t); }); return m; };
+const parseDay = v => { const [y,m,d] = v.split('-').map(Number); return new Date(y, m-1, d); };
+const cellHtml = c => (c && typeof c==='object') ? c.html : esc(c);
+const cellText = c => (c && typeof c==='object') ? c.text : String(c ?? '');
+const ageText = ms => fmtDuration(ms);
+
+window.initReportPage = function(){
+  const sel = document.getElementById('rType');
+  if(!sel.options.length) sel.innerHTML = REPORT_TYPES.filter(r=>true).map(r=>`<option value="${r[0]}">${r[1]}</option>`).join('');
+  const sub = document.getElementById('rDateSubOpt');
+  if(sub){ sub.hidden = !isAdmin(); sub.disabled = !isAdmin(); if(!isAdmin() && document.getElementById('rDateField').value==='submittedAt') document.getElementById('rDateField').value='createdAt'; }
+  const fd = document.getElementById('fixDupBtn'); if(fd) fd.style.display = isAdmin() ? '' : 'none';
+  runReport();
+};
+
+function totalsRow(rows, label){
+  if(!rows.length) return rows;
+  const n = rows[0].length, tot = [{html:`<strong>${esc(label)}</strong>`, text:label}];
+  for(let c=1;c<n;c++){
+    const allNum = rows.every(r=>typeof r[c]==='number');
+    const v = allNum ? rows.reduce((x,r)=>x+r[c],0) : '';
+    tot.push(allNum ? {html:`<strong>${v}</strong>`, text:String(v)} : '');
+  }
+  return [...rows, tot];
+}
+
 window.runReport=function(){
-  const fd=document.getElementById('rDept')?.value||'', fs=document.getElementById('rStatus')?.value||'', fp=document.getElementById('rPriority')?.value||'';
-  const dField=document.getElementById('rDateField')?.value||'createdAt';
+  if(!document.getElementById('rType')?.options.length) return;
+  const type = document.getElementById('rType').value;
+  const fd=document.getElementById('rDept')?.value||'', fa=document.getElementById('rADept')?.value||'', fs=document.getElementById('rStatus')?.value||'', fp=document.getElementById('rPriority')?.value||'';
+  const dField=(isAdmin() ? document.getElementById('rDateField')?.value : 'createdAt') || 'createdAt';
   const dFrom=document.getElementById('rDateFrom')?.value||'';
   const dTo=document.getElementById('rDateTo')?.value||'';
-  let data=_tickets;
+
+  let data = _tickets.filter(canViewTicket);      // already limited to what this role may see
   if(fd) data=data.filter(t=>t.deptId===fd);
+  if(fa) data=data.filter(t=>t.assignedDeptId===fa);
   if(fs) data=data.filter(t=>t.statusId===fs);
   if(fp) data=data.filter(t=>t.priorityId===fp);
   if(dFrom || dTo){
     data=data.filter(t=>{
       const ts=t[dField];
-      if(!ts) return false; // no reliable date for this field — excluded from a date-ranged report rather than guessed
+      if(!ts) return false;
       const d = ts.toDate ? ts.toDate() : new Date(ts);
       if(isNaN(d.getTime())) return false;
       const dayStart = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-      if(dFrom && dayStart < new Date(dFrom)) return false;
-      if(dTo && dayStart > new Date(dTo)) return false;
+      if(dFrom && dayStart < parseDay(dFrom)) return false;
+      if(dTo && dayStart > parseDay(dTo)) return false;
       return true;
     });
   }
-  window._rptData=data;
-  document.getElementById('rptBody').innerHTML=data.length===0?emptyRow(9,'No records found.'):data.map(t=>`<tr><td style="color:var(--blue);font-weight:500">${t.ticketNo}</td><td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.subject}</td><td>${getUser(t.userId)}</td><td>${getDept(t.deptId)}</td><td>${priBadge(t.priorityId)}</td><td>${statBadge(t.statusId)}</td><td>${t.assignedTo ? `<strong>${getUser(t.assignedTo)}</strong>` : '<span style="color:var(--muted)">—</span>'}</td><td>${fmtDate(t.createdAt)}</td><td>${fmtDate(t.submittedAt,'Not Available')}</td></tr>`).join('');
+
+  const showSub = isAdmin();
+  const listRow = (t, extra=[]) => [
+    {html:`<span style="color:var(--blue);font-weight:500">${esc(t.ticketNo)}</span>`, text:t.ticketNo},
+    {html:`<span style="display:inline-block;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(t.subject)}">${esc(t.subject)}</span>`, text:t.subject},
+    getUser(t.userId), getDept(t.deptId), t.assignedDeptId ? getDept(t.assignedDeptId) : '—',
+    ...extra
+  ];
+  const baseHead = ['Ticket No','Subject','Raised By','Department','Assigned Dept'];
+  let out;
+
+  if(type==='register'){
+    const rows = data.map(t=>listRow(t,[
+      getType(t.typeId),
+      {html:priBadge(t.priorityId), text:getPri(t.priorityId)},
+      {html:statBadge(t.statusId), text:getStat(t.statusId)},
+      t.assignedTo ? getUser(t.assignedTo) : '—',
+      fmtDate(t.targetDate), fmtDate(t.createdAt),
+      ...(showSub ? [fmtDate(t.submittedAt,'Not Available')] : [])
+    ]));
+    out = { title:'Ticket Register', head:[...baseHead,'Issue Type','Priority','Status','Assigned To','Target Date','Creation Date',...(showSub?['Submitted Date']:[])], rows };
+  }
+  else if(type==='dept'){
+    const g = groupBy(data, t=>t.deptId||'');
+    const rows = [...g.entries()].map(([k,l])=>[k?getDept(k):'(not set)', l.length, l.filter(t=>!isDone(t)).length, l.filter(isSolved).length, l.filter(t=>t.statusId==='s10').length, l.filter(isOverdue).length]).sort((x,y)=>y[1]-x[1]);
+    out = { title:'Department-wise Ticket Report (tickets raised by each department)', head:['Department','Total Raised','Pending','Resolved / Closed','Rejected','Overdue'], rows:totalsRow(rows,'Total') };
+  }
+  else if(type==='emp'){
+    const g = groupBy(data, t=>t.userId||'');
+    const rows = [...g.entries()].map(([k,l])=>{ const u=_users.find(x=>x.id===k); return [u?.name||'—', u?.empId||'—', u?.deptId?getDept(u.deptId):'—', l.length, l.filter(t=>!isDone(t)).length, l.filter(isSolved).length, l.filter(t=>t.reopenCount>0||t.statusId==='s6').length]; }).sort((x,y)=>y[3]-x[3]);
+    out = { title:'Employee-wise Ticket Report (tickets raised by employees)', head:['Employee','Emp ID','Department','Total Raised','Pending','Resolved / Closed','Reopened'], rows:totalsRow(rows.map(r=>r),'Total') };
+    out.rows = out.rows.map((r,i,arr)=> i===arr.length-1 ? [r[0],'','',r[3],r[4],r[5],r[6]] : r);
+  }
+  else if(type==='assigned'){
+    const g = groupBy(data.filter(t=>t.assignedTo), t=>t.assignedTo);
+    const rows = [...g.entries()].map(([k,l])=>{ const u=_users.find(x=>x.id===k); return [u?.name||'—', u?.deptId?getDept(u.deptId):'—', l.length, l.filter(t=>!isDone(t)).length, l.filter(isSolved).length, l.filter(isOverdue).length, avgTat(l)]; }).sort((x,y)=>y[3]-x[3]);
+    const un = data.filter(t=>!t.assignedTo && !isDone(t)).length;
+    out = { title:'Assigned Employee Report (workload of each support employee)', head:['Assigned To','Department','Total Assigned','Pending','Resolved / Closed','Overdue','Avg Resolution Time'], rows:totalsRow(rows,'Total') };
+    out.rows = out.rows.map((r,i,arr)=> i===arr.length-1 && rows.length ? [r[0],'',r[2],r[3],r[4],r[5],''] : r);
+    if(un) out.note = `${un} pending ticket${un>1?'s are':' is'} not assigned to anyone yet.`;
+  }
+  else if(type==='pending'){
+    const l = data.filter(t=>!isDone(t)).sort((x,y)=>toMs(x.createdAt)-toMs(y.createdAt));
+    out = { title:'Pending Ticket Report', head:[...baseHead,'Priority','Status','Assigned To','Target Date','Age'], rows:l.map(t=>listRow(t,[
+      {html:priBadge(t.priorityId), text:getPri(t.priorityId)}, {html:statBadge(t.statusId), text:getStat(t.statusId)},
+      t.assignedTo?getUser(t.assignedTo):'—', fmtDate(t.targetDate), ageText(Date.now()-toMs(t.createdAt))])) };
+  }
+  else if(type==='overdue'){
+    const l = data.filter(isOverdue).sort((x,y)=>toMs(x.targetDate)-toMs(y.targetDate));
+    out = { title:'Overdue Ticket Report (past the target resolution date)', head:[...baseHead,'Priority','Status','Assigned To','Target Date','Overdue By'], rows:l.map(t=>listRow(t,[
+      {html:priBadge(t.priorityId), text:getPri(t.priorityId)}, {html:statBadge(t.statusId), text:getStat(t.statusId)},
+      t.assignedTo?getUser(t.assignedTo):'—', fmtDT(t.targetDate), ageText(Date.now()-toMs(t.targetDate))])) };
+  }
+  else if(type==='tat'){
+    const l = data.filter(t=>tatMs(t)>0).sort((x,y)=>tatMs(y)-tatMs(x));
+    out = { title:'Resolution TAT Report (time taken to resolve)', head:[...baseHead,'Priority','Created','Resolved','Resolution Time','SLA'], rows:l.map(t=>listRow(t,[
+      {html:priBadge(t.priorityId), text:getPri(t.priorityId)}, fmtDT(t.createdAt), fmtDT(t.firstResolvedAt||t.resolvedAt||t.closedAt), fmtDuration(tatMs(t)),
+      (()=>{ if(!t.targetDate) return '—'; const met = (toMs(t.firstResolvedAt)||doneMs(t)) <= toMs(t.targetDate); return {html:met?'<span class="b-ontrack">SLA met</span>':'<span class="b-overdue">SLA breached</span>', text:met?'SLA met':'SLA breached'}; })()])) };
+    if(l.length) out.note = `Average resolution time: ${avgTat(l)}`;
+  }
+  else if(type==='priority'){
+    const g = groupBy(data, t=>t.priorityId||'');
+    const order = MASTERS.priorities.map(p=>p.id).reverse();
+    const rows = [...g.entries()].sort((x,y)=>order.indexOf(x[0])-order.indexOf(y[0])).map(([k,l])=>[k?getPri(k):'(not set)', l.length, l.filter(t=>!isDone(t)).length, l.filter(isSolved).length, l.filter(isOverdue).length, avgTat(l)]);
+    out = { title:'Priority-wise Report', head:['Priority','Total','Pending','Resolved / Closed','Overdue','Avg Resolution Time'], rows:totalsRow(rows,'Total') };
+    out.rows = out.rows.map((r,i,arr)=> i===arr.length-1 && rows.length ? [r[0],r[1],r[2],r[3],r[4],''] : r);
+  }
+  else if(type==='reopened'){
+    const l = data.filter(t=>t.reopenCount>0 || t.statusId==='s6').sort((x,y)=>toMs(y.reopenedAt)-toMs(x.reopenedAt));
+    out = { title:'Reopened Ticket Report', head:[...baseHead,'Status','Times Reopened','Last Reopened','Reopen Reason'], rows:l.map(t=>listRow(t,[
+      {html:statBadge(t.statusId), text:getStat(t.statusId)}, t.reopenCount||1, fmtDT(t.reopenedAt), t.reopenReason||'—'])) };
+  }
+  else { // monthly
+    const g = groupBy(data.filter(t=>t.createdAt), t=>{ const d=new Date(toMs(t.createdAt)); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); });
+    const rows = [...g.entries()].sort((x,y)=>y[0].localeCompare(x[0])).map(([k,l])=>{ const [y,m]=k.split('-'); return [MONTHS[+m-1]+' '+y, l.length, l.filter(isSolved).length, l.filter(t=>t.statusId==='s10').length, l.filter(t=>!isDone(t)).length, l.filter(t=>t.reopenCount>0||t.statusId==='s6').length, avgTat(l)]; });
+    out = { title:'Monthly Ticket Summary (by Creation Date)', head:['Month','Raised','Resolved / Closed','Rejected','Pending','Reopened','Avg Resolution Time'], rows:totalsRow(rows,'Total') };
+    out.rows = out.rows.map((r,i,arr)=> i===arr.length-1 && rows.length ? [r[0],r[1],r[2],r[3],r[4],r[5],''] : r);
+  }
+
+  window._rptOut = out;
+  const isTotals = (type==='dept'||type==='emp'||type==='assigned'||type==='priority'||type==='monthly');
+  const cnt = isTotals ? Math.max(0,out.rows.length-1) : out.rows.length;
+  document.getElementById('rptTitle').textContent = out.title;
+  document.getElementById('rptCount').textContent = out.rows.length ? (isTotals ? `${cnt} row${cnt===1?'':'s'}` : `${cnt} ticket${cnt===1?'':'s'}`) + (out.note ? ' · '+out.note : '') : (out.note||'');
+  document.getElementById('rptHead').innerHTML = '<tr>'+out.head.map(h=>`<th>${esc(h)}</th>`).join('')+'</tr>';
+  document.getElementById('rptBody').innerHTML = out.rows.length ? out.rows.map(r=>'<tr>'+r.map(c=>`<td>${cellHtml(c)}</td>`).join('')+'</tr>').join('') : emptyRow(out.head.length,'No records found.');
 };
 
 // ── FIX DUPLICATE TICKET NUMBERS (one-time repair tool) ──
@@ -2477,8 +3173,244 @@ window.fixDuplicateTicketNumbers = async function(){
 };
 
 window.exportCSV=function(){
-  const rows=['Ticket No,Subject,Raised By,Department,Priority,Status,Assigned To,Creation Date,Ticket Submitted Date'].concat(window._rptData.map(t=>`"${t.ticketNo}","${t.subject}","${getUser(t.userId)}","${getDept(t.deptId)}","${getPri(t.priorityId)}","${getStat(t.statusId)}","${t.assignedTo?getUser(t.assignedTo):''}","${fmtDate(t.createdAt)}","${fmtDate(t.submittedAt,'Not Available')}"`)).join('\n');
-  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([rows],{type:'text/csv'})); a.download='helpdesk_report.csv'; a.click(); toast('CSV exported');
+  const o = window._rptOut;
+  if(!o || !o.rows.length){ toast('Nothing to export — run a report first','error'); return; }
+  const q = v => { let t = cellText(v); if(/^[=+\-@]/.test(t)) t = "'"+t; return '"'+t.replace(/"/g,'""')+'"'; };
+  const lines = [o.head.map(q).join(',')].concat(o.rows.map(r=>r.map(q).join(',')));
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['﻿'+lines.join('\r\n')],{type:'text/csv;charset=utf-8'}));
+  a.download='helpdesk_'+(document.getElementById('rType').value||'report')+'_'+today()+'.csv';
+  a.click(); toast('CSV exported');
+};
+
+// ══════════════════════════════════════════════════════════════
+//  SLA / TAT SETTINGS PAGE
+// ══════════════════════════════════════════════════════════════
+const SLA_UNIT_LABEL = { min:'Minutes', hr:'Hours', wd:'Working days' };
+const slaUnitSelect = (id, cur) => `<select class="form-select" id="${id}" style="width:150px;display:inline-block">${Object.entries(SLA_UNIT_LABEL).map(([k,v])=>`<option value="${k}" ${k===cur?'selected':''}>${v}</option>`).join('')}</select>`;
+
+window.renderSla = function(){
+  const sel = document.getElementById('sla-dept');
+  const cur = sel.value || 'default';
+  sel.innerHTML = `<option value="default">Default (all departments)</option>` + MASTERS.departments.filter(d=>d.active!==false).map(d=>`<option value="${d.id}">${esc(d.name)}${SLA.byDept[d.id]?' — custom':''}</option>`).join('');
+  sel.value = [...sel.options].some(o=>o.value===cur) ? cur : 'default';
+  const dept = sel.value;
+  const pris = [...MASTERS.priorities].sort((a,b)=>b.level-a.level);
+  document.getElementById('slaBody').innerHTML = pris.map(p=>{
+    const r = getSlaRule(dept, p.id);
+    return `<tr><td>${priBadge(p.id)}</td>
+      <td><input type="number" min="1" class="form-control" id="sla-ack-v-${p.id}" value="${r.ack.v}" style="width:90px;display:inline-block;margin-right:6px"/>${slaUnitSelect('sla-ack-u-'+p.id, r.ack.u)}</td>
+      <td><input type="number" min="1" class="form-control" id="sla-res-v-${p.id}" value="${r.res.v}" style="width:90px;display:inline-block;margin-right:6px"/>${slaUnitSelect('sla-res-u-'+p.id, r.res.u)}</td></tr>`;
+  }).join('');
+  const hasOwn = dept!=='default' && !!SLA.byDept[dept];
+  document.getElementById('sla-resetBtn').style.display = hasOwn ? '' : 'none';
+  document.getElementById('sla-note').innerHTML = dept==='default'
+    ? 'These targets apply to every department that has no targets of its own. They are used for <strong>new tickets</strong> and when a ticket’s priority or department is changed; tickets already raised keep their existing target dates.'
+    : (hasOwn ? `<strong>${esc(getDept(dept))}</strong> has its own targets.` : `<strong>${esc(getDept(dept))}</strong> currently uses the Default targets. Saving here will give it its own targets.`);
+};
+
+window.saveSla = async function(){
+  if(!isAdmin()) return;
+  const dept = document.getElementById('sla-dept').value || 'default';
+  const rules = {};
+  for(const p of MASTERS.priorities){
+    const rule = {};
+    for(const k of ['ack','res']){
+      const v = parseInt(document.getElementById(`sla-${k}-v-${p.id}`).value, 10);
+      const u = document.getElementById(`sla-${k}-u-${p.id}`).value;
+      if(!(v>0)){ toast(`Enter a number greater than 0 for ${p.name} ${k==='ack'?'Acknowledgement':'Resolution'}`,'error'); return; }
+      rule[k] = { v, u };
+    }
+    rules[p.id] = rule;
+  }
+  setSyncStatus('saving');
+  try{
+    await setDoc(doc(db,'slaSettings',dept), { rules, updatedAt:serverTimestamp(), updatedBy:SESSION.user.uid });
+    await loadMasters(); renderSla();
+    setSyncStatus('synced'); toast('SLA / TAT saved');
+  } catch(e){ setSyncStatus('err'); toast('Save failed: '+e.message,'error'); }
+};
+
+window.resetSlaDept = async function(){
+  if(!isAdmin()) return;
+  const dept = document.getElementById('sla-dept').value;
+  if(!dept || dept==='default') return;
+  if(!confirm(`Remove the custom targets for "${getDept(dept)}"? It will use the Default targets again.`)) return;
+  setSyncStatus('saving');
+  try{
+    await deleteDoc(doc(db,'slaSettings',dept));
+    await loadMasters(); renderSla();
+    setSyncStatus('synced'); toast('Custom targets removed');
+  } catch(e){ setSyncStatus('err'); toast('Failed: '+e.message,'error'); }
+};
+
+// ══════════════════════════════════════════════════════════════
+//  HELPDESK SETUP — loads the recommended masters (safe to re-run)
+// ══════════════════════════════════════════════════════════════
+const HD_CATEGORIES = ['Application / System Issue','Process Related','Approval Pending','Data Correction','Access / Permission','Hardware Issue','Network / Internet','Request for Information','New Requirement','General Support'];
+const HD_NEW_STATUSES = [{id:'s7',name:'Acknowledged'},{id:'s8',name:'On Hold'},{id:'s9',name:'Pending Approval'},{id:'s10',name:'Rejected'}];
+const HD_STATUS_ORDER = { s1:1, s2:2, s7:3, s3:4, s8:5, s9:6, s4:7, s5:8, s6:9, s10:10 };
+const HD_DEPARTMENTS = ['Accounts','Sales','CRM','Purchase','Engineering','HR','Admin','Marketing','ERP & IT','Legal'];
+const HD_MAP = [
+  ['Accounts','Payment','Vendor Payment Pending'], ['Accounts','Receipt','Receipt Mismatch'], ['Accounts','Reports','Ledger Report'],
+  ['Sales','Booking','Booking Modification'], ['Sales','Customer','Customer Details Correction'],
+  ['CRM','Collection','Payment Follow-up'],
+  ['Purchase','Purchase Order','PO Modification'], ['Purchase','Vendor','Vendor Master Creation'],
+  ['Engineering','BOQ','BOQ Modification'], ['Engineering','Site','Site Issue'],
+  ['HR','Employee','Employee Data Correction'], ['HR','Attendance','Attendance Correction'],
+  ['Admin','Asset','Asset Allocation'], ['Admin','Facility','Maintenance Request'],
+  ['Marketing','Vendor Bill','Bill Approval'],
+  ['ERP & IT','ERP','Login Issue'], ['ERP & IT','ERP','Transaction Error'], ['ERP & IT','ERP','Report Issue'],
+  ['ERP & IT','IT Support','Hardware / Network Issue'],
+  ['Legal','Documentation','Document Verification']
+];
+const hdNorm = x => String(x||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+const hdSlug = x => String(x||'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
+const hdLog = t => { document.getElementById('hdSetupLog').textContent = t; };
+
+async function hdCommit(ops){
+  for(let i=0;i<ops.length;i+=400){
+    const batch = writeBatch(db);
+    ops.slice(i,i+400).forEach(o=>{ if(o.kind==='set') batch.set(o.ref,o.data); else batch.update(o.ref,o.data); });
+    await batch.commit();
+  }
+}
+
+window.runHelpdeskSetup = async function(){
+  if(!isAdmin()) return;
+  const btn = document.getElementById('hdSetupBtn');
+  btn.disabled = true;
+  try{
+    hdLog('Reading current masters…');
+    await loadMasters();
+    const ops = [], notes = [];
+    const sum = { status:0, order:0, cat:0, dept:0, type:0, link:0, sub:0, flag:0, sla:0 };
+
+    // 1) Statuses
+    for(const st of HD_NEW_STATUSES){
+      const byId = MASTERS.statuses.find(x=>x.id===st.id);
+      const byName = MASTERS.statuses.find(x=>hdNorm(x.name)===hdNorm(st.name));
+      if(byId) continue;
+      if(byName){ notes.push(`⚠ A status called "${st.name}" already exists with a different internal id (${byName.id}) — it was NOT added again, but the new workflow expects id ${st.id}. Please tell your developer.`); continue; }
+      ops.push({kind:'set', ref:doc(db,'statuses',st.id), data:{name:st.name, order:HD_STATUS_ORDER[st.id]}}); sum.status++;
+    }
+    for(const [id,ord] of Object.entries(HD_STATUS_ORDER)){
+      const ex = MASTERS.statuses.find(x=>x.id===id);
+      if(ex && ex.order !== ord){ ops.push({kind:'update', ref:doc(db,'statuses',id), data:{order:ord}}); sum.order++; }
+    }
+
+    // 2) Ticket categories
+    HD_CATEGORIES.forEach((name,i)=>{
+      if(MASTERS.categories.some(c=>hdNorm(c.name)===hdNorm(name))) return;
+      ops.push({kind:'set', ref:doc(db,'categories','cat'+(i+1)), data:{name, active:true, order:i+1}}); sum.cat++;
+    });
+
+    // 3) Departments (created only when missing by name)
+    const deptIdByName = {};
+    for(const name of HD_DEPARTMENTS){
+      const ex = MASTERS.departments.find(d=>hdNorm(d.name)===hdNorm(name));
+      if(ex){ deptIdByName[name] = ex.id; }
+      else {
+        const id = 'dx_'+hdSlug(name);
+        deptIdByName[name] = id;
+        ops.push({kind:'set', ref:doc(db,'departments',id), data:{name, active:true, projectRequired:false, confidential:(name==='HR')}}); sum.dept++;
+      }
+    }
+    const hr = MASTERS.departments.find(d=>hdNorm(d.name)==='hr');
+    if(hr && hr.confidential === undefined){ ops.push({kind:'update', ref:doc(db,'departments',hr.id), data:{confidential:true}}); sum.flag++; }
+
+    // 4) Issue Types + Sub-Types
+    const typeIdFor = {};     // "dept|type" -> id
+    const plannedTypes = {};  // id -> {name, deptId}
+    for(const [deptName, typeName, subName] of HD_MAP){
+      const deptId = deptIdByName[deptName];
+      const key = deptName+'|'+typeName;
+      if(!typeIdFor[key]){
+        let t = MASTERS.issueTypes.find(x=>hdNorm(x.name)===hdNorm(typeName) && x.deptId===deptId)
+             || MASTERS.issueTypes.find(x=>hdNorm(x.name)===hdNorm(typeName) && !x.deptId && !Object.values(plannedTypes).some(pt=>pt.id===x.id));
+        if(t){
+          typeIdFor[key] = t.id;
+          if(!t.deptId){ ops.push({kind:'update', ref:doc(db,'issueTypes',t.id), data:{deptId}}); sum.link++; notes.push(`Linked existing Issue Type "${t.name}" to ${deptName}`); plannedTypes[t.id] = {id:t.id}; }
+        } else {
+          const id = 'itx_'+hdSlug(deptName)+'_'+hdSlug(typeName);
+          typeIdFor[key] = id; plannedTypes[id] = {id};
+          ops.push({kind:'set', ref:doc(db,'issueTypes',id), data:{name:typeName, active:true, deptId}}); sum.type++;
+        }
+      }
+      const tid = typeIdFor[key];
+      const subExists = MASTERS.subTypes.some(x=>x.typeId===tid && hdNorm(x.name)===hdNorm(subName));
+      if(!subExists){
+        const sid = 'stx_'+hdSlug(deptName)+'_'+hdSlug(typeName)+'_'+hdSlug(subName);
+        if(!ops.some(o=>o.ref.id===sid && o.ref.parent.id==='subTypes')){
+          ops.push({kind:'set', ref:doc(db,'subTypes',sid), data:{name:subName, typeId:tid, active:true}}); sum.sub++;
+        }
+      }
+    }
+
+    // Old Issue Types that stay un-linked keep showing for every department — tell the admin
+    const stillGlobal = MASTERS.issueTypes.filter(t=>!t.deptId && t.active!==false && !plannedTypes[t.id]);
+    if(stillGlobal.length) notes.push(`ℹ These older Issue Types are not linked to a department, so they appear for every department: ${stillGlobal.map(t=>t.name).join(', ')}. Link each to a department (Masters → Issue Type → Edit) or mark it Inactive.`);
+
+    // 5) Default SLA
+    if(!SLA.byDept.default){
+      const rules = {};
+      MASTERS.priorities.forEach(p=>{ const r = DEFAULT_SLA_BY_LEVEL[p.level] || DEFAULT_SLA_BY_LEVEL[2]; rules[p.id] = JSON.parse(JSON.stringify(r)); });
+      ops.push({kind:'set', ref:doc(db,'slaSettings','default'), data:{rules, updatedAt:serverTimestamp(), updatedBy:SESSION.user.uid}}); sum.sla++;
+    }
+
+    if(!ops.length){ hdLog('Everything is already set up — nothing to add.' + (notes.length?'\n\n'+notes.join('\n'):'')); toast('Already set up'); return; }
+
+    const summary = [
+      sum.status && `• ${sum.status} new status(es)`, sum.order && `• ${sum.order} status order change(s)`,
+      sum.cat && `• ${sum.cat} ticket categories`, sum.dept && `• ${sum.dept} new department(s)`, sum.flag && `• HR marked confidential`,
+      sum.type && `• ${sum.type} new Issue Type(s)`, sum.link && `• ${sum.link} existing Issue Type(s) linked to a department`,
+      sum.sub && `• ${sum.sub} new Sub-Type(s)`, sum.sla && `• Default SLA / TAT targets`
+    ].filter(Boolean).join('\n');
+    const preview = 'Setup will make these changes:\n\n' + summary + (notes.length ? '\n\n' + notes.join('\n') : '') + '\n\nNothing is deleted and existing tickets are not changed. Continue?';
+    hdLog(preview);
+    if(!confirm(preview)){ hdLog('Cancelled — nothing was changed.'); return; }
+
+    setSyncStatus('saving');
+    await hdCommit(ops);
+    await loadMasters(); populateFilters();
+    setSyncStatus('synced');
+    hdLog('✅ Setup complete.\n\n' + summary + (notes.length ? '\n\n' + notes.join('\n') : '') + '\n\nNext: click “Update Existing Tickets”, then set each user’s Role and Department under Admin → Users.');
+    toast('Setup complete');
+  } catch(e){
+    setSyncStatus('err'); hdLog('❌ Setup failed: '+e.message); toast('Setup failed: '+e.message,'error');
+  } finally { btn.disabled = false; }
+};
+
+window.runTicketBackfill = async function(){
+  if(!isAdmin()) return;
+  const btn = document.getElementById('hdBackfillBtn');
+  btn.disabled = true;
+  try{
+    hdLog('Reading tickets…');
+    await loadMasters();
+    const docs = (await getDocs(collection(db,'tickets'))).docs;
+    const ops = []; let deptSet = 0, confSet = 0, unresolved = 0;
+    for(const d of docs){
+      const t = d.data(), upd = {};
+      let ad = t.assignedDeptId;
+      if(ad === undefined || ad === null || ad === ''){
+        const dep = MASTERS.issueTypes.find(x=>x.id===t.typeId)?.deptId;
+        if(dep){ ad = dep; upd.assignedDeptId = dep; deptSet++; } else unresolved++;
+      }
+      if(t.confidential === undefined){ upd.confidential = !!(ad && deptById(ad)?.confidential); confSet++; }
+      if(Object.keys(upd).length) ops.push({kind:'update', ref:d.ref, data:upd});
+    }
+    if(!ops.length){ hdLog(`All ${docs.length} tickets are already up to date.` + (unresolved?`\n${unresolved} older ticket(s) use an Issue Type that is not linked to a department; they remain visible to Admin and to the person who raised them. Link the Issue Type to a department (Masters → Issue Type) and run this again.`:'')); toast('Nothing to update'); return; }
+    const msg = `${docs.length} tickets found.\n\n• Assigned Department will be set on ${deptSet} ticket(s)\n• ${confSet} ticket(s) will be marked confidential / not confidential\n• ${unresolved} ticket(s) cannot be matched to a department automatically\n\nNothing else on the tickets changes. Continue?`;
+    if(!confirm(msg)){ hdLog('Cancelled — nothing was changed.'); return; }
+    setSyncStatus('saving');
+    await hdCommit(ops);
+    setSyncStatus('synced');
+    hdLog(`✅ Done. Assigned Department set on ${deptSet} ticket(s); ${confSet} confidentiality flag(s) set.` + (unresolved?`\n\n${unresolved} older ticket(s) use an Issue Type that is not linked to a department; they stay visible to Admin and to the person who raised them. Link the Issue Type to a department (Masters → Issue Type) and run this again.`:''));
+    toast('Existing tickets updated');
+  } catch(e){
+    setSyncStatus('err'); hdLog('❌ Failed: '+e.message); toast('Update failed: '+e.message,'error');
+  } finally { btn.disabled = false; }
 };
 
 // ── PASSWORD ──────────────────────────────────────────────────
@@ -2511,6 +3443,9 @@ window.changePwd=async function(){
 // BULK USER UPLOAD
 // ═══════════════════════════════════════════════════════
 let _bulkUsers = [];
+// Accepts the stored value or a friendly label (any case, spaces/dashes ignored)
+const ROLE_ALIASES = { user:'User', employee:'User', deptexecutive:'DeptExecutive', departmentexecutive:'DeptExecutive', executive:'DeptExecutive', deptmanager:'DeptManager', departmentmanager:'DeptManager', manager:'DeptManager', depthead:'DeptHead', departmenthead:'DeptHead', head:'DeptHead', management:'Management', admin:'Admin', helpdeskadmin:'Admin' };
+const normRole = r => ROLE_ALIASES[String(r||'User').toLowerCase().replace(/[^a-z]/g,'')] || null;
 
 window.openBulkModal = function(){
   _bulkUsers = [];
@@ -2533,6 +3468,7 @@ window.downloadTemplate = function(){
     '102,Priya R,priya@mpdevelopers.com,Welcome@123,User,Accounts',
     '103,Ravi M,ravi@mpdevelopers.com,Welcome@123,User,HR',
     '104,Deepa S,deepa@mpdevelopers.com,Welcome@123,Admin,IT',
+    '106,Anand P,anand@mpdevelopers.com,Welcome@123,Dept Manager,Accounts',
     '105,Karthik V,,Welcome@123,User,Projects'
   ].join('\n');
   const a = document.createElement('a');
@@ -2588,7 +3524,9 @@ window.parseBulkCSV = function(){
       if(!name)  errors.push('Name missing');
       if(email && !email.includes('@')) errors.push('Invalid email');
       if(!pass || pass.length < 6) errors.push('Password min 6 chars');
-      if(role !== 'Admin' && role !== 'User') errors.push('Role must be Admin or User');
+      const roleKey = normRole(role);
+      if(!roleKey) errors.push('Role not recognised (use Employee, Dept Executive, Dept Manager, Dept Head, Management or Admin)');
+      if(['DeptExecutive','DeptManager','DeptHead'].includes(roleKey) && !deptMap[dept.toLowerCase()]) errors.push('Department required for this role');
 
       const deptId = deptMap[dept.toLowerCase()] || MASTERS.departments[0]?.id || 'd1';
       const deptName = MASTERS.departments.find(d=>d.id===deptId)?.name || dept;
@@ -2598,7 +3536,7 @@ window.parseBulkCSV = function(){
         statusClass = 'b-critical';
       }
 
-      _bulkUsers.push({ empId, name, email, pass, role: (role==='Admin'?'Admin':'User'), deptId, deptName, status, statusClass, valid: errors.length===0 });
+      _bulkUsers.push({ empId, name, email, pass, role: (roleKey||'User'), deptId, deptName, status, statusClass, valid: errors.length===0 });
     }
 
     // Render preview
@@ -2612,7 +3550,7 @@ window.parseBulkCSV = function(){
         <td style="font-family:monospace;font-weight:600">${u.empId||'—'}</td>
         <td><strong>${u.name||'—'}</strong></td>
         <td style="font-size:12px">${u.email||'—'}</td>
-        <td><span class="${u.role==='Admin'?'b-admin':'b-user'}">${u.role}</span></td>
+        <td><span class="${u.role==='Admin'?'b-admin':(u.role==='User'?'b-user':'b-role')}">${roleLabel(u.role)}</span></td>
         <td>${u.deptName||'—'}</td>
         <td><span class="${u.statusClass}" style="font-size:11px">${u.status}</span></td>
       </tr>`).join('');
@@ -2783,6 +3721,7 @@ window.openEditTicketModal = function(){
   // Populate fields
   document.getElementById('et-subject').value = t.subject || '';
   document.getElementById('et-desc').value    = t.description || '';
+  document.getElementById('et-ref').value     = t.refNo || '';
 
   // Raised By — lists ALL users, shows current, flags duplicate names so
   // admin can spot which account a ticket is actually wired to
@@ -2790,39 +3729,54 @@ window.openEditTicketModal = function(){
   _users.forEach(u => { nameCounts[u.name] = (nameCounts[u.name]||0) + 1; });
   document.getElementById('et-raisedBy').innerHTML = _users.map(u=>{
     const dupTag = nameCounts[u.name] > 1 ? ` — Login ID: ${u.empId||emailToEmp(u.email)}` : '';
-    return `<option value="${u.id}" ${u.id===t.userId?'selected':''}>${u.name}${dupTag}</option>`;
+    return `<option value="${u.id}" ${u.id===t.userId?'selected':''}>${esc(u.name)}${dupTag}</option>`;
   }).join('');
 
-  // Issue Types
-  document.getElementById('et-type').innerHTML =
-    MASTERS.issueTypes.map(x=>`<option value="${x.id}" ${x.id===t.typeId?'selected':''}>${x.name}</option>`).join('');
+  // Raised To (department), Category, Project
+  const adept = t.assignedDeptId || '';
+  document.getElementById('et-adept').innerHTML = '<option value="">— Not set —</option>' + MASTERS.departments.filter(d=>d.active!==false||d.id===adept).map(d=>`<option value="${d.id}" ${d.id===adept?'selected':''}>${esc(d.name)}</option>`).join('');
+  document.getElementById('et-cat').innerHTML = '<option value="">— Not set —</option>' + MASTERS.categories.filter(c=>c.active!==false||c.id===t.categoryId).map(c=>`<option value="${c.id}" ${c.id===t.categoryId?'selected':''}>${esc(c.name)}</option>`).join('');
+  document.getElementById('et-proj').innerHTML = '<option value="">— None —</option>' + MASTERS.projects.filter(x=>x.active!==false||x.id===t.projectId).map(x=>`<option value="${x.id}" ${x.id===t.projectId?'selected':''}>${esc(x.name)}</option>`).join('');
+
+  // Issue Types for that department (current one is always kept in the list)
+  fillEditTypes(adept, t.typeId);
   loadEditSubTypes(t.subTypeId);
 
   // Priority
   document.getElementById('et-priority').innerHTML =
-    MASTERS.priorities.map(p=>`<option value="${p.id}" ${p.id===t.priorityId?'selected':''}>${p.name}</option>`).join('');
+    MASTERS.priorities.map(p=>`<option value="${p.id}" ${p.id===t.priorityId?'selected':''}>${esc(p.name)}</option>`).join('');
 
-  // Department
+  // Raiser's department
   document.getElementById('et-dept').innerHTML =
-    MASTERS.departments.map(d=>`<option value="${d.id}" ${d.id===t.deptId?'selected':''}>${d.name}</option>`).join('');
+    MASTERS.departments.map(d=>`<option value="${d.id}" ${d.id===t.deptId?'selected':''}>${esc(d.name)}</option>`).join('');
 
   // Status
   document.getElementById('et-status').innerHTML =
-    MASTERS.statuses.map(s=>`<option value="${s.id}" ${s.id===t.statusId?'selected':''}>${s.name}</option>`).join('');
+    MASTERS.statuses.map(s=>`<option value="${s.id}" ${s.id===t.statusId?'selected':''}>${esc(s.name)}</option>`).join('');
 
-  // Assign To — Admin users only
-  document.getElementById('et-assign').innerHTML =
-    '<option value="">-- Unassigned --</option>' +
-    _users.filter(u=>u.role==='Admin').map(u=>`<option value="${u.id}" ${u.id===t.assignedTo?'selected':''}>${u.name}</option>`).join('');
+  // Assign To — staff of the department (and Admins)
+  fillOptions(document.getElementById('et-assign'), staffOptionsFor(adept, t.assignedTo), t.assignedTo, '-- Unassigned --');
 
   document.getElementById('editTicketModal').classList.add('show');
 };
 
+function fillEditTypes(adept, currentTypeId){
+  const list = adept ? typesForDept(adept) : MASTERS.issueTypes.filter(t=>t.active!==false);
+  if(currentTypeId && !list.find(x=>x.id===currentTypeId)){ const cur = MASTERS.issueTypes.find(x=>x.id===currentTypeId); if(cur) list.push(cur); }
+  document.getElementById('et-type').innerHTML = list.map(x=>`<option value="${x.id}" ${x.id===currentTypeId?'selected':''}>${esc(x.name)}</option>`).join('');
+}
+window.onEditAdeptChange = function(){
+  const adept = document.getElementById('et-adept').value;
+  fillEditTypes(adept, document.getElementById('et-type').value);
+  loadEditSubTypes();
+  fillOptions(document.getElementById('et-assign'), staffOptionsFor(adept, null), null, '-- Unassigned --');
+};
+
 window.loadEditSubTypes = function(selectedId=null){
   const tid = document.getElementById('et-type').value;
-  const subs = MASTERS.subTypes.filter(s=>s.typeId===tid && s.active);
+  const subs = MASTERS.subTypes.filter(s=>s.typeId===tid && s.active!==false);
   document.getElementById('et-subtype').innerHTML =
-    subs.map(s=>`<option value="${s.id}" ${s.id===(selectedId||'') ?'selected':''}>${s.name}</option>`).join('');
+    subs.map(s=>`<option value="${s.id}" ${s.id===(selectedId||'') ?'selected':''}>${esc(s.name)}</option>`).join('');
 };
 
 window.closeEditTicketModal = function(){
@@ -2834,18 +3788,27 @@ window.saveEditTicket = async function(){
   const id      = window._viewTicketId;
   const t       = _tickets.find(x=>x.id===id);
   if(!t) return;
+  const $v = i => (document.getElementById(i)?.value ?? '').trim();
 
-  const subject    = document.getElementById('et-subject').value.trim();
-  const desc       = document.getElementById('et-desc').value.trim();
-  const raisedById = document.getElementById('et-raisedBy').value;
-  const typeId     = document.getElementById('et-type').value;
-  const subTypeId  = document.getElementById('et-subtype').value || null;
-  const priorityId = document.getElementById('et-priority').value;
-  const deptId     = document.getElementById('et-dept').value;
-  const statusId   = document.getElementById('et-status').value;
-  const assignedTo = document.getElementById('et-assign').value || null;
+  const subject    = $v('et-subject');
+  const desc       = $v('et-desc');
+  const raisedById = $v('et-raisedBy');
+  const typeId     = $v('et-type');
+  const subTypeId  = $v('et-subtype') || null;
+  const priorityId = $v('et-priority');
+  const deptId     = $v('et-dept');
+  const statusId   = $v('et-status');
+  const assignedTo = $v('et-assign') || null;
+  const adept      = $v('et-adept');
+  const catId      = $v('et-cat') || null;
+  const projId     = $v('et-proj') || null;
+  const refNo      = $v('et-ref');
 
   if(!subject){ toast('Subject is required','error'); return; }
+  if(statusId !== t.statusId){
+    const need = { s4:['resolutionRemarks','Resolution Remarks'], s5:['closureRemarks','Closure Remarks'], s10:['rejectionReason','Rejection Reason'], s6:['reopenReason','Reopen Reason'] }[statusId];
+    if(need && !t[need[0]]){ toast(`Enter the ${need[1]} in the Ticket Processing section first, then change the status there`,'error'); return; }
+  }
 
   const btn = document.getElementById('etSaveBtn');
   btn.innerHTML = '<span class="spinner"></span> Saving…'; btn.disabled = true;
@@ -2853,52 +3816,47 @@ window.saveEditTicket = async function(){
 
   try{
     const activity = [...(t.activity||[])];
+    const log = text => activity.push({ text, by:SESSION.profile.name, date:today() });
 
     // Log what changed
-    if(raisedById !== t.userId){
-      const oldName = getUser(t.userId);
-      const newName = getUser(raisedById);
-      activity.push({ text:`Raised By corrected: ${oldName} → ${newName}`, by:SESSION.profile.name, date:today() });
-    }
-    if(subject    !== t.subject)    activity.push({ text:`Subject updated`,          by:SESSION.profile.name, date:today() });
-    if(typeId     !== t.typeId)     activity.push({ text:`Issue Type → ${getType(typeId)}`, by:SESSION.profile.name, date:today() });
-    if(priorityId !== t.priorityId) activity.push({ text:`Priority → ${getPri(priorityId)}`, by:SESSION.profile.name, date:today() });
-    if(statusId   !== t.statusId)   activity.push({ text:`Status → ${getStat(statusId)}`,  by:SESSION.profile.name, date:today() });
-    if(assignedTo !== (t.assignedTo||null)){
-      const aName = _users.find(u=>u.id===assignedTo)?.name || 'Unassigned';
-      activity.push({ text:`Assigned to ${aName}`, by:SESSION.profile.name, date:today() });
-    }
+    if(raisedById !== t.userId) log(`Raised By corrected: ${getUser(t.userId)} → ${getUser(raisedById)}`);
+    if(subject    !== t.subject)    log('Subject updated');
+    if(adept      !== (t.assignedDeptId||'')) log(`Raised To department → ${adept?getDept(adept):'Not set'}`);
+    if(catId      !== (t.categoryId||null))   log(`Ticket Category → ${catId?getCat(catId):'Not set'}`);
+    if(projId     !== (t.projectId||null))    log(`Project / Location → ${projId?getProj(projId):'None'}`);
+    if(refNo      !== (t.refNo||''))          log('Reference Number updated');
+    if(typeId     !== t.typeId)     log(`Issue Type → ${getType(typeId)}`);
+    if(priorityId !== t.priorityId) log(`Priority → ${getPri(priorityId)}`);
+    if(statusId   !== t.statusId)   log(`Status → ${getStat(statusId)}`);
+    if(assignedTo !== (t.assignedTo||null)) log(`Assigned to ${assignedTo ? getUser(assignedTo) : 'Unassigned'}`);
 
-    await updateDoc(doc(db,'tickets',id), {
+    const updates = {
       subject, description:desc,
       userId: raisedById,
       typeId, subTypeId, priorityId, deptId, statusId,
       assignedTo, activity,
+      categoryId: catId, projectId: projId, refNo,
       updatedAt:   serverTimestamp(),
       updatedBy:   SESSION.user.uid
-    });
+    };
+    if(adept){ updates.assignedDeptId = adept; updates.confidential = !!deptById(adept)?.confidential; }
+    if(assignedTo !== (t.assignedTo||null)) updates.assignedOn = assignedTo ? serverTimestamp() : null;
+    if(statusId !== t.statusId) applyStatusTimestamps(t, statusId, updates);
+    // Priority or department changed → target dates follow the new SLA
+    if((priorityId !== t.priorityId || (adept && adept !== (t.assignedDeptId||''))) && !DONE_STATUSES.includes(statusId)){
+      const sla = computeSla(adept || t.assignedDeptId || '', priorityId, new Date(toMs(t.createdAt)||Date.now()));
+      updates.ackDueAt = sla.ackDueAt; updates.targetDate = sla.targetDate;
+    }
 
+    await updateDoc(doc(db,'tickets',id), updates);
+    window._procDirty = false;
     setSyncStatus('synced');
 
-    // Update ticket detail UI immediately
-    document.getElementById('td-subject').textContent  = subject;
-    document.getElementById('td-desc').textContent     = desc;
-    document.getElementById('td-by').textContent       = getUser(raisedById);
-    document.getElementById('td-type').textContent     = getType(typeId);
-    document.getElementById('td-sub').textContent      = getSub(subTypeId) || '—';
-    document.getElementById('td-pri').textContent      = getPri(priorityId);
-    document.getElementById('td-stat').textContent     = getStat(statusId);
-    document.getElementById('td-dept').textContent     = getDept(deptId);
-    document.getElementById('td-pBadge').innerHTML     = priBadge(priorityId);
-    document.getElementById('td-sBadge').innerHTML     = statBadge(statusId);
-    const aEl = document.getElementById('td-assignedTo');
-    if(aEl) aEl.textContent = assignedTo ? (_users.find(u=>u.id===assignedTo)?.name||'—') : 'Unassigned';
-    renderActivity({...t, activity});
-
-    // Send notifications
+    // Send notifications (using the values just saved)
+    const merged = { ...t, id, statusId, assignedTo, assignedDeptId: adept || t.assignedDeptId || '', activity, subject };
     try{
-      if(statusId   !== t.statusId)              await sendEmailNotification(id,'status_changed');
-      if(assignedTo !== (t.assignedTo||null))    await sendEmailNotification(id,'ticket_assigned');
+      if(statusId   !== t.statusId)              await sendEmailNotification(merged,'status_changed');
+      if(assignedTo !== (t.assignedTo||null))    await sendEmailNotification(merged,'ticket_assigned');
     } catch(e){}
 
     closeEditTicketModal();
