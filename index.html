@@ -173,7 +173,6 @@ code{background:#ECEEF8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
 .btn-go{background:var(--navy);color:#fff;border:none;border-radius:5px;padding:7px 20px;font-size:13px;font-weight:600;cursor:pointer}
 .btn-go:hover{background:var(--navy2)}
 .mt-tools{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 14px}
-.mt-tools a{font-size:13px;font-weight:600;color:var(--navy);text-decoration:underline;cursor:pointer}
 .mt-ic{border:none;background:none;padding:2px 4px;font-size:20px;line-height:1;cursor:pointer;vertical-align:middle}
 .mt-ic.on{color:#1E9E5A}.mt-ic.off{color:#D93025}.mt-ic.edit{color:var(--navy)}.mt-ic.del{color:#D93025}
 .mt-ic:hover{transform:scale(1.15)}
@@ -580,7 +579,7 @@ input[type=checkbox]{accent-color:var(--navy)}
 
 <!-- MASTERS (one page: pick a master table, press Go) -->
 <div class="page" id="page-masters">
-  <div class="ph"><h1>Master Tables</h1></div>
+  <div class="ph"><h1>Master Tables</h1><button class="btn-teal" id="mt-create" onclick="mtCreate()" style="display:none"><i class="ti ti-plus"></i> <span id="mt-createLbl">Create</span></button></div>
   <div class="card-box" style="margin-bottom:14px">
     <div class="cbb">
       <div class="mt-row">
@@ -605,8 +604,7 @@ input[type=checkbox]{accent-color:var(--navy)}
         <select class="form-select form-select-sm" id="mt-size" style="width:auto" onchange="mtSizeChanged()"><option>10</option><option>25</option><option>50</option><option>100</option></select> Items per page</div>
       <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
         <input class="form-control form-control-sm" id="mt-search" placeholder="Search…" oninput="mtSearch()" style="width:190px"/>
-        <a id="mt-mapLink" onclick="openCatMap()" style="display:none"><i class="ti ti-grid-dots"></i> Map to Ticket Categories</a>
-        <a id="mt-create" onclick="mtCreate()">Create</a>
+        <button class="btn-outline" id="mt-mapLink" onclick="openCatMap()" style="display:none"><i class="ti ti-grid-dots"></i> Map to Ticket Categories</button>
       </div>
     </div>
     <div class="info-panel" id="mt-info" style="display:none;margin:0 14px 12px"></div>
@@ -2784,7 +2782,9 @@ function renderMasterTable(){
   document.getElementById('mt-descRow').style.display = '';
   document.getElementById('mt-desc').textContent = d.desc;
   document.getElementById('mt-panel').style.display = '';
-  document.getElementById('mt-mapLink').style.display = d.map ? '' : 'none';
+  document.getElementById('mt-create').style.display = '';
+  document.getElementById('mt-createLbl').textContent = 'Create ' + d.label;
+  document.getElementById('mt-mapLink').style.display = d.map ? 'inline-flex' : 'none';
   const info = document.getElementById('mt-info');
   info.style.display = d.info ? 'flex' : 'none';
   info.innerHTML = d.info ? `<i class="ti ti-info-circle" style="font-size:16px;flex-shrink:0"></i><span>${d.info}</span>` : '';
