@@ -247,7 +247,7 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
   <div class="s-logo">
     <img src="https://erp.mpdevelopers.com/images/%7Be0847889-8a54-4363-afdd-966dd480dfbb%7D.jpeg" alt="MP Developers" style="width:36px;height:36px;border-radius:8px;object-fit:contain;background:#fff;padding:2px;flex-shrink:0" onerror="this.style.display='none';document.getElementById('sidebarLogoFallback').style.display='flex'"/>
     <div id="sidebarLogoFallback" style="display:none;width:36px;height:36px;background:var(--teal);border-radius:8px;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0">HD</div>
-    <div><div class="s-brand">MP HelpDesk</div><div class="s-sub"><i class="ti ti-flame" style="font-size:10px"></i> Firebase · Build 2026-10-26 v2</div></div>
+    <div><div class="s-brand">MP HelpDesk</div><div class="s-sub"><i class="ti ti-flame" style="font-size:10px"></i> Firebase · Build 2026-10-30 v2</div></div>
   </div>
   <div id="nav-admin" style="display:none">
     <div class="s-sec">Main</div>
@@ -360,7 +360,7 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
     </div>
     <div style="overflow-x:auto">
       <table class="table table-hover mb-0">
-        <thead><tr><th>Ticket No</th><th>Subject</th><th id="th-by" style="display:none">Raised By</th><th>Department</th><th>Issue Type</th><th>Priority</th><th>Status</th><th id="th-assigned" style="display:none">Assigned To</th><th>Creation Date</th><th>Submitted Date</th><th>Action</th></tr></thead>
+        <thead><tr><th>Ticket No</th><th>Subject</th><th id="th-by" style="display:none">Raised By</th><th>Department</th><th>Issue Type</th><th>Priority</th><th>Status</th><th id="th-assigned" style="display:none">Assigned To</th><th>Creation Date</th><th id="th-submitted" style="display:none">Submitted Date</th><th>Action</th></tr></thead>
         <tbody id="ticketBody"></tbody>
       </table>
     </div>
@@ -399,7 +399,7 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
         </div>
         <div class="col-md-4"><label class="form-label">Priority</label><select class="form-select" id="ct-priority"></select></div>
         <div class="col-md-4"><label class="form-label">Ticket No</label><input class="form-control" id="ct-no" readonly/></div>
-        <div class="col-md-4"><label class="form-label">Ticket Submitted Date <span style="color:var(--red)">*</span></label><input type="date" class="form-control" id="ct-submittedDate"/></div>
+        <div class="col-md-4" id="ct-submittedWrap"><label class="form-label">Ticket Submitted Date <span style="color:var(--red)">*</span> <span style="display:inline-block;font-size:10px;background:var(--navy);color:#fff;padding:1px 7px;border-radius:10px;margin-left:4px;font-weight:600">ADMIN ONLY</span></label><input type="date" class="form-control" id="ct-submittedDate"/></div>
         <div class="col-md-4"><label class="form-label">Creation Date <span style="font-size:11px;color:var(--muted);font-weight:400">(automatic)</span></label><input class="form-control" id="ct-creationDate" readonly/></div>
         <div class="col-12"><label class="form-label">Subject <span style="color:var(--red)">*</span></label><input class="form-control" id="ct-subject" placeholder="Brief summary of the issue"/></div>
         <div class="col-12"><label class="form-label">Description</label><textarea class="form-control" id="ct-desc" rows="4" placeholder="Describe the issue in detail..."></textarea></div>
@@ -452,7 +452,7 @@ code{background:#F1EFE8;padding:2px 6px;border-radius:4px;font-size:12px;font-fa
             <div class="meta-item"><label>Status</label><p id="td-stat">—</p></div>
             <div class="meta-item" id="td-assignedToWrap"><label>Assigned To</label><p id="td-assignedTo">—</p></div>
             <div class="meta-item"><label>Creation Date</label><p id="td-date">—</p></div>
-            <div class="meta-item"><label>Ticket Submitted Date</label><p id="td-submitted">—</p></div>
+            <div class="meta-item" id="td-submittedWrap"><label>Ticket Submitted Date</label><p id="td-submitted">—</p></div>
           </div>
           <div id="td-attachmentsWrap" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
             <label style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);font-weight:600">Attachments</label>
@@ -1525,12 +1525,14 @@ window.renderTickets=function(){
   document.getElementById('th-by').style.display         = admin ? '' : 'none';
   const thAssigned = document.getElementById('th-assigned');
   if(thAssigned) thAssigned.style.display = admin ? '' : 'none';
+  const thSubmitted = document.getElementById('th-submitted');
+  if(thSubmitted) thSubmitted.style.display = admin ? '' : 'none';
   const fs = document.getElementById('fStatus').value;
   const fp = document.getElementById('fPriority').value;
   let data = admin ? _tickets : _tickets.filter(t=>t.userId===SESSION.user.uid);
   if(fs) data = data.filter(t=>t.statusId===fs);
   if(fp) data = data.filter(t=>t.priorityId===fp);
-  document.getElementById('ticketBody').innerHTML=data.length===0?emptyRow(10,'No tickets found.'):data.map(t=>`<tr><td><a href="#" onclick="viewTicket('${t.id}');return false" style="color:var(--blue);font-weight:500">${t.ticketNo}</a></td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.subject}</td>${isAdmin()?`<td>${getUser(t.userId)}</td>`:''}<td>${getDept(t.deptId)}</td><td>${getType(t.typeId)}</td><td>${priBadge(t.priorityId)}</td><td>${statBadge(t.statusId)}</td>${isAdmin()?`<td style="font-size:12px">${t.assignedTo?`<span style="font-weight:500">${getUser(t.assignedTo)}</span>`:'<span style="color:var(--muted)">Unassigned</span>'}</td>`:''}<td>${fmtDate(t.createdAt)}</td><td>${fmtDate(t.submittedAt,'Not Available')}</td><td><button class="btn-icon" onclick="viewTicket('${t.id}')" title="View"><i class="ti ti-eye"></i></button>${isAdmin()?`<button class="btn-icon" onclick="delTicket('${t.id}')" title="Delete" style="color:var(--red)"><i class="ti ti-trash"></i></button>`:''}</td></tr>`).join('');
+  document.getElementById('ticketBody').innerHTML=data.length===0?emptyRow(10,'No tickets found.'):data.map(t=>`<tr><td><a href="#" onclick="viewTicket('${t.id}');return false" style="color:var(--blue);font-weight:500">${t.ticketNo}</a></td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.subject}</td>${isAdmin()?`<td>${getUser(t.userId)}</td>`:''}<td>${getDept(t.deptId)}</td><td>${getType(t.typeId)}</td><td>${priBadge(t.priorityId)}</td><td>${statBadge(t.statusId)}</td>${isAdmin()?`<td style="font-size:12px">${t.assignedTo?`<span style="font-weight:500">${getUser(t.assignedTo)}</span>`:'<span style="color:var(--muted)">Unassigned</span>'}</td>`:''}<td>${fmtDate(t.createdAt)}</td>${isAdmin()?`<td>${fmtDate(t.submittedAt,'Not Available')}</td>`:''}<td><button class="btn-icon" onclick="viewTicket('${t.id}')" title="View"><i class="ti ti-eye"></i></button>${isAdmin()?`<button class="btn-icon" onclick="delTicket('${t.id}')" title="Delete" style="color:var(--red)"><i class="ti ti-trash"></i></button>`:''}</td></tr>`).join('');
 };
 
 // ── TICKET DETAIL ─────────────────────────────────────────────
@@ -1553,6 +1555,7 @@ window.viewTicket=async function(id){
   document.getElementById('td-stat').textContent   =getStat(t.statusId);
   document.getElementById('td-date').textContent   =fmtDate(t.createdAt);
   document.getElementById('td-submitted').textContent =fmtDate(t.submittedAt,'Not Available');
+  document.getElementById('td-submittedWrap').style.display = isAdmin() ? '' : 'none'; // Admin only
   // Assigned To — only visible to Admin
   const assignedWrap = document.getElementById('td-assignedToWrap');
   const assignedEl   = document.getElementById('td-assignedTo');
@@ -1826,7 +1829,7 @@ function initNewTicketForm(){
 
   loadSubTypes();
   if(isAdmin()){
-    document.getElementById('raisedByWrap').innerHTML=`<select class="form-select" id="ct-userId">${_users.map(u=>`<option value="${u.id}">${u.name}</option>`).join('')}</select>`;
+    document.getElementById('raisedByWrap').innerHTML=`<select class="form-select" id="ct-userId" onchange="syncRaisedByDept()">${_users.map(u=>`<option value="${u.id}">${u.name}</option>`).join('')}</select>`;
     document.getElementById('ct-userId').value=SESSION.user.uid;
     document.getElementById('ctInfo').style.display='none';
   } else {
@@ -1834,14 +1837,16 @@ function initNewTicketForm(){
     document.getElementById('raisedByWrap').innerHTML=`<input class="form-control" readonly value="${p.name}"/><input type="hidden" id="ct-userId" value="${SESSION.user.uid}"/>`;
     document.getElementById('ctInfo').style.display='flex';
     document.getElementById('ctInfoTxt').textContent=`Submitting as ${p.name} · ${getDept(p.deptId)}`;
-    if(p.deptId) document.getElementById('ct-dept').value=p.deptId;
   }
+  syncRaisedByDept(); // Department always follows the selected person's department
   // Ticket Submitted Date — entered by the user (defaults to today, no future dates).
   // Creation Date — read-only display; the real value is the server timestamp set on save.
   const _now = new Date();
   const _todayStr = `${_now.getFullYear()}-${String(_now.getMonth()+1).padStart(2,'0')}-${String(_now.getDate()).padStart(2,'0')}`;
   const _sd = document.getElementById('ct-submittedDate');
   _sd.max = _todayStr; _sd.value = _todayStr;
+  // Ticket Submitted Date is visible/entered by Admin only
+  document.getElementById('ct-submittedWrap').style.display = isAdmin() ? '' : 'none';
   document.getElementById('ct-creationDate').value = fmtDate(_now);
   document.getElementById('ct-subject').value='';
   document.getElementById('ct-desc').value='';
@@ -1850,6 +1855,27 @@ function initNewTicketForm(){
   window._ctSelectedFiles = [];
 }
 window.initNewTicketForm=initNewTicketForm;
+
+// Department on the Raise Ticket form is taken from the selected person's
+// profile (Users page) and locked, so it can't be picked wrongly. If the
+// person has no department set, the dropdown stays selectable.
+window.syncRaisedByDept=function(){
+  const dd  = document.getElementById('ct-dept');
+  const uid = document.getElementById('ct-userId')?.value;
+  if(!dd) return;
+  const person = uid===SESSION.user.uid ? SESSION.profile : _users.find(x=>x.id===uid);
+  const deptId = person?.deptId;
+  if(deptId && MASTERS.departments.some(d=>d.id===deptId)){
+    dd.value = deptId;
+    dd.disabled = true;
+    dd.style.background = '#F8F9FB';
+    dd.title = 'Department is taken from the selected user\'s profile';
+  } else {
+    dd.disabled = false;
+    dd.style.background = '';
+    dd.title = '';
+  }
+};
 
 // ── FILE ATTACHMENTS (Raise Ticket) ─────────────────────────────
 const MAX_ATTACH_FILES = 3;
@@ -1908,12 +1934,21 @@ window.submitTicket=async function(){
   const subject=document.getElementById('ct-subject').value.trim();
   if(!subject){toast('Subject is required','error');return;}
   // Ticket Submitted Date: user-entered, required, cannot be in the future
-  const sdVal = document.getElementById('ct-submittedDate').value;
-  if(!sdVal){toast('Please enter the Ticket Submitted Date','error');return;}
-  const [sy,sm,sdd] = sdVal.split('-').map(Number);
-  const submittedDate = new Date(sy, sm-1, sdd, 12, 0, 0); // noon local → no timezone day-shift
-  if(isNaN(submittedDate.getTime())){toast('Invalid Ticket Submitted Date','error');return;}
-  if(submittedDate.getTime() > Date.now()){toast('Ticket Submitted Date cannot be a future date','error');return;}
+  // Admin enters it; for normal users the field is hidden and it is simply today.
+  let submittedDate = new Date();
+  if(isAdmin()){
+    const sdVal = document.getElementById('ct-submittedDate').value;
+    if(!sdVal){toast('Please enter the Ticket Submitted Date','error');return;}
+    const [sy,sm,sdd] = sdVal.split('-').map(Number);
+    const picked = new Date(sy, sm-1, sdd, 12, 0, 0); // noon local → no timezone day-shift
+    if(isNaN(picked.getTime())){toast('Invalid Ticket Submitted Date','error');return;}
+    const n = new Date();
+    const pickedDay = new Date(sy, sm-1, sdd).getTime();
+    const todayDay  = new Date(n.getFullYear(), n.getMonth(), n.getDate()).getTime();
+    if(pickedDay > todayDay){toast('Ticket Submitted Date cannot be a future date','error');return;}
+    // Today → use the current moment (never ahead of server time); past days → noon of that day
+    submittedDate = pickedDay === todayDay ? n : picked;
+  }
   const uid=document.getElementById('ct-userId').value;
   if(!isAdmin()&&uid!==SESSION.user.uid){toast('Access denied','error');return;}
   // Extra safety: if user, ensure type/subtype dropdowns are set
@@ -2239,8 +2274,11 @@ window.openUserModal=function(user=null){
   const isEdit = !!user;
   document.getElementById('umTitle').textContent = isEdit ? 'Edit User' : 'Add User';
   document.getElementById('u-empid').value = user?.empId||'';
-  document.getElementById('u-empid').readOnly = isEdit; // login ID can't change (Firebase Auth)
-  document.getElementById('u-empid').style.background = isEdit ? '#F8F9FB' : '';
+  // Emp ID is locked once set (it is the Firebase login ID). If a user has no
+  // Emp ID yet, the Admin can add one here.
+  const empLocked = isEdit && !!user?.empId;
+  document.getElementById('u-empid').readOnly = empLocked;
+  document.getElementById('u-empid').style.background = empLocked ? '#F8F9FB' : '';
   document.getElementById('u-name').value  = user?.name||'';
   document.getElementById('u-email').value = user?.notifyEmail || (user && !String(user.email||'').endsWith('@'+EMP_EMAIL_DOMAIN) ? user.email : '') || '';
   document.getElementById('u-email').readOnly = false;
@@ -2288,6 +2326,18 @@ window.saveUser=async function(){
   }
   if(notifyEmail && !notifyEmail.includes('@')){toast('Notification email is invalid','error');return;}
 
+  // Editing a user who has no Emp ID yet: Admin may add one (3 digits, unique)
+  let newEmpIdForEdit = null;
+  if(window._editUserId){
+    const cur = _users.find(u=>u.id===window._editUserId);
+    if(cur && !cur.empId && empId){
+      if(!isAdmin()){toast('Only an Admin can add an Employee ID','error');return;}
+      if(!/^\d{3}$/.test(empId)){toast('Employee ID must be exactly 3 digits (e.g. 101)','error');return;}
+      if(_users.find(u=>u.empId===empId)){toast('Employee ID '+empId+' already exists','error');return;}
+      newEmpIdForEdit = empId;
+    }
+  }
+
   const btn=document.getElementById('umSaveBtn');
   btn.innerHTML='<span class="spinner"></span>'; btn.disabled=true;
   setSyncStatus('saving');
@@ -2295,8 +2345,10 @@ window.saveUser=async function(){
   try{
     if(window._editUserId){
       // Edit existing user profile in Firestore
-      await updateDoc(doc(db,'users',window._editUserId),{name,role,deptId,active,notifyEmail});
-      toast('User details updated successfully');
+      const upd = {name,role,deptId,active,notifyEmail};
+      if(newEmpIdForEdit) upd.empId = newEmpIdForEdit;
+      await updateDoc(doc(db,'users',window._editUserId),upd);
+      toast(newEmpIdForEdit ? 'User updated — Employee ID '+newEmpIdForEdit+' added' : 'User details updated successfully');
     } else {
       // Create new Firebase Auth user (empId mapped to internal email) + Firestore profile
       if(!pwd||pwd.length<6){toast('Password must be at least 6 characters','error');btn.innerHTML='<i class="ti ti-check"></i> Create User';btn.disabled=false;return;}
