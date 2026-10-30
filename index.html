@@ -191,6 +191,42 @@ input[type=checkbox]{accent-color:var(--navy)}
 .cfg-table input[type=checkbox]{width:16px;height:16px;cursor:pointer}
 .cfg-table input[type=checkbox]:disabled{cursor:not-allowed;opacity:.45}
 .cfg-sec td{background:#F7F8FD;font-weight:700;font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--navy)}
+
+/* DASHBOARD (chart oriented) */
+.dk-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:4px}
+.kpi{background:#fff;border:1px solid var(--border);border-radius:8px;padding:14px 18px 13px;cursor:pointer;transition:.15s;box-shadow:0 1px 2px rgba(46,49,146,.05)}
+.kpi:hover{box-shadow:0 4px 16px rgba(46,49,146,.12);transform:translateY(-1px)}
+.kpi-l{font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#4A4F6B}
+.kpi-v{font-size:30px;font-weight:700;color:var(--navy);line-height:1.15;margin-top:6px}
+.kpi-v.warn{color:var(--orange-dk)}.kpi-v.bad{color:#C0392B}.kpi-v.good{color:#1E9E5A}
+.kpi-s{font-size:11.5px;color:var(--muted);margin-top:2px}
+.dsec{display:flex;align-items:center;gap:14px;margin:28px 0 2px}
+.dsec b{font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:400;color:var(--orange)}
+.dsec i{flex:1;height:1px;background:var(--border)}
+.dsub{font-family:Georgia,'Times New Roman',serif;font-size:13px;letter-spacing:1.6px;text-transform:uppercase;font-weight:700;color:var(--navy);margin:2px 0 12px;display:flex;align-items:center;gap:14px}
+.dsub:after{content:'';flex:1;height:1px;background:var(--border)}
+.dc{background:#fff;border:1px solid var(--border);border-radius:8px;padding:16px 18px;height:100%;box-shadow:0 1px 2px rgba(46,49,146,.05)}
+.dc-t{font-size:13px;font-weight:700;color:var(--navy)}
+.dc-h{font-size:11px;color:var(--muted);margin:2px 0 12px}
+.dc-empty{color:var(--muted);font-size:13px;padding:36px 0;text-align:center}
+.dn-wrap{display:flex;flex-direction:column;align-items:center}
+.dn-seg{cursor:pointer;transition:opacity .15s}.dn-seg:hover{opacity:.82}
+.dn-lg{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 16px;margin-top:12px;font-size:12px}
+.dn-lg span{display:inline-flex;align-items:center;gap:6px;cursor:pointer}.dn-lg span:hover{text-decoration:underline}
+.dn-lg i{width:10px;height:10px;border-radius:2px;display:inline-block}
+.hb{display:flex;align-items:center;gap:12px;margin-bottom:9px;cursor:pointer}
+.hb-l{width:34%;max-width:190px;font-size:12.5px;text-align:right;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hb-t{flex:1;border-left:1px solid var(--border);padding:2px 0}
+.hb-f{height:17px;border-radius:0 3px 3px 0;transition:width .3s}
+.hb:hover .hb-f{opacity:.82}
+.hb-v{font-size:12px;font-weight:700;color:var(--navy);min-width:28px}
+.vb-bar{cursor:pointer}.vb-bar:hover{opacity:.82}
+.exp-wrap{position:relative}
+.exp-menu{display:none;position:absolute;right:0;top:calc(100% + 4px);min-width:250px;background:#fff;border:1px solid var(--border);border-radius:6px;box-shadow:0 8px 24px rgba(46,49,146,.16);z-index:50;padding:4px 0}
+.exp-menu.open{display:block}
+.exp-menu a{display:flex;align-items:center;gap:10px;padding:9px 16px;font-size:13px;color:var(--navy);cursor:pointer;text-decoration:none}
+.exp-menu a i{font-size:16px;color:var(--orange)}
+.exp-menu a:hover{background:var(--blue-bg,#ECEDF8)}
 </style>
 </head>
 <body>
@@ -356,42 +392,10 @@ input[type=checkbox]{accent-color:var(--navy)}
 <div class="page active" id="page-dashboard">
   <div class="ph"><h1 id="dashTitle">Dashboard</h1><span style="font-size:13px;color:var(--muted)" id="dashDate"></span></div>
   <div id="dashOverdueBanner" class="warn-panel mb-3" style="display:none;cursor:pointer" onclick="filterTicketsFromDash('overdue')"></div>
-  <div class="row g-3 mb-4" id="dashStaffCards" style="display:none"></div>
-  <div class="row g-3 mb-4" id="dashUserCards">
-    <div class="col-md-3 col-6">
-      <div class="stat-card" onclick="filterTicketsFromDash('all')" style="cursor:pointer;transition:.15s" onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,.1)'" onmouseout="this.style.boxShadow=''">
-        <div class="stat-icon" style="background:var(--blue-bg);color:var(--blue)"><i class="ti ti-ticket"></i></div>
-        <div><div class="stat-val" id="ds-total">—</div><div class="stat-lbl">Total Tickets</div></div>
-        <i class="ti ti-arrow-right" style="margin-left:auto;color:var(--muted);font-size:14px"></i>
-      </div>
-    </div>
-    <div class="col-md-3 col-6">
-      <div class="stat-card" onclick="filterTicketsFromDash('open')" style="cursor:pointer;transition:.15s" onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,.1)'" onmouseout="this.style.boxShadow=''">
-        <div class="stat-icon" style="background:#D9DCF5;color:var(--navy)"><i class="ti ti-circle-dot"></i></div>
-        <div><div class="stat-val" id="ds-open">—</div><div class="stat-lbl">Open</div></div>
-        <i class="ti ti-arrow-right" style="margin-left:auto;color:var(--muted);font-size:14px"></i>
-      </div>
-    </div>
-    <div class="col-md-3 col-6">
-      <div class="stat-card" onclick="filterTicketsFromDash('inprogress')" style="cursor:pointer;transition:.15s" onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,.1)'" onmouseout="this.style.boxShadow=''">
-        <div class="stat-icon" style="background:var(--orange-bg);color:var(--orange)"><i class="ti ti-clock"></i></div>
-        <div><div class="stat-val" id="ds-progress">—</div><div class="stat-lbl" id="ds-progressLbl">In Progress</div></div>
-        <i class="ti ti-arrow-right" style="margin-left:auto;color:var(--muted);font-size:14px"></i>
-      </div>
-    </div>
-    <div class="col-md-3 col-6">
-      <div class="stat-card" onclick="filterTicketsFromDash('critical')" style="cursor:pointer;transition:.15s" onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,.1)'" onmouseout="this.style.boxShadow=''">
-        <div class="stat-icon" style="background:var(--red-bg);color:var(--red)"><i class="ti ti-alert-circle"></i></div>
-        <div><div class="stat-val" id="ds-4th">—</div><div class="stat-lbl" id="ds-4thLbl">Critical</div></div>
-        <i class="ti ti-arrow-right" style="margin-left:auto;color:var(--muted);font-size:14px"></i>
-      </div>
-    </div>
-  </div>
-  <div class="row g-3 mb-4" id="adminCharts" style="display:none">
-    <div class="col-md-6"><div class="card-box"><div class="cbh"><h2><i class="ti ti-building" style="margin-right:6px"></i>Department-wise Pending Tickets</h2></div><div class="cbb" id="deptChart"></div></div></div>
-    <div class="col-md-6"><div class="card-box"><div class="cbh"><h2><i class="ti ti-flag" style="margin-right:6px"></i>Priority Breakdown</h2></div><div class="cbb" id="priChart"></div></div></div>
-    <div class="col-md-6"><div class="card-box"><div class="cbh"><h2><i class="ti ti-user-check" style="margin-right:6px"></i>Employee-wise Workload (pending)</h2></div><div class="cbb" id="assignChart"></div></div></div>
-  </div>
+  <div class="dk-grid" id="dashKpis"></div>
+  <div id="dashBody"></div>
+  <div class="dsec"><b>Recent</b><i></i></div>
+  <div class="dsub">Latest tickets</div>
   <div class="card-box">
     <div class="cbh"><h2>Recent Tickets</h2><button class="btn-outline" onclick="showPage('tickets',null)" style="font-size:12px;padding:5px 12px">View all</button></div>
     <div style="overflow-x:auto"><table class="table table-hover mb-0"><thead><tr><th>Ticket No</th><th>Subject</th><th id="th-recBy">Raised By</th><th>Priority</th><th>Status</th><th>Date</th></tr></thead><tbody id="recentBody"></tbody></table></div>
@@ -408,6 +412,7 @@ input[type=checkbox]{accent-color:var(--navy)}
     <div class="cbh">
       <h2 id="ticketListSub">All Tickets</h2>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <span id="extraFilterChip" style="display:none"><span class="b-overdue" style="font-size:11px;padding:4px 10px;cursor:pointer;background:var(--navy)" onclick="clearExtraFilter()" title="Click to clear"></span></span>
         <span id="overdueFilterChip" style="display:none"><span class="b-overdue" style="font-size:11px;padding:4px 10px;cursor:pointer" onclick="clearOverdueFilter()" title="Click to clear">Overdue only ✕</span></span>
         <select class="form-select" id="fStatus"   style="width:130px;font-size:12px;padding:5px 8px" onchange="renderTickets()"><option value="">All Status</option></select>
         <select class="form-select" id="fPriority" style="width:120px;font-size:12px;padding:5px 8px" onchange="renderTickets()"><option value="">All Priority</option></select>
@@ -729,24 +734,34 @@ input[type=checkbox]{accent-color:var(--navy)}
 <div class="page" id="page-reports">
   <div class="ph"><h1>Reports</h1>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn-outline" id="fixDupBtn" onclick="fixDuplicateTicketNumbers()" style="color:var(--amber);border-color:#FAC775"><i class="ti ti-tool"></i> Fix Duplicate Ticket Numbers</button>
-      <button class="btn-outline" onclick="exportCSV()"><i class="ti ti-download"></i> Export CSV</button>
+      <div class="exp-wrap" id="expWrap">
+        <button class="btn-outline" id="expBtn" onclick="toggleExportMenu(event)" title="Export"><i class="ti ti-device-floppy"></i> Export <i class="ti ti-chevron-down" style="font-size:12px"></i></button>
+        <div class="exp-menu" id="expMenu">
+          <a onclick="exportReport('word')"><i class="ti ti-file-word"></i> Word</a>
+          <a onclick="exportReport('excel')"><i class="ti ti-file-spreadsheet"></i> Excel</a>
+          <a onclick="exportReport('pdf')"><i class="ti ti-file-type-pdf"></i> PDF</a>
+          <a onclick="exportReport('csv')"><i class="ti ti-file-type-csv"></i> CSV (comma delimited)</a>
+          <a onclick="exportReport('xml')"><i class="ti ti-file-code"></i> XML file with report data</a>
+        </div>
+      </div>
     </div>
   </div>
-  <div class="row g-3 mb-3">
-    <div class="col-md-6"><select class="form-select" id="rType" onchange="runReport()"></select></div>
-    <div class="col-md-3"><select class="form-select" id="rDept"><option value="">All Departments (raised by)</option></select></div>
-    <div class="col-md-3"><select class="form-select" id="rADept"><option value="">All Assigned Departments</option></select></div>
-  </div>
-  <div class="row g-3 mb-3">
-    <div class="col-md-3"><select class="form-select" id="rStatus"><option value="">All Status</option></select></div>
-    <div class="col-md-3"><select class="form-select" id="rPriority"><option value="">All Priority</option></select></div>
-        <div class="col-md-3"><button class="btn-navy" style="width:100%;justify-content:center" onclick="runReport()"><i class="ti ti-search"></i> Run Report</button></div>
-  </div>
-  <div class="row g-3 mb-3">
-    <div class="col-md-3"><input type="date" class="form-control" id="rDateFrom" title="From date"></div>
-    <div class="col-md-3"><input type="date" class="form-control" id="rDateTo" title="To date"></div>
-  </div>
+  <div class="card-box" style="margin-bottom:14px"><div class="cbb">
+    <div class="row g-3">
+      <div class="col-md-6 col-lg-4"><label class="form-label">Report</label><select class="form-select" id="rType" onchange="runReport()"></select></div>
+      <div class="col-md-6 col-lg-4"><label class="form-label">Department</label><select class="form-select" id="rADept" onchange="rptFilterChanged('dept')"><option value="">All Departments</option></select></div>
+      <div class="col-md-6 col-lg-4"><label class="form-label">Ticket Category</label><select class="form-select" id="rCat" onchange="rptFilterChanged('cat')"><option value="">All Categories</option></select></div>
+      <div class="col-md-6 col-lg-4"><label class="form-label">Issue Type</label><select class="form-select" id="rIssue" onchange="runReport()"><option value="">All Issue Types</option></select></div>
+      <div class="col-md-6 col-lg-2"><label class="form-label">Creation Date — From</label><input type="date" class="form-control" id="rDateFrom" onchange="runReport()"></div>
+      <div class="col-md-6 col-lg-2"><label class="form-label">Creation Date — To</label><input type="date" class="form-control" id="rDateTo" onchange="runReport()"></div>
+      <div class="col-md-6 col-lg-4"><label class="form-label">Priority</label><select class="form-select" id="rPriority" onchange="runReport()"><option value="">All Priority</option></select></div>
+      <div class="col-md-6 col-lg-4"><label class="form-label">Raised By</label><select class="form-select" id="rUser" onchange="runReport()"><option value="">All Users</option></select></div>
+      <div class="col-lg-4" style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap">
+        <button class="btn-navy" onclick="runReport()"><i class="ti ti-search"></i> Run Report</button>
+        <button class="btn-outline" onclick="resetReportFilters()"><i class="ti ti-filter-off"></i> Clear filters</button>
+      </div>
+    </div>
+  </div></div>
   <div class="card-box"><div class="cbh"><h2 id="rptTitle">Report</h2><span id="rptCount" style="font-size:12px;color:var(--muted)"></span></div><div style="overflow-x:auto"><table class="table table-hover mb-0"><thead id="rptHead"></thead><tbody id="rptBody"></tbody></table></div></div>
 </div>
 
@@ -1454,7 +1469,7 @@ async function seedMasterData(){
     {id:'st9',typeId:'it4',name:'Invoice Mismatch',active:true}
   ];
   const priorities=[{id:'p1',name:'Low',level:1,color:'#9AA0BF'},{id:'p2',name:'Medium',level:2,color:'#5058B8'},{id:'p3',name:'High',level:3,color:'#EB7626'},{id:'p4',name:'Critical',level:4,color:'#E24B4A'}];
-  const departments=[{id:'d1',name:'Accounts',active:true},{id:'d2',name:'HR',active:true},{id:'d3',name:'Projects',active:true},{id:'d4',name:'ERP',active:true},{id:'d5',name:'IT',active:true}];
+  const departments=[{id:'d1',name:'Accounts',active:true},{id:'d2',name:'HR',active:true},{id:'d3',name:'Projects',active:true}];
   const statuses=[{id:'s1',name:'Open',order:1},{id:'s2',name:'Assigned',order:2},{id:'s3',name:'In Progress',order:3},{id:'s4',name:'Resolved',order:4},{id:'s5',name:'Closed',order:5},{id:'s6',name:'Reopened',order:6}];
 
   for(const item of [...issueTypes,...subTypes,...priorities,...departments,...statuses]){
@@ -1850,86 +1865,132 @@ function updateBadges(){
   document.getElementById('openBadgeU').textContent = myActive;
 }
 
-// ── DASHBOARD ─────────────────────────────────────────────────
-function dashCard(label, value, icon, bg, fg, onclick){
-  return `<div class="col-md-3 col-6"><div class="stat-card" onclick="${onclick}" style="cursor:pointer;transition:.15s" onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,.1)'" onmouseout="this.style.boxShadow=''">
-    <div class="stat-icon" style="background:${bg};color:${fg}"><i class="ti ${icon}"></i></div>
-    <div><div class="stat-val">${value}</div><div class="stat-lbl">${label}</div></div>
-    <i class="ti ti-arrow-right" style="margin-left:auto;color:var(--muted);font-size:14px"></i></div></div>`;
+// ── DASHBOARD (chart oriented — click any chart to open those tickets) ───────
+
+const STATUS_COLORS = {s1:'#2E3192',s2:'#EB7626',s3:'#5058B8',s4:'#1E9E5A',s5:'#9AA0BF',s6:'#E24B4A',s7:'#7F86D6',s8:'#B9BCD3',s9:'#F3A66B',s10:'#B4474A'};
+const CHART_PALETTE = ['#2E3192','#EB7626','#5058B8','#F3A66B','#7F86D6','#1E9E5A','#9AA0BF','#C45A12','#23267A','#B9BCD3'];
+const PRI_COLORS = ['#9AA0BF','#5058B8','#EB7626','#E24B4A'];
+const MON_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const dcard = (title, hint, inner) => `<div class="dc"><div class="dc-t">${title}</div><div class="dc-h">${hint||'&nbsp;'}</div>${inner}</div>`;
+const dsec  = (t, sub) => `<div class="dsec"><b>${t}</b><i></i></div><div class="dsub">${sub}</div>`;
+window.dashGo = (kind, val) => filterTicketsFromDash(kind + ':' + val);
+
+function donutChart(items, kind, centerLbl){
+  items = items.filter(i=>i.value>0);
+  const total = items.reduce((a,i)=>a+i.value,0);
+  if(!total) return '<div class="dc-empty">No tickets yet</div>';
+  const S = 230, c = S/2, r = 80, sw = 38, C = 2*Math.PI*r;
+  let acc = 0, segs = '', labels = '';
+  items.forEach(i=>{
+    const len = i.value/total*C, gap = items.length>1 ? 1.5 : 0;
+    const click = i.click === false ? '' : `onclick="dashGo('${kind}','${i.id}')"`;
+    segs += `<circle class="dn-seg" ${click} cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${i.color}" stroke-width="${sw}" stroke-dasharray="${Math.max(len-gap,0.5)} ${C-Math.max(len-gap,0.5)}" stroke-dashoffset="${-acc}" transform="rotate(-90 ${c} ${c})"><title>${esc(i.label)}: ${i.value}</title></circle>`;
+    if(i.value/total >= 0.06){
+      const ang = (acc + len/2)/C*2*Math.PI - Math.PI/2;
+      labels += `<text x="${c+Math.cos(ang)*r}" y="${c+Math.sin(ang)*r+4}" text-anchor="middle" font-size="12" font-weight="700" fill="#fff" pointer-events="none">${i.value}</text>`;
+    }
+    acc += len;
+  });
+  const lg = items.map(i=>`<span ${i.click===false?'':`onclick="dashGo('${kind}','${i.id}')"`}><i style="background:${i.color}"></i>${esc(i.label)} (${i.value})</span>`).join('');
+  return `<div class="dn-wrap"><svg viewBox="0 0 ${S} ${S}" width="100%" style="max-width:230px">${segs}${labels}
+    <text x="${c}" y="${c+2}" text-anchor="middle" font-size="30" font-weight="700" fill="#2E3192">${total}</text>
+    <text x="${c}" y="${c+20}" text-anchor="middle" font-size="11" fill="#6A6F8C">${centerLbl}</text></svg><div class="dn-lg">${lg}</div></div>`;
 }
+function monthBars(buckets, kind){
+  const W = 720, H = 270, L = 38, R = 10, T = 26, B = 52, max = Math.max(...buckets.map(b=>b.value), 0);
+  if(!max) return '<div class="dc-empty">No tickets in the last 12 months</div>';
+  const top = Math.max(4, Math.ceil(max/4)*4), slot = (W-L-R)/buckets.length, bw = slot*0.52, ph = H-T-B;
+  let g = '';
+  for(let k=0;k<=4;k++){ const y = T + ph - ph*k/4; g += `<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="#E4E6F0"/><text x="${L-8}" y="${y+4}" text-anchor="end" font-size="11" fill="#6A6F8C">${top*k/4}</text>`; }
+  buckets.forEach((b,i)=>{
+    const x = L + slot*i + (slot-bw)/2, h = ph*b.value/top, y = T+ph-h, cx = L+slot*i+slot/2;
+    if(b.value) g += `<rect class="vb-bar" onclick="dashGo('${kind}','${b.key}')" x="${x}" y="${y}" width="${bw}" height="${h}" rx="2" fill="#EB7626"><title>${b.label}: ${b.value}</title></rect><text x="${cx}" y="${y-6}" text-anchor="middle" font-size="12" font-weight="700" fill="#2E3192">${b.value}</text>`;
+    g += `<text transform="translate(${cx} ${H-B+16}) rotate(-32)" text-anchor="end" font-size="11" fill="#6A6F8C">${b.label}</text>`;
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block">${g}</svg>`;
+}
+function hBars(items, kind, color, limit=8){
+  items = items.filter(i=>i.value>0).sort((a,b)=>b.value-a.value).slice(0,limit);
+  if(!items.length) return '<div class="dc-empty">No data yet</div>';
+  const max = Math.max(...items.map(i=>i.value),1);
+  return items.map((i,n)=>`<div class="hb" ${i.click===false?'':`onclick="dashGo('${kind}','${i.id}')"`}><div class="hb-l" title="${esc(i.label)}">${esc(i.label)}</div><div class="hb-t"><div class="hb-f" style="width:${Math.max(3,Math.round(i.value/max*100))}%;background:${i.color||color}"></div></div><div class="hb-v">${i.value}</div></div>`).join('');
+}
+const countBy = (arr, fn) => { const m = new Map(); arr.forEach(t=>{ const k = fn(t); m.set(k,(m.get(k)||0)+1); }); return m; };
+const kpi = (label, value, sub, cls, go) => `<div class="kpi" onclick="filterTicketsFromDash('${go}')"><div class="kpi-l">${label}</div><div class="kpi-v ${cls||''}">${value}</div><div class="kpi-s">${sub}</div></div>`;
 
 function renderDashboard(){
   updateBadges(); // always keep sidebar badge in sync with what's on screen
   const staff = isStaff();
   const myT = staff ? _tickets : _tickets.filter(t=>t.userId===SESSION.user.uid);
-
-  // ── Employee cards (unchanged) ──
-  document.getElementById('dashUserCards').style.display = staff ? 'none' : '';
-  document.getElementById('ds-total').textContent    = myT.length;
-  document.getElementById('ds-open').textContent     = myT.filter(t=>['s1','s6'].includes(t.statusId)).length;
-  document.getElementById('ds-progress').textContent = myT.filter(t=>['s2','s3','s7','s8','s9'].includes(t.statusId)).length;
-  document.getElementById('ds-4th').textContent      = myT.filter(t=>t.statusId==='s5').length;
-  document.getElementById('ds-4thLbl').textContent   = 'Closed';
-  const progLbl = document.getElementById('ds-progressLbl');
-  if(progLbl) progLbl.textContent = 'Assigned / In Progress';
-
-  // ── Staff cards + charts ──
-  const staffCards = document.getElementById('dashStaffCards');
-  const overdueBanner = document.getElementById('dashOverdueBanner');
-  staffCards.style.display = staff ? '' : 'none';
-  document.getElementById('adminCharts').style.display = staff ? 'flex' : 'none';
   document.getElementById('th-recBy').style.display = staff ? '' : 'none';
+  const overdueBanner = document.getElementById('dashOverdueBanner');
+  const now = new Date(), monthKey = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  const thisMonth = myT.filter(t=>t.createdAt && monthKey(new Date(toMs(t.createdAt)))===monthKey(now)).length;
+  const pending = myT.filter(t=>!isDone(t));
+  const overdue = myT.filter(isOverdue).length, ackOver = myT.filter(isAckOverdue).length;
+  const solved  = myT.filter(isSolved);
+  const doneT   = myT.filter(t=>['s4','s5'].includes(t.statusId) && doneMs(t) && t.createdAt);
+  const avgMs   = doneT.length ? doneT.reduce((sum,t)=>sum+(doneMs(t)-toMs(t.createdAt)),0)/doneT.length : 0;
+  const critOpen = pending.filter(t=>t.priorityId==='p4').length;
 
-  if(staff){
-    const cnt = ids => myT.filter(t=>ids.includes(t.statusId)).length;
-    const overdue = myT.filter(isOverdue).length;
-    const ackOver = myT.filter(isAckOverdue).length;
-    const doneT   = myT.filter(t=>['s4','s5'].includes(t.statusId) && doneMs(t) && t.createdAt);
-    const avgMs   = doneT.length ? doneT.reduce((sum,t)=>sum+(doneMs(t)-toMs(t.createdAt)),0)/doneT.length : 0;
-    const f = k => `filterTicketsFromDash('${k}')`;
-    staffCards.innerHTML =
-      dashCard('Total Tickets', myT.length, 'ti-ticket', 'var(--blue-bg)', 'var(--blue)', f('all')) +
-      dashCard('Open', cnt(['s1','s6']), 'ti-circle-dot', '#D9DCF5', 'var(--navy)', f('status:s1')) +
-      dashCard('Assigned', cnt(['s2','s7']), 'ti-user-check', 'var(--orange-bg)', 'var(--orange)', f('status:s2')) +
-      dashCard('In Progress', cnt(['s3']), 'ti-clock', '#D9DCF5', '#23267A', f('status:s3')) +
-      dashCard('On Hold', cnt(['s8']), 'ti-player-pause', '#ECEDF4', '#4A4F6B', f('status:s8')) +
-      dashCard('Pending Approval', cnt(['s9']), 'ti-hourglass', '#FBE0CC', '#B8510B', f('status:s9')) +
-      dashCard('Resolved', cnt(['s4']), 'ti-circle-check', 'var(--teal-bg)', '#085041', f('status:s4')) +
-      dashCard('Closed', cnt(['s5']), 'ti-lock', '#ECEDF4', '#4A4F6B', f('status:s5')) +
-      dashCard('Overdue Tickets', overdue, 'ti-alarm', 'var(--red-bg)', 'var(--red)', f('overdue')) +
-      dashCard('Critical Priority', myT.filter(t=>t.priorityId==='p4').length, 'ti-alert-circle', 'var(--red-bg)', 'var(--red)', f('critical')) +
-      dashCard('Rejected', cnt(['s10']), 'ti-ban', 'var(--red-bg)', '#9B2C2C', f('status:s10')) +
-      dashCard('Avg Resolution Time', avgMs ? fmtDuration(avgMs) : '—', 'ti-stopwatch', 'var(--blue-bg)', 'var(--blue)', f('all'));
-    if(overdue + ackOver > 0){
-      overdueBanner.style.display = 'flex';
-      overdueBanner.innerHTML = `<i class="ti ti-alarm" style="font-size:16px;flex-shrink:0"></i><span><strong>${overdue}</strong> ticket${overdue===1?' is':'s are'} past the target resolution date${ackOver?` and <strong>${ackOver}</strong> not acknowledged in time`:''}. Click to view overdue tickets.</span>`;
-    } else overdueBanner.style.display = 'none';
+  // ── KPI cards ──
+  document.getElementById('dashKpis').innerHTML =
+    kpi('Total tickets', myT.length, `${thisMonth} raised this month`, '', 'all') +
+    kpi('Pending', pending.length, `of ${myT.length} — click to view`, pending.length?'warn':'', 'pending') +
+    (staff ? kpi('Overdue', overdue, ackOver ? `${ackOver} not acknowledged in time` : 'past target date — click to view', overdue?'bad':'good', 'overdue')
+           : kpi('In progress', myT.filter(t=>['s2','s3','s7','s8','s9'].includes(t.statusId)).length, 'assigned / being worked on', '', 'inprogress')) +
+    kpi('Resolved / closed', solved.length, avgMs ? `avg ${fmtDuration(avgMs)} to resolve` : 'click to view', 'good', 'solved') +
+    kpi('Critical (open)', critOpen, 'highest priority pending', critOpen?'bad':'', 'critical') +
+    kpi(staff ? 'Unassigned' : 'Reopened', staff ? pending.filter(t=>!t.assignedTo).length : myT.filter(t=>t.statusId==='s6').length, staff ? 'pending, no one assigned' : 'sent back for rework', '', staff ? 'assigned:__none__' : 'status:s6');
 
-    // Charts (only when there are tickets)
-    const pending = myT.filter(t=>!isDone(t));
-    const dC={}, pC={}, aC={};
-    myT.forEach(t=>{ pC[t.priorityId]=(pC[t.priorityId]||0)+1; });
-    pending.forEach(t=>{
-      const dk = adeptOf(t) || t.deptId || '__none__';
-      dC[dk]=(dC[dk]||0)+1;
-      const ak = t.assignedTo || '__unassigned__';
-      aC[ak]=(aC[ak]||0)+1;
-    });
-    const maxD=Math.max(...Object.values(dC),1);
-    document.getElementById('deptChart').innerHTML = Object.keys(dC).length
-      ? Object.entries(dC).sort((a,b)=>b[1]-a[1]).map(([id,c])=>`<div class="bar-wrap"><div class="bar-label">${id==='__none__'?'Not set':esc(getDept(id))}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(c/maxD*100)}%"></div></div><div class="bar-val">${c}</div></div>`).join('')
-      : '<div style="color:var(--muted);font-size:13px">No pending tickets.</div>';
-    const priC=['#9AA0BF','#5058B8','#EB7626','#E24B4A'];
-    document.getElementById('priChart').innerHTML = MASTERS.priorities.map(p=>`<div class="bar-wrap"><div class="bar-label">${p.name}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round((pC[p.id]||0)/Math.max(myT.length,1)*100)}%;background:${p.color||priC[p.level-1]}"></div></div><div class="bar-val">${pC[p.id]||0}</div></div>`).join('');
-    const maxA = Math.max(...Object.values(aC), 1);
-    document.getElementById('assignChart').innerHTML = Object.keys(aC).length
-      ? Object.entries(aC).sort((a,b)=>b[1]-a[1]).map(([id,c])=>{
-          const label = id==='__unassigned__' ? 'Unassigned' : esc(getUser(id));
-          const barColor = id==='__unassigned__' ? '#888780' : 'var(--navy)';
-          return `<div class="bar-wrap"><div class="bar-label">${label}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(c/maxA*100)}%;background:${barColor}"></div></div><div class="bar-val">${c}</div></div>`;
-        }).join('')
-      : '<div style="color:var(--muted);font-size:13px">No pending tickets.</div>';
+  if(staff && overdue + ackOver > 0){
+    overdueBanner.style.display = 'flex';
+    overdueBanner.innerHTML = `<i class="ti ti-alarm" style="font-size:16px;flex-shrink:0"></i><span><strong>${overdue}</strong> ticket${overdue===1?' is':'s are'} past the target resolution date${ackOver?` and <strong>${ackOver}</strong> not acknowledged in time`:''}. Click to view overdue tickets.</span>`;
   } else overdueBanner.style.display = 'none';
+
+  // ── chart data ──
+  const stMap = countBy(myT, t=>t.statusId);
+  const statusItems = [...MASTERS.statuses].sort((a,b)=>(a.order||0)-(b.order||0)).map((s,i)=>({id:s.id, label:s.name, value:stMap.get(s.id)||0, color:STATUS_COLORS[s.id]||CHART_PALETTE[i%CHART_PALETTE.length]}));
+  const months = []; for(let k=11;k>=0;k--){ const d = new Date(now.getFullYear(), now.getMonth()-k, 1); months.push({key:monthKey(d), label:`${MON_SHORT[d.getMonth()]} ${String(d.getFullYear()).slice(2)}`, value:0}); }
+  myT.forEach(t=>{ if(!t.createdAt) return; const b = months.find(m=>m.key===monthKey(new Date(toMs(t.createdAt)))); if(b) b.value++; });
+  const dMap = countBy(myT, t=>adeptOf(t) || '__none__');
+  const deptItems = [...dMap].map(([id,v])=>({id, label:id==='__none__'?'Not set':getDept(id), value:v, click:id!=='__none__'}));
+  const cMap = countBy(myT, t=>t.categoryId || '__none__');
+  const catItems = [...cMap].map(([id,v])=>({id, label:id==='__none__'?'Not set':getCat(id), value:v, click:id!=='__none__'}));
+  const pMap = countBy(myT, t=>t.priorityId);
+  const priItems = [...MASTERS.priorities].sort((a,b)=>a.level-b.level).map(p=>({id:p.id, label:p.name, value:pMap.get(p.id)||0, color:PRI_COLORS[Math.min(Math.max(p.level,1),4)-1]}));
+  const tMap = countBy(myT, t=>t.typeId || '__none__');
+  const typeItems = [...tMap].map(([id,v])=>({id, label:id==='__none__'?'Not set':getType(id), value:v, click:id!=='__none__'}));
+
+  let html = dsec('Overview','Ticket position') + `<div class="row g-3">
+      <div class="col-lg-5">${dcard('Tickets by status — all tickets','Click a slice or legend item to see those tickets', donutChart(statusItems,'status','tickets'))}</div>
+      <div class="col-lg-7">${dcard('Ticket inflow by month (last 12 months)','Click a bar to see that month’s tickets', monthBars(months,'month'))}</div></div>`;
+  html += dsec('Departments & Categories','Where the tickets go') + `<div class="row g-3">
+      <div class="col-lg-6">${dcard('Tickets by department (raised to)','Click a bar to see those tickets', hBars(deptItems,'dept','#2E3192'))}</div>
+      <div class="col-lg-6">${dcard('Tickets by category','Click a bar to see those tickets', hBars(catItems,'cat','#EB7626'))}</div></div>`;
+  html += dsec('Priority & Issue Types','What kind of tickets') + `<div class="row g-3">
+      <div class="col-lg-5">${dcard('Tickets by priority','Click a slice or legend item to see those tickets', donutChart(priItems,'priority','tickets'))}</div>
+      <div class="col-lg-7">${dcard('Top issue types','Click a bar to see those tickets', hBars(typeItems,'type','#5058B8',8))}</div></div>`;
+  if(staff){
+    const onTrack = pending.length - overdue;
+    const done = solved.filter(t=>t.targetDate && doneMs(t));
+    const late = done.filter(t=>doneMs(t) > toMs(t.targetDate)).length;
+    const slaItems = [
+      {id:'ontrack', label:'Pending — on track', value:Math.max(onTrack,0), color:'#5058B8'},
+      {id:'overdue', label:'Pending — overdue', value:overdue, color:'#E24B4A'},
+      {id:'x1', label:'Resolved in time', value:done.length-late + solved.filter(t=>!t.targetDate).length, color:'#1E9E5A', click:false},
+      {id:'x2', label:'Resolved late', value:late, color:'#EB7626', click:false}
+    ];
+    const aMap = countBy(pending, t=>t.assignedTo || '__none__');
+    const asItems = [...aMap].map(([id,v])=>({id, label:id==='__none__'?'Unassigned':getUser(id), value:v, color:id==='__none__'?'#9AA0BF':'#2E3192'}));
+    const uMap = countBy(myT, t=>t.userId);
+    const userItems = [...uMap].map(([id,v])=>({id, label:getUser(id), value:v}));
+    html += dsec('Service Levels & People','Turnaround and workload') + `<div class="row g-3">
+      <div class="col-lg-4">${dcard('Resolution SLA','Pending tickets by target date; resolved by on-time vs late', donutChart(slaItems,'sla','tickets'))}</div>
+      <div class="col-lg-4">${dcard('Workload — pending by assignee','Click a bar to see those tickets', hBars(asItems,'assigned','#2E3192',8))}</div>
+      <div class="col-lg-4">${dcard('Top requesters','Who raises the most tickets', hBars(userItems,'user','#EB7626',8))}</div></div>`;
+  }
+  document.getElementById('dashBody').innerHTML = html;
 
   const recent=myT.slice(0,5);
   document.getElementById('recentBody').innerHTML = recent.length===0
@@ -1952,30 +2013,50 @@ function populateFilters(){
   fp.innerHTML='<option value="">All Priority</option>'+MASTERS.priorities.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
   const opts = (arr,first)=>`<option value="">${first}</option>`+arr.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('');
   const set = (id,html)=>{ const el=document.getElementById(id); if(el){ const cur=el.value; el.innerHTML=html; el.value=cur; } };
-  set('rDept',    opts(MASTERS.departments,'All Departments (raised by)'));
-  set('rADept',   opts(MASTERS.departments,'All Assigned Departments'));
-  set('rStatus',  opts(MASTERS.statuses,'All Status'));
+  set('rADept',   opts(MASTERS.departments,'All Departments'));
+  set('rCat',     opts(MASTERS.categories.map(c=>({id:c.id,name:catLabel(c)})),'All Categories'));
+  set('rIssue',   opts(MASTERS.issueTypes,'All Issue Types'));
   set('rPriority',opts(MASTERS.priorities,'All Priority'));
 }
 
 // ── Dashboard card click → navigate to ticket list with filter ──
 window._ticketOverdueOnly = false;
 window.clearOverdueFilter = function(){ window._ticketOverdueOnly=false; renderTickets(); };
+window._ticketExtra = null;
+window.clearExtraFilter = function(){ window._ticketExtra = null; renderTickets(); };
+function extraFilterLabel(e){
+  const v = e.val;
+  return ({dept:()=>'Department: '+getDept(v), cat:()=>'Category: '+getCat(v), type:()=>'Issue Type: '+getType(v), assigned:()=>'Assigned: '+(v==='__none__'?'Unassigned':getUser(v)),
+           user:()=>'Raised by: '+getUser(v), month:()=>{ const [y,m]=v.split('-'); return 'Created: '+MON_SHORT[+m-1]+' '+y; }, ontrack:()=>'Pending — on track', pending:()=>'Pending tickets', solved:()=>'Resolved / closed'})[e.kind]?.() || '';
+}
+function matchExtra(t, e){
+  const v = e.val;
+  switch(e.kind){
+    case 'dept': return adeptOf(t) === v;
+    case 'cat': return t.categoryId === v;
+    case 'type': return t.typeId === v;
+    case 'assigned': return (t.assignedTo || '__none__') === v && !isDone(t);
+    case 'user': return t.userId === v;
+    case 'month': { if(!t.createdAt) return false; const d = new Date(toMs(t.createdAt)); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}` === v; }
+    case 'ontrack': return !isDone(t) && !isOverdue(t);
+    case 'pending': return !isDone(t);
+    case 'solved': return isSolved(t);
+  }
+  return true;
+}
 window.filterTicketsFromDash = function(type){
-  // Reset filters first
-  const fStatus   = document.getElementById('fStatus');
-  const fPriority = document.getElementById('fPriority');
-  fStatus.value   = '';
-  fPriority.value = '';
-  window._ticketOverdueOnly = false;
-
+  const fStatus = document.getElementById('fStatus'), fPriority = document.getElementById('fPriority');
+  fStatus.value = ''; fPriority.value = ''; window._ticketOverdueOnly = false; window._ticketExtra = null;
   if(type === 'open')            fStatus.value = 's1';
   else if(type === 'inprogress') fStatus.value = 's3';
   else if(type === 'critical')   fPriority.value = 'p4';
-  else if(type === 'overdue')    window._ticketOverdueOnly = true;
-  else if(type.startsWith('status:')) fStatus.value = type.slice(7);
+  else if(type === 'overdue' || type === 'sla:overdue') window._ticketOverdueOnly = true;
+  else if(type.startsWith('status:'))   fStatus.value = type.slice(7);
+  else if(type.startsWith('priority:')) fPriority.value = type.slice(9);
+  else if(type === 'ontrack' || type === 'pending' || type === 'solved') window._ticketExtra = {kind:type, val:''};
+  else if(type === 'sla:ontrack') window._ticketExtra = {kind:'ontrack', val:''};
+  else { const m = type.match(/^(dept|cat|type|assigned|month|user):(.*)$/); if(m) window._ticketExtra = {kind:m[1], val:m[2]}; }
   // 'all' = no filter, show everything
-
   showPage('tickets', document.querySelector('.nav-item[data-p="tickets"]'));
 };
 
@@ -2009,6 +2090,9 @@ window.renderTickets=function(){
   const show = (id,on)=>{ const e=document.getElementById(id); if(e) e.style.display = on?'':'none'; };
   show('th-assigned', staff); show('th-target', staff);
   document.getElementById('overdueFilterChip').style.display = window._ticketOverdueOnly ? '' : 'none';
+  const exc = document.getElementById('extraFilterChip'), ex = window._ticketExtra;
+  exc.style.display = ex ? '' : 'none';
+  if(ex) exc.firstElementChild.textContent = extraFilterLabel(ex) + ' ✕';
   const fs = document.getElementById('fStatus').value;
   const fp = document.getElementById('fPriority').value;
   let data = staff ? _tickets : _tickets.filter(t=>t.userId===SESSION.user.uid);
@@ -2023,6 +2107,7 @@ window.renderTickets=function(){
   if(fAs) data = data.filter(t=>(t.assignedTo||'__none__')===fAs);
   if(fUs) data = data.filter(t=>t.userId===fUs);
   if(window._ticketOverdueOnly) data = data.filter(anyOverdue);
+  if(window._ticketExtra) data = data.filter(t=>matchExtra(t, window._ticketExtra));
   document.getElementById('ticketBody').innerHTML = data.length===0 ? emptyRow(12,'No tickets found.') : data.map(t=>{
     const conf = '';
     const od   = staff && anyOverdue(t) ? '<span class="b-overdue">Overdue</span>' : '';
@@ -3376,10 +3461,29 @@ const cellHtml = c => (c && typeof c==='object') ? c.html : esc(c);
 const cellText = c => (c && typeof c==='object') ? c.text : String(c ?? '');
 const ageText = ms => fmtDuration(ms);
 
+// Department → narrows the category list; Category → narrows the issue-type list
+window.rptFilterChanged = function(which){
+  const set = (id, arr, first) => { const el = document.getElementById(id), cur = el.value; el.innerHTML = `<option value="">${first}</option>` + arr.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join(''); el.value = arr.some(x=>x.id===cur) ? cur : ''; };
+  if(which === 'dept'){
+    const d = document.getElementById('rADept').value;
+    set('rCat', (d ? MASTERS.categories.filter(c=>!c.deptId || c.deptId===d) : MASTERS.categories).map(c=>({id:c.id,name:catLabel(c)})), 'All Categories');
+  }
+  const c = document.getElementById('rCat').value;
+  set('rIssue', c ? typesForCategory(c) : MASTERS.issueTypes, 'All Issue Types');
+  runReport();
+};
+window.resetReportFilters = function(){
+  ['rADept','rCat','rIssue','rPriority','rUser','rDateFrom','rDateTo'].forEach(id=>{ const e = document.getElementById(id); if(e) e.value = ''; });
+  rptFilterChanged('dept');
+};
 window.initReportPage = function(){
+  // "Raised By" lists the people whose tickets this role can see
+  const ru = document.getElementById('rUser'), cur = ru.value;
+  const ids = [...new Set(_tickets.filter(canViewTicket).map(t=>t.userId).filter(Boolean))].sort((a,b)=>getUser(a).localeCompare(getUser(b)));
+  ru.innerHTML = '<option value="">All Users</option>' + ids.map(id=>`<option value="${id}">${esc(getUser(id))}</option>`).join('');
+  ru.value = ids.includes(cur) ? cur : '';
   const sel = document.getElementById('rType');
   if(!sel.options.length) sel.innerHTML = REPORT_TYPES.filter(r=>true).map(r=>`<option value="${r[0]}">${r[1]}</option>`).join('');
-  const fd = document.getElementById('fixDupBtn'); if(fd) fd.style.display = isAdmin() ? '' : 'none';
   runReport();
 };
 
@@ -3397,16 +3501,17 @@ function totalsRow(rows, label){
 window.runReport=function(){
   if(!document.getElementById('rType')?.options.length) return;
   const type = document.getElementById('rType').value;
-  const fd=document.getElementById('rDept')?.value||'', fa=document.getElementById('rADept')?.value||'', fs=document.getElementById('rStatus')?.value||'', fp=document.getElementById('rPriority')?.value||'';
+  const fa=document.getElementById('rADept')?.value||'', fc=document.getElementById('rCat')?.value||'', fi=document.getElementById('rIssue')?.value||'', fp=document.getElementById('rPriority')?.value||'', fu=document.getElementById('rUser')?.value||'';
   const dField='createdAt';
   const dFrom=document.getElementById('rDateFrom')?.value||'';
   const dTo=document.getElementById('rDateTo')?.value||'';
 
   let data = _tickets.filter(canViewTicket);      // already limited to what this role may see
-  if(fd) data=data.filter(t=>t.deptId===fd);
-  if(fa) data=data.filter(t=>t.assignedDeptId===fa);
-  if(fs) data=data.filter(t=>t.statusId===fs);
+  if(fa) data=data.filter(t=>adeptOf(t)===fa);
+  if(fc) data=data.filter(t=>t.categoryId===fc);
+  if(fi) data=data.filter(t=>t.typeId===fi);
   if(fp) data=data.filter(t=>t.priorityId===fp);
+  if(fu) data=data.filter(t=>t.userId===fu);
   if(dFrom || dTo){
     data=data.filter(t=>{
       const ts=t[dField];
@@ -3505,74 +3610,55 @@ window.runReport=function(){
   document.getElementById('rptBody').innerHTML = out.rows.length ? out.rows.map(r=>'<tr>'+r.map(c=>`<td>${cellHtml(c)}</td>`).join('')+'</tr>').join('') : emptyRow(out.head.length,'No records found.');
 };
 
-// ── FIX DUPLICATE TICKET NUMBERS (one-time repair tool) ──
-// Re-numbers every ticket in creation order with a guaranteed-unique
-// number, then resets the atomic counter so new tickets continue correctly.
-window.fixDuplicateTicketNumbers = async function(){
-  if(!isAdmin()) return;
-
-  // Check if there actually are duplicates before doing anything
-  const numberCounts = {};
-  _tickets.forEach(t => { numberCounts[t.ticketNo] = (numberCounts[t.ticketNo]||0) + 1; });
-  const duplicates = Object.entries(numberCounts).filter(([no,count])=>count>1);
-
-  if(duplicates.length === 0){
-    toast('No duplicate ticket numbers found — everything looks good!');
-    return;
-  }
-
-  const dupList = duplicates.map(([no,count])=>`${no} (used ${count} times)`).join('\n');
-  if(!confirm(`Found duplicate ticket numbers:\n\n${dupList}\n\nThis will re-number ALL ${_tickets.length} tickets in creation order to fix this. Continue?`)) return;
-
-  setLoading(true, 'Fixing ticket numbers…');
-  try{
-    // Sort all tickets by creation date, oldest first
-    const sorted = [...(await getDocs(collection(db,'tickets'))).docs]
-      .map(d=>({ id:d.id, ...d.data() }))
-      .sort((a,b)=>{
-        const ta = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0;
-        const tb = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0;
-        return ta - tb;
-      });
-
-    let seq = 0;
-    const batch = writeBatch(db);
-    let batchCount = 0;
-
-    for(const t of sorted){
-      seq++;
-      const d = t.createdAt?.toDate ? t.createdAt.toDate() : new Date();
-      const dateStr = d.toISOString().slice(0,10).replace(/-/g,'');
-      const newNo = `TKT-${dateStr}-${String(seq).padStart(4,'0')}`;
-      if(newNo !== t.ticketNo){
-        batch.update(doc(db,'tickets',t.id), { ticketNo: newNo });
-        batchCount++;
-      }
-    }
-
-    if(batchCount > 0) await batch.commit();
-
-    // Reset the atomic counter so the NEXT new ticket continues from here safely
-    await setDoc(doc(db,'counters','tickets'), { value: seq }, { merge:true });
-
-    setLoading(false);
-    toast(`Fixed! ${batchCount} ticket number(s) corrected. Refreshing…`);
-    setTimeout(()=>location.reload(), 1500);
-  } catch(e){
-    setLoading(false);
-    toast('Fix failed: '+e.message,'error');
-  }
-};
-
-window.exportCSV=function(){
+// ── EXPORT (Word / Excel / PDF / CSV / XML) ──
+window.toggleExportMenu = function(e){ e && e.stopPropagation(); document.getElementById('expMenu').classList.toggle('open'); };
+document.addEventListener('click', ()=>{ const m = document.getElementById('expMenu'); if(m) m.classList.remove('open'); });
+function rptData(){
   const o = window._rptOut;
-  if(!o || !o.rows.length){ toast('Nothing to export — run a report first','error'); return; }
-  const q = v => { let t = cellText(v); if(/^[=+\-@]/.test(t)) t = "'"+t; return '"'+t.replace(/"/g,'""')+'"'; };
-  const lines = [o.head.map(q).join(',')].concat(o.rows.map(r=>r.map(q).join(',')));
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob(['﻿'+lines.join('\r\n')],{type:'text/csv;charset=utf-8'}));
-  a.download='helpdesk_'+(document.getElementById('rType').value||'report')+'_'+today()+'.csv';
-  a.click(); toast('CSV exported');
+  if(!o || !o.rows.length){ toast('Nothing to export — run a report first','error'); return null; }
+  return { head:o.head.map(cellText), rows:o.rows.map(r=>r.map(cellText)),
+           title:(document.getElementById('rptTitle')?.textContent||'Report'), file:'helpdesk_'+(document.getElementById('rType').value||'report')+'_'+today() };
+}
+function saveBlob(blob, name){ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },1500); }
+function rptHtmlDoc(d, forPrint){
+  const th = d.head.map(h=>`<th>${esc(h)}</th>`).join(''), tr = d.rows.map(r=>'<tr>'+r.map(c=>`<td>${esc(c)}</td>`).join('')+'</tr>').join('');
+  const filt = [['rADept','Department'],['rCat','Category'],['rIssue','Issue Type'],['rPriority','Priority'],['rUser','Raised By']].map(([id,l])=>{ const e=document.getElementById(id); return e&&e.value?`${l}: ${e.options[e.selectedIndex].text}`:''; }).filter(Boolean);
+  const df=document.getElementById('rDateFrom')?.value, dt=document.getElementById('rDateTo')?.value; if(df||dt) filt.push(`Created: ${df||'…'} to ${dt||'…'}`);
+  return `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><title>${esc(d.title)}</title>
+<style>body{font-family:Arial,sans-serif;font-size:11px;color:#222}h2{color:#2E3192;margin:0 0 4px}.m{color:#666;margin:0 0 10px}table{border-collapse:collapse;width:100%}th{background:#2E3192;color:#fff;text-align:left}th,td{border:1px solid #bbb;padding:4px 6px}tr:nth-child(even) td{background:#F3F4FA}${forPrint?'@page{size:landscape;margin:12mm}':''}</style></head>
+<body><h2>MP Developers — ${esc(d.title)}</h2><p class="m">Generated ${new Date().toLocaleString('en-IN')} · ${d.rows.length} rows${filt.length?' · '+esc(filt.join(' · ')):''}</p><table><thead><tr>${th}</tr></thead><tbody>${tr}</tbody></table></body></html>`;
+}
+function loadScriptOnce(src){ return new Promise((res,rej)=>{ if(window.XLSX) return res(); const s=document.createElement('script'); s.src=src; s.onload=()=>window.XLSX?res():rej(new Error('lib')); s.onerror=()=>rej(new Error('net')); document.head.appendChild(s); }); }
+window.exportReport = async function(fmt){
+  document.getElementById('expMenu')?.classList.remove('open');
+  const d = rptData(); if(!d) return;
+  if(fmt==='csv'){
+    const q = t => { t = String(t); if(/^[=+\-@]/.test(t)) t = "'"+t; return '"'+t.replace(/"/g,'""')+'"'; };
+    const lines = [d.head.map(q).join(',')].concat(d.rows.map(r=>r.map(q).join(',')));
+    saveBlob(new Blob(['﻿'+lines.join('\r\n')],{type:'text/csv;charset=utf-8'}), d.file+'.csv'); toast('CSV exported');
+  } else if(fmt==='word'){
+    saveBlob(new Blob(['﻿'+rptHtmlDoc(d,false)],{type:'application/msword'}), d.file+'.doc'); toast('Word file exported');
+  } else if(fmt==='excel'){
+    try{
+      await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js');
+      const XLSX = window.XLSX, ws = XLSX.utils.aoa_to_sheet([d.head, ...d.rows]); ws['!cols'] = d.head.map((h,i)=>({wch:Math.min(40,Math.max(String(h).length, ...d.rows.slice(0,200).map(r=>String(r[i]??'').length))+2)}));
+      const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Report'); XLSX.writeFile(wb, d.file+'.xlsx');
+    }catch(e){   // offline / library blocked → Excel can still open an HTML table
+      saveBlob(new Blob(['﻿'+rptHtmlDoc(d,false)],{type:'application/vnd.ms-excel'}), d.file+'.xls');
+    }
+    toast('Excel file exported');
+  } else if(fmt==='xml'){
+    const tag = h => String(h).replace(/[^A-Za-z0-9]+/g,'_').replace(/^(\d)/,'_$1').replace(/^_+|_+$/g,'') || 'Field';
+    const x = t => String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
+    const tags = d.head.map(tag);
+    const body = d.rows.map(r=>'  <Ticket>\n'+r.map((c,i)=>`    <${tags[i]}>${x(c)}</${tags[i]}>`).join('\n')+'\n  </Ticket>').join('\n');
+    saveBlob(new Blob([`<?xml version="1.0" encoding="utf-8"?>\n<Report name="${x(d.title)}" generated="${new Date().toISOString()}" rows="${d.rows.length}">\n${body}\n</Report>`],{type:'application/xml'}), d.file+'.xml'); toast('XML exported');
+  } else if(fmt==='pdf'){
+    const f = document.createElement('iframe'); f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0'; document.body.appendChild(f);
+    f.contentDocument.open(); f.contentDocument.write(rptHtmlDoc(d,true)); f.contentDocument.close();
+    setTimeout(()=>{ try{ f.contentWindow.focus(); f.contentWindow.print(); }catch(e){ toast('Could not open the print dialog','error'); } setTimeout(()=>f.remove(),60000); },300);
+    toast('Choose "Save as PDF" in the print window');
+  }
 };
 
 // ══════════════════════════════════════════════════════════════
@@ -3642,7 +3728,7 @@ window.resetSlaDept = async function(){
 const HD_CATEGORIES = ['Application / System Issue','Process Related','Approval Pending','Data Correction','Access / Permission','Hardware Issue','Network / Internet','Request for Information','New Requirement','General Support'];
 const HD_NEW_STATUSES = [{id:'s7',name:'Acknowledged'},{id:'s8',name:'On Hold'},{id:'s9',name:'Pending Approval'},{id:'s10',name:'Rejected'}];
 const HD_STATUS_ORDER = { s1:1, s2:2, s7:3, s3:4, s8:5, s9:6, s4:7, s5:8, s6:9, s10:10 };
-const HD_DEPARTMENTS = ['Accounts','Sales','CRM','Purchase','Engineering','HR','Admin','Marketing','ERP & IT','Legal'];
+const HD_DEPARTMENTS = ['Accounts','Sales','CRM','Purchase','Engineering','HR','Admin','Marketing','Legal'];
 const HD_MAP = [
   ['Accounts','Payment','Vendor Payment Pending'], ['Accounts','Receipt','Receipt Mismatch'], ['Accounts','Reports','Ledger Report'],
   ['Sales','Booking','Booking Modification'], ['Sales','Customer','Customer Details Correction'],
@@ -3652,8 +3738,6 @@ const HD_MAP = [
   ['HR','Employee','Employee Data Correction'], ['HR','Attendance','Attendance Correction'],
   ['Admin','Asset','Asset Allocation'], ['Admin','Facility','Maintenance Request'],
   ['Marketing','Vendor Bill','Bill Approval'],
-  ['ERP & IT','ERP','Login Issue'], ['ERP & IT','ERP','Transaction Error'], ['ERP & IT','ERP','Report Issue'],
-  ['ERP & IT','IT Support','Hardware / Network Issue'],
   ['Legal','Documentation','Document Verification']
 ];
 const hdNorm = x => String(x||'').toLowerCase().replace(/[^a-z0-9]/g,'');
