@@ -227,6 +227,8 @@ input[type=checkbox]{accent-color:var(--navy)}
 .exp-menu a{display:flex;align-items:center;gap:10px;padding:9px 16px;font-size:13px;color:var(--navy);cursor:pointer;text-decoration:none}
 .exp-menu a i{font-size:16px;color:var(--orange)}
 .exp-menu a:hover{background:var(--blue-bg,#ECEDF8)}
+.rpt-list td{padding:11px 14px}
+.rpt-list td a{color:#2E3192 !important;cursor:pointer;text-decoration:none;font-weight:500}.rpt-list td a:hover{text-decoration:underline}
 </style>
 </head>
 <body>
@@ -732,37 +734,47 @@ input[type=checkbox]{accent-color:var(--navy)}
 
 <!-- REPORTS -->
 <div class="page" id="page-reports">
-  <div class="ph"><h1>Reports</h1>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <div class="exp-wrap" id="expWrap">
-        <button class="btn-outline" id="expBtn" onclick="toggleExportMenu(event)" title="Export"><i class="ti ti-device-floppy"></i> Export <i class="ti ti-chevron-down" style="font-size:12px"></i></button>
-        <div class="exp-menu" id="expMenu">
-          <a onclick="exportReport('word')"><i class="ti ti-file-word"></i> Word</a>
-          <a onclick="exportReport('excel')"><i class="ti ti-file-spreadsheet"></i> Excel</a>
-          <a onclick="exportReport('pdf')"><i class="ti ti-file-type-pdf"></i> PDF</a>
-          <a onclick="exportReport('csv')"><i class="ti ti-file-type-csv"></i> CSV (comma delimited)</a>
-          <a onclick="exportReport('xml')"><i class="ti ti-file-code"></i> XML file with report data</a>
+  <!-- 1) report list -->
+  <div id="rptListView">
+    <div class="ph"><h1>Reports</h1></div>
+    <div style="margin-bottom:12px;max-width:360px;position:relative"><input class="form-control" id="rptSearch" placeholder="Search Reports" oninput="renderReportList()" style="padding-right:34px"><i class="ti ti-search" style="position:absolute;right:12px;top:10px;color:var(--muted)"></i></div>
+    <div class="card-box"><div style="overflow-x:auto"><table class="table table-hover mb-0 rpt-list"><thead><tr><th style="width:36%">Name</th><th>Description</th></tr></thead><tbody id="rptListBody"></tbody></table></div></div>
+  </div>
+  <!-- 2) one report: filters first, data only after Run Report -->
+  <div id="rptRunView" style="display:none">
+    <div class="ph"><h1 id="rptRunTitle">Report</h1>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn-outline" onclick="showReportList()"><i class="ti ti-arrow-left"></i> All Reports</button>
+        <div class="exp-wrap" id="expWrap" style="display:none">
+          <button class="btn-outline" id="expBtn" onclick="toggleExportMenu(event)" title="Export"><i class="ti ti-device-floppy"></i> Export <i class="ti ti-chevron-down" style="font-size:12px"></i></button>
+          <div class="exp-menu" id="expMenu">
+            <a onclick="exportReport('word')"><i class="ti ti-file-word"></i> Word</a>
+            <a onclick="exportReport('excel')"><i class="ti ti-file-spreadsheet"></i> Excel</a>
+            <a onclick="exportReport('pdf')"><i class="ti ti-file-type-pdf"></i> PDF</a>
+            <a onclick="exportReport('csv')"><i class="ti ti-file-type-csv"></i> CSV (comma delimited)</a>
+            <a onclick="exportReport('xml')"><i class="ti ti-file-code"></i> XML file with report data</a>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-  <div class="card-box" style="margin-bottom:14px"><div class="cbb">
-    <div class="row g-3">
-      <div class="col-md-6 col-lg-4"><label class="form-label">Report</label><select class="form-select" id="rType" onchange="runReport()"></select></div>
-      <div class="col-md-6 col-lg-4"><label class="form-label">Department</label><select class="form-select" id="rADept" onchange="rptFilterChanged('dept')"><option value="">All Departments</option></select></div>
-      <div class="col-md-6 col-lg-4"><label class="form-label">Ticket Category</label><select class="form-select" id="rCat" onchange="rptFilterChanged('cat')"><option value="">All Categories</option></select></div>
-      <div class="col-md-6 col-lg-4"><label class="form-label">Issue Type</label><select class="form-select" id="rIssue" onchange="runReport()"><option value="">All Issue Types</option></select></div>
-      <div class="col-md-6 col-lg-2"><label class="form-label">Creation Date — From</label><input type="date" class="form-control" id="rDateFrom" onchange="runReport()"></div>
-      <div class="col-md-6 col-lg-2"><label class="form-label">Creation Date — To</label><input type="date" class="form-control" id="rDateTo" onchange="runReport()"></div>
-      <div class="col-md-6 col-lg-4"><label class="form-label">Priority</label><select class="form-select" id="rPriority" onchange="runReport()"><option value="">All Priority</option></select></div>
-      <div class="col-md-6 col-lg-4"><label class="form-label">Raised By</label><select class="form-select" id="rUser" onchange="runReport()"><option value="">All Users</option></select></div>
-      <div class="col-lg-4" style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap">
-        <button class="btn-navy" onclick="runReport()"><i class="ti ti-search"></i> Run Report</button>
-        <button class="btn-outline" onclick="resetReportFilters()"><i class="ti ti-filter-off"></i> Clear filters</button>
+    <input type="hidden" id="rType">
+    <div class="card-box" style="margin-bottom:14px"><div class="cbb">
+      <div class="row g-3">
+        <div class="col-md-6 col-lg-4"><label class="form-label">Department</label><select class="form-select" id="rADept" onchange="rptFilterChanged('dept')"><option value="">All Departments</option></select></div>
+        <div class="col-md-6 col-lg-4"><label class="form-label">Ticket Category</label><select class="form-select" id="rCat" onchange="rptFilterChanged('cat')"><option value="">All Categories</option></select></div>
+        <div class="col-md-6 col-lg-4"><label class="form-label">Issue Type</label><select class="form-select" id="rIssue"><option value="">All Issue Types</option></select></div>
+        <div class="col-md-6 col-lg-2"><label class="form-label">Creation Date — From</label><input type="date" class="form-control" id="rDateFrom"></div>
+        <div class="col-md-6 col-lg-2"><label class="form-label">Creation Date — To</label><input type="date" class="form-control" id="rDateTo"></div>
+        <div class="col-md-6 col-lg-4"><label class="form-label">Priority</label><select class="form-select" id="rPriority"><option value="">All Priority</option></select></div>
+        <div class="col-md-6 col-lg-4"><label class="form-label">Raised By</label><select class="form-select" id="rUser"><option value="">All Users</option></select></div>
       </div>
-    </div>
-  </div></div>
-  <div class="card-box"><div class="cbh"><h2 id="rptTitle">Report</h2><span id="rptCount" style="font-size:12px;color:var(--muted)"></span></div><div style="overflow-x:auto"><table class="table table-hover mb-0"><thead id="rptHead"></thead><tbody id="rptBody"></tbody></table></div></div>
+      <div style="display:flex;gap:10px;margin-top:18px">
+        <button class="btn-teal" id="rptRunBtn" onclick="runReport()"><i class="ti ti-search"></i> Run Report</button>
+        <button class="btn-outline" onclick="resetReportFilters()">Reset</button>
+      </div>
+    </div></div>
+    <div class="card-box" id="rptResult" style="display:none"><div class="cbh"><h2 id="rptTitle">Report</h2><span id="rptCount" style="font-size:12px;color:var(--muted)"></span></div><div style="overflow-x:auto"><table class="table table-hover mb-0"><thead id="rptHead"></thead><tbody id="rptBody"></tbody></table></div></div>
+  </div>
 </div>
 
 <!-- CHANGE PASSWORD -->
@@ -3441,16 +3453,16 @@ window.saveUser=async function(){
 
 // ── REPORTS ───────────────────────────────────────────────────
 const REPORT_TYPES = [
-  ['register','Ticket Register (all tickets)'],
-  ['dept','Department-wise Ticket Report'],
-  ['emp','Employee-wise Ticket Report'],
-  ['assigned','Assigned Employee Report'],
-  ['pending','Pending Ticket Report'],
-  ['overdue','Overdue Ticket Report'],
-  ['tat','Resolution TAT Report'],
-  ['priority','Priority-wise Report'],
-  ['reopened','Reopened Ticket Report'],
-  ['monthly','Monthly Ticket Summary']
+  ['register','Ticket Register (all tickets)','This report lists every ticket with its raiser, department, issue type, priority, status, assignee, target and creation date.'],
+  ['dept','Department-wise Ticket Report','This report shows, for each department, the total, pending, resolved, rejected and overdue ticket counts.'],
+  ['emp','Employee-wise Ticket Report','This report shows how many tickets each employee has raised, and how many are pending, resolved or reopened.'],
+  ['assigned','Assigned Employee Report','This report shows each assignee\'s ticket load: pending, resolved, overdue and the average resolution time.'],
+  ['pending','Pending Ticket Report','This report lists all tickets that are not yet resolved, closed or rejected, with their age.'],
+  ['overdue','Overdue Ticket Report','This report lists tickets that are past their target resolution date or were not acknowledged in time.'],
+  ['tat','Resolution TAT Report','This report shows the time taken to resolve each ticket against its target, with the average turnaround.'],
+  ['priority','Priority-wise Report','This report displays ticket counts by priority along with their status split.'],
+  ['reopened','Reopened Ticket Report','This report lists tickets that were reopened after being resolved, with the reopen count.'],
+  ['monthly','Monthly Ticket Summary','This report summarises tickets raised and resolved in each month.']
 ];
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const tatMs = t => { const e = toMs(t.firstResolvedAt)||toMs(t.resolvedAt)||toMs(t.closedAt); const st = toMs(t.createdAt); return (e && st && e>=st && t.statusId!=='s10') ? e-st : 0; };
@@ -3471,11 +3483,36 @@ window.rptFilterChanged = function(which){
   }
   const c = document.getElementById('rCat').value;
   set('rIssue', c ? typesForCategory(c) : MASTERS.issueTypes, 'All Issue Types');
-  runReport();
 };
 window.resetReportFilters = function(){
   ['rADept','rCat','rIssue','rPriority','rUser','rDateFrom','rDateTo'].forEach(id=>{ const e = document.getElementById(id); if(e) e.value = ''; });
   rptFilterChanged('dept');
+  // back to the "filters only" state
+  window._rptOut = null;
+  document.getElementById('rptResult').style.display = 'none';
+  document.getElementById('expWrap').style.display = 'none';
+};
+// Reports: 1) list of reports  2) filters for the chosen report  3) data only after Run Report
+window.renderReportList = function(){
+  const q = (document.getElementById('rptSearch')?.value||'').toLowerCase().trim();
+  const list = REPORT_TYPES.filter(r=>!q || r[1].toLowerCase().includes(q) || r[2].toLowerCase().includes(q));
+  document.getElementById('rptListBody').innerHTML = list.length
+    ? list.map(r=>`<tr><td><a onclick="openReport('${r[0]}')">${esc(r[1])}</a></td><td style="color:var(--text)">${esc(r[2])}</td></tr>`).join('')
+    : emptyRow(2,'No reports match your search.');
+};
+window.showReportList = function(){
+  document.getElementById('rptRunView').style.display = 'none';
+  document.getElementById('rptListView').style.display = '';
+  window._rptOut = null;
+  renderReportList();
+};
+window.openReport = function(key){
+  const r = REPORT_TYPES.find(x=>x[0]===key); if(!r) return;
+  document.getElementById('rType').value = key;
+  document.getElementById('rptRunTitle').textContent = r[1];
+  document.getElementById('rptListView').style.display = 'none';
+  document.getElementById('rptRunView').style.display = '';
+  resetReportFilters();
 };
 window.initReportPage = function(){
   // "Raised By" lists the people whose tickets this role can see
@@ -3483,9 +3520,7 @@ window.initReportPage = function(){
   const ids = [...new Set(_tickets.filter(canViewTicket).map(t=>t.userId).filter(Boolean))].sort((a,b)=>getUser(a).localeCompare(getUser(b)));
   ru.innerHTML = '<option value="">All Users</option>' + ids.map(id=>`<option value="${id}">${esc(getUser(id))}</option>`).join('');
   ru.value = ids.includes(cur) ? cur : '';
-  const sel = document.getElementById('rType');
-  if(!sel.options.length) sel.innerHTML = REPORT_TYPES.filter(r=>true).map(r=>`<option value="${r[0]}">${r[1]}</option>`).join('');
-  runReport();
+  showReportList();       // always open on the list — no data until a report is run
 };
 
 function totalsRow(rows, label){
@@ -3500,7 +3535,7 @@ function totalsRow(rows, label){
 }
 
 window.runReport=function(){
-  if(!document.getElementById('rType')?.options.length) return;
+  if(!document.getElementById('rType')?.value) return;
   const type = document.getElementById('rType').value;
   const fa=document.getElementById('rADept')?.value||'', fc=document.getElementById('rCat')?.value||'', fi=document.getElementById('rIssue')?.value||'', fp=document.getElementById('rPriority')?.value||'', fu=document.getElementById('rUser')?.value||'';
   const dField='createdAt';
@@ -3603,6 +3638,8 @@ window.runReport=function(){
   }
 
   window._rptOut = out;
+  document.getElementById('rptResult').style.display = '';
+  document.getElementById('expWrap').style.display = '';
   const isTotals = (type==='dept'||type==='emp'||type==='assigned'||type==='priority'||type==='monthly');
   const cnt = isTotals ? Math.max(0,out.rows.length-1) : out.rows.length;
   document.getElementById('rptTitle').textContent = out.title;
