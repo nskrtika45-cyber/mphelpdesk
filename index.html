@@ -587,7 +587,7 @@ input[type=checkbox]{accent-color:var(--navy)}
 
 <!-- MASTERS (one page: pick a master table, press Go) -->
 <div class="page" id="page-masters">
-  <div class="ph"><h1>Master Tables</h1><button class="btn-teal" id="mt-create" onclick="mtCreate()" style="display:none"><i class="ti ti-plus"></i> <span id="mt-createLbl">Create</span></button></div>
+  <div class="ph"><h1>Master Tables</h1><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn-outline" id="mt-bulk" onclick="openMtBulk()" style="display:none"><i class="ti ti-upload"></i> Bulk Upload</button><button class="btn-teal" id="mt-create" onclick="mtCreate()" style="display:none"><i class="ti ti-plus"></i> <span id="mt-createLbl">Create</span></button></div></div>
   <div class="card-box" style="margin-bottom:14px">
     <div class="cbb">
       <div class="mt-row">
@@ -828,6 +828,32 @@ input[type=checkbox]{accent-color:var(--navy)}
     <div class="mh"><h3 id="mmTitle">Add</h3><button class="btn-x" onclick="closeMM()">✕</button></div>
     <div class="mb-p" id="mmBody"></div>
     <div class="mf"><button class="btn-outline" onclick="closeMM()">Cancel</button><button class="btn-teal" id="mmSaveBtn" onclick="saveMM()"><i class="ti ti-check"></i> Save</button></div>
+  </div>
+</div>
+
+<!-- MASTERS BULK UPLOAD -->
+<div class="overlay" id="mtBulkModal">
+  <div class="modal-box" style="width:min(820px,95vw)">
+    <div class="mh"><h3><i class="ti ti-upload" style="margin-right:6px"></i><span id="mbTitle">Bulk Upload</span></h3><button class="btn-x" onclick="closeMtBulk()">✕</button></div>
+    <div class="mb-p">
+      <div style="background:var(--gray);border-radius:8px;padding:14px 16px;margin-bottom:14px">
+        <div style="font-size:13px;font-weight:600;margin-bottom:6px"><i class="ti ti-download" style="margin-right:6px;color:var(--navy)"></i>Step 1 — Download the template</div>
+        <div id="mbHelp" style="font-size:12.5px;color:var(--muted);margin-bottom:10px;line-height:1.6"></div>
+        <button class="btn-outline" onclick="downloadMtTemplate()" style="font-size:12px;padding:6px 14px"><i class="ti ti-file-spreadsheet"></i> Download CSV Template</button>
+      </div>
+      <div style="background:var(--gray);border-radius:8px;padding:14px 16px;margin-bottom:14px">
+        <div style="font-size:13px;font-weight:600;margin-bottom:8px"><i class="ti ti-upload" style="margin-right:6px;color:var(--blue)"></i>Step 2 — Upload your filled CSV</div>
+        <input type="file" id="mbFile" accept=".csv" class="form-control" onchange="parseMtBulk()" style="margin-bottom:8px"/>
+        <div style="font-size:12px;color:var(--muted)">.csv only (in Excel use File → Save As → CSV) · up to 500 rows · rows that already exist are skipped, so it is safe to upload again</div>
+      </div>
+      <div id="mbPreview" style="display:none">
+        <div style="font-size:13px;font-weight:600;margin-bottom:6px"><i class="ti ti-eye" style="margin-right:6px;color:var(--navy)"></i>Step 3 — Preview &amp; confirm</div>
+        <div id="mbCount" style="font-size:12.5px;margin-bottom:8px"></div>
+        <div style="max-height:280px;overflow:auto;border:1px solid var(--border);border-radius:8px"><table class="table table-sm mb-0"><thead id="mbHead" style="position:sticky;top:0;background:#fff"></thead><tbody id="mbBody"></tbody></table></div>
+      </div>
+      <div id="mbResult" style="margin-top:12px;font-size:13px"></div>
+    </div>
+    <div class="mf"><button class="btn-outline" onclick="closeMtBulk()">Close</button><button class="btn-teal" id="mbRunBtn" onclick="runMtBulk()" style="display:none"><i class="ti ti-check"></i> <span id="mbRunLbl">Upload</span></button></div>
   </div>
 </div>
 
@@ -2992,6 +3018,172 @@ const MT_DEFS = {
     del:r=>deleteCategory(r.id,r.name) }
 };
 
+// ── MASTER TABLES · BULK UPLOAD (CSV) ──────────────────────────
+const mbNorm = x => String(x ?? '').toLowerCase().replace(/\s+/g,' ').trim();
+const mbKey  = x => String(x ?? '').toLowerCase().replace(/[^a-z0-9]/g,'');
+function mbParseCsv(text){
+  text = String(text).replace(/^\ufeff/,''); const rows = []; let row = [], f = '', q = false;
+  for(let i=0;i<text.length;i++){
+    const c = text[i];
+    if(q){ if(c==='"'){ if(text[i+1]==='"'){ f+='"'; i++; } else q=false; } else f+=c; }
+    else if(c==='"') q = true;
+    else if(c===','){ row.push(f); f=''; }
+    else if(c==='\n' || c==='\r'){ if(c==='\r' && text[i+1]==='\n') i++; row.push(f); f=''; rows.push(row); row=[]; }
+    else f+=c;
+  }
+  if(f!=='' || row.length){ row.push(f); rows.push(row); }
+  return rows.filter(r=>r.some(x=>String(x).trim()!==''));
+}
+const mbDeptByName = n => MASTERS.departments.find(d=>mbNorm(d.name)===mbNorm(n));
+const mbOrderStart = () => MASTERS.categories.reduce((m,c)=>Math.max(m,c.order||0),0);
+// Each definition: columns (header → accepted names), template rows, and plan(rows) → { items:[{cells,state,note}], ops:[{col,id?,data,mode}] }
+const MB_DEFS = {
+  dept:{ label:'Departments', cols:['Department','Ticket Prefix'], keys:[['department','departmentname','name'],['ticketprefix','prefix','code']],
+    help:()=>'<strong>Department</strong> (required) · <strong>Ticket Prefix</strong> (optional — up to 6 letters/numbers used at the start of ticket numbers; leave blank for automatic).',
+    sample:[['Facility Management','FM'],['Land',''],['Legal','']],
+    plan(rows){
+      const items = [], ops = [], codes = new Set(MASTERS.departments.map(deptCode)), names = new Set(MASTERS.departments.map(d=>mbNorm(d.name)));
+      rows.forEach(r=>{
+        const name = (r[0]||'').trim(), raw = (r[1]||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6);
+        if(!name) return items.push({cells:[name,raw],state:'error',note:'Department name missing'});
+        if(names.has(mbNorm(name))) return items.push({cells:[name,raw],state:'skip',note:'Already exists'});
+        const eff = raw || autoDeptCode(name);
+        if(codes.has(eff)) return items.push({cells:[name,raw||eff+' (auto)'],state:'error',note:`Prefix ${eff} already used — give a different one`});
+        codes.add(eff); names.add(mbNorm(name));
+        items.push({cells:[name,raw||eff+' (auto)'],state:'ready',note:'New'}); ops.push({col:'departments',mode:'add',data:{name,active:true,code:raw}});
+      });
+      return {items,ops};
+    } },
+  category:{ label:'Ticket Categories', cols:['Department','Category'], keys:[['department','departmentname'],['category','ticketcategory','categoryname','name']],
+    help:()=>'<strong>Department</strong> (must already exist) · <strong>Category</strong> (the Ticket Category name for that department).<br>Departments: '+esc(MASTERS.departments.map(d=>d.name).join(', ')),
+    sample:[['IT','Hardware Issue'],['IT','Network / Internet'],['Admin','Asset Request']],
+    plan(rows){
+      const items = [], ops = [], have = new Set(MASTERS.categories.map(c=>(c.deptId||'')+'|'+mbNorm(c.name))); let order = mbOrderStart();
+      rows.forEach(r=>{
+        const dn = (r[0]||'').trim(), name = (r[1]||'').trim(), d = mbDeptByName(dn);
+        if(!name) return items.push({cells:[dn,name],state:'error',note:'Category name missing'});
+        if(!d) return items.push({cells:[dn,name],state:'error',note:dn?'Department not found':'Department missing'});
+        const k = d.id+'|'+mbNorm(name);
+        if(have.has(k)) return items.push({cells:[d.name,name],state:'skip',note:'Already exists'});
+        have.add(k); order++;
+        items.push({cells:[d.name,name],state:'ready',note:'New'}); ops.push({col:'categories',mode:'add',data:{name,active:true,deptId:d.id,order}});
+      });
+      return {items,ops};
+    } },
+  issueType:{ label:'Issue Types', cols:['Issue Type','Department','Category'], keys:[['issuetype','issuetypename','name'],['department','departmentname'],['category','ticketcategory','categoryname']],
+    help:()=>'<strong>Issue Type</strong> (required) · <strong>Department</strong> and <strong>Category</strong> (optional — the Ticket Category this Issue Type appears under). Use one row per category; repeat the Issue Type to link it to several categories. Leave both blank to show it under every category.',
+    sample:[['Printer Not Working','IT','Hardware Issue'],['Printer Not Working','Admin','Asset Request'],['Wi-Fi Down','IT','Network / Internet']],
+    plan(rows){
+      const items = [], ops = [], byType = new Map();   // key → {name, existing, ids:Set}
+      rows.forEach(r=>{
+        const tn = (r[0]||'').trim(), dn = (r[1]||'').trim(), cn = (r[2]||'').trim(); const cells = [tn,dn,cn];
+        if(!tn) return items.push({cells,state:'error',note:'Issue Type name missing'});
+        let catId = null;
+        if(cn){
+          const pool = MASTERS.categories.filter(c=>mbNorm(c.name)===mbNorm(cn));
+          let cat = null;
+          if(dn){ const d = mbDeptByName(dn); if(!d) return items.push({cells,state:'error',note:'Department not found'}); cat = pool.find(c=>c.deptId===d.id); if(!cat) return items.push({cells,state:'error',note:`No category “${cn}” in ${d.name}`}); }
+          else if(pool.length===1) cat = pool[0];
+          else return items.push({cells,state:'error',note:pool.length?'Several departments have this category — add the Department':'Category not found'});
+          catId = cat.id;
+        } else if(dn && !mbDeptByName(dn)) return items.push({cells,state:'error',note:'Department not found'});
+        const key = mbNorm(tn);
+        let g = byType.get(key);
+        if(!g){ const ex = MASTERS.issueTypes.find(x=>mbNorm(x.name)===key); g = {name:tn, existing:ex||null, ids:new Set(ex?(ex.categoryIds||[]):[]), added:false, created:false}; byType.set(key,g); }
+        if(g.existing){
+          if(catId && !g.ids.has(catId)){ g.ids.add(catId); g.added = true; items.push({cells,state:'ready',note:'Existing Issue Type — adds this category'}); }
+          else items.push({cells,state:'skip',note: catId?'Already linked':'Already exists'});
+        } else {
+          if(catId && g.ids.has(catId)) return items.push({cells,state:'skip',note:'Duplicate row'});
+          if(catId) g.ids.add(catId);
+          items.push({cells,state:'ready',note: g.created?'Adds this category to the new Issue Type':'New'}); g.created = true;
+        }
+      });
+      byType.forEach(g=>{
+        if(g.existing && g.added) ops.push({col:'issueTypes',mode:'update',id:g.existing.id,data:{categoryIds:[...g.ids]}});
+        else if(!g.existing && g.created) ops.push({col:'issueTypes',mode:'add',data:{name:g.name,active:true,deptId:null,categoryIds:[...g.ids]}});
+      });
+      return {items,ops};
+    } },
+  subType:{ label:'Issue Sub-Types', cols:['Issue Type','Sub-Type'], keys:[['issuetype','issuetypename'],['subtype','subtypename','name']],
+    help:()=>'<strong>Issue Type</strong> (must already exist) · <strong>Sub-Type</strong> (name).<br>Issue Types: '+esc(MASTERS.issueTypes.slice(0,25).map(t=>t.name).join(', '))+(MASTERS.issueTypes.length>25?' …':''),
+    sample:[['Printer Not Working','Paper Jam'],['Printer Not Working','Toner Replacement'],['Wi-Fi Down','Router Reset']],
+    plan(rows){
+      const items = [], ops = [], have = new Set(MASTERS.subTypes.map(x=>x.typeId+'|'+mbNorm(x.name)));
+      rows.forEach(r=>{
+        const tn = (r[0]||'').trim(), name = (r[1]||'').trim(), t = MASTERS.issueTypes.find(x=>mbNorm(x.name)===mbNorm(tn));
+        if(!name) return items.push({cells:[tn,name],state:'error',note:'Sub-Type name missing'});
+        if(!t) return items.push({cells:[tn,name],state:'error',note:tn?'Issue Type not found':'Issue Type missing'});
+        const k = t.id+'|'+mbNorm(name);
+        if(have.has(k)) return items.push({cells:[t.name,name],state:'skip',note:'Already exists'});
+        have.add(k); items.push({cells:[t.name,name],state:'ready',note:'New'}); ops.push({col:'subTypes',mode:'add',data:{name,typeId:t.id,active:true}});
+      });
+      return {items,ops};
+    } }
+};
+window._mb = null;
+window.openMtBulk = function(){
+  const d = MB_DEFS[MT.cur]; if(!d || !isAdmin()) return;
+  window._mb = {type:MT.cur, plan:null};
+  document.getElementById('mbTitle').textContent = 'Bulk Upload — ' + d.label;
+  document.getElementById('mbHelp').innerHTML = d.help();
+  ['mbPreview'].forEach(i=>document.getElementById(i).style.display='none');
+  document.getElementById('mbRunBtn').style.display = 'none'; document.getElementById('mbResult').innerHTML = ''; document.getElementById('mbFile').value = '';
+  document.getElementById('mtBulkModal').classList.add('show');
+};
+window.closeMtBulk = function(){ document.getElementById('mtBulkModal').classList.remove('show'); };
+window.downloadMtTemplate = function(){
+  const d = MB_DEFS[window._mb?.type]; if(!d) return;
+  const q = v => /[",\n]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v;
+  const csv = [d.cols, ...d.sample].map(r=>r.map(q).join(',')).join('\r\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));
+  a.download = 'MP_HelpDesk_'+d.label.replace(/[^A-Za-z]/g,'')+'_Template.csv'; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },1500);
+  toast('Template downloaded — fill it and upload');
+};
+window.parseMtBulk = function(){
+  const st = window._mb, d = MB_DEFS[st?.type], file = document.getElementById('mbFile').files[0]; if(!d || !file) return;
+  if(!/\.csv$/i.test(file.name)){ toast('Please upload a .csv file','error'); return; }
+  const rd = new FileReader();
+  rd.onload = e => {
+    const all = mbParseCsv(e.target.result);
+    if(all.length < 2){ toast('The file has no data rows','error'); return; }
+    const head = all[0].map(mbKey), idx = d.keys.map(names=>head.findIndex(h=>names.includes(h)));
+    const missing = d.cols.filter((c,i)=>idx[i]<0 && !(st.type==='dept' && i===1) && !(st.type==='issueType' && i>0));
+    if(missing.length){ toast('Missing column(s): '+missing.join(', ')+' — use the template','error'); return; }
+    const body = all.slice(1,501).map(r=>d.keys.map((_,i)=>idx[i]>=0 ? (r[idx[i]]||'') : ''));
+    const plan = d.plan(body); st.plan = plan;
+    const ready = plan.items.filter(x=>x.state==='ready').length, skip = plan.items.filter(x=>x.state==='skip').length, err = plan.items.filter(x=>x.state==='error').length;
+    document.getElementById('mbCount').innerHTML = `${plan.items.length} row(s): <strong style="color:#1E9E5A">${ready} to add</strong> · ${skip} already exist · <strong style="color:${err?'#C0392B':'inherit'}">${err} with errors</strong>${all.length>501?' · only the first 500 rows are read':''}`;
+    document.getElementById('mbHead').innerHTML = '<tr><th>#</th>'+d.cols.map(c=>`<th>${esc(c)}</th>`).join('')+'<th>Result</th></tr>';
+    const col = {ready:'#1E9E5A',skip:'#6A6F8C',error:'#C0392B'};
+    document.getElementById('mbBody').innerHTML = plan.items.map((x,i)=>`<tr><td>${i+1}</td>${x.cells.map(c=>`<td>${esc(c)}</td>`).join('')}<td style="color:${col[x.state]};font-weight:600;font-size:12px">${esc(x.note)}</td></tr>`).join('');
+    document.getElementById('mbPreview').style.display = '';
+    document.getElementById('mbResult').innerHTML = err ? '<span style="color:#C0392B">Rows with errors will be left out. Fix them in the file and upload again if needed — rows already added are skipped.</span>' : '';
+    const run = document.getElementById('mbRunBtn');
+    run.style.display = plan.ops.length ? '' : 'none'; document.getElementById('mbRunLbl').textContent = `Add ${ready} row(s)`;
+    if(!plan.ops.length) document.getElementById('mbResult').innerHTML += '<div style="margin-top:6px;color:var(--muted)">Nothing new to add.</div>';
+  };
+  rd.readAsText(file);
+};
+window.runMtBulk = async function(){
+  const st = window._mb; if(!isAdmin() || !st?.plan?.ops.length) return;
+  const btn = document.getElementById('mbRunBtn'); btn.disabled = true;
+  try{
+    const ops = st.plan.ops;
+    for(let i=0;i<ops.length;i+=400){
+      const b = writeBatch(db);
+      ops.slice(i,i+400).forEach(o=>{ if(o.mode==='add') b.set(doc(collection(db,o.col)), o.data); else b.update(doc(db,o.col,o.id), o.data); });
+      await b.commit();
+    }
+    await loadMasters(); populateFilters(); mtRefresh();
+    const added = ops.filter(o=>o.mode==='add').length, upd = ops.length-added;
+    document.getElementById('mbResult').innerHTML = `<span style="color:#1E9E5A"><i class="ti ti-check"></i> Done — ${added} added${upd?`, ${upd} updated`:''}.</span>`;
+    document.getElementById('mbRunBtn').style.display = 'none'; st.plan = null;
+    toast('Bulk upload complete');
+  }catch(e){ document.getElementById('mbResult').innerHTML = `<span style="color:#C0392B">Upload failed: ${esc(e.message)}. Nothing after the error was saved — check the list and run it again (rows already added are skipped).</span>`; }
+  finally{ btn.disabled = false; }
+};
+
 window.renderMastersPage = function(){
   const pre = window._mtPreselect; window._mtPreselect = null;
   if(pre){ document.getElementById('mt-select').value = pre; mtGo(); return; }
@@ -3019,6 +3211,7 @@ function renderMasterTable(){
   document.getElementById('mt-desc').textContent = d.desc;
   document.getElementById('mt-panel').style.display = '';
   document.getElementById('mt-create').style.display = '';
+  document.getElementById('mt-bulk').style.display = MB_DEFS[MT.cur] ? '' : 'none';
   document.getElementById('mt-createLbl').textContent = 'Create ' + d.label;
   document.getElementById('mt-mapLink').style.display = d.map ? 'inline-flex' : 'none';
   const info = document.getElementById('mt-info');
