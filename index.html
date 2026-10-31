@@ -1309,6 +1309,25 @@ window.applyFieldConfig = function(){
 // Ticket Categories belong to the department a ticket is raised to (a category with no department shows for every department)
 const categoriesForDept = deptId => MASTERS.categories.filter(c => c.active !== false && !!deptId && c.deptId === deptId);
 const catLabel = c => c.name + (c.deptId ? ' — ' + getDept(c.deptId) : '');
+// Filter lists (Reports + ticket list) show only what the signed-in person may deal with:
+// Administrator → everything; others → the departments they handle plus those of tickets they can see.
+function allowedDepts(){
+  if(!SESSION.profile || isAdmin()) return MASTERS.departments;
+  const ids = new Set(isOwner() ? myDepts() : []);
+  _tickets.forEach(t=>{ if(t.assignedDeptId) ids.add(t.assignedDeptId); });
+  return MASTERS.departments.filter(d=>ids.has(d.id));
+}
+function allowedCats(){
+  if(!SESSION.profile || isAdmin()) return MASTERS.categories;
+  const ids = new Set(allowedDepts().map(d=>d.id));
+  const used = new Set(_tickets.map(t=>t.categoryId).filter(Boolean));
+  return MASTERS.categories.filter(c=>ids.has(c.deptId) || used.has(c.id));
+}
+function allowedTypes(){
+  if(!SESSION.profile || isAdmin()) return MASTERS.issueTypes;
+  const cats = new Set(allowedCats().map(c=>c.id));
+  return MASTERS.issueTypes.filter(t=>!(t.categoryIds||[]).length || t.categoryIds.some(c=>cats.has(c)));
+}
 const typesForCategory = catId => MASTERS.issueTypes.filter(t => t.active !== false && (!(t.categoryIds||[]).length || (t.categoryIds||[]).includes(catId)));
 
 // ── SLA / TAT ──
@@ -2141,9 +2160,9 @@ function populateFilters(){
   fp.innerHTML='<option value="">All Priority</option>'+MASTERS.priorities.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
   const opts = (arr,first)=>`<option value="">${first}</option>`+arr.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('');
   const set = (id,html)=>{ const el=document.getElementById(id); if(el){ const cur=el.value; el.innerHTML=html; el.value=cur; } };
-  set('rADept',   opts(MASTERS.departments,'All Departments'));
-  set('rCat',     opts(MASTERS.categories.map(c=>({id:c.id,name:catLabel(c)})),'All Categories'));
-  set('rIssue',   opts(MASTERS.issueTypes,'All Issue Types'));
+  set('rADept',   opts(allowedDepts(),'All Departments'));
+  set('rCat',     opts(allowedCats().map(c=>({id:c.id,name:catLabel(c)})),'All Categories'));
+  set('rIssue',   opts(allowedTypes(),'All Issue Types'));
   set('rPriority',opts(MASTERS.priorities,'All Priority'));
 }
 
@@ -2193,9 +2212,9 @@ function applyFilterConfig(base){
   const staff = isStaff();
   const uniq = (arr) => [...new Set(arr.filter(Boolean))];
   const defs = [
-    ['fAdept','adept','All Raise-To Depts', MASTERS.departments.map(x=>({id:x.id,name:x.name})), false],
-    ['fCat','category','All Categories', MASTERS.categories.map(x=>({id:x.id,name:catLabel(x)})), false],
-    ['fType','type','All Issue Types', MASTERS.issueTypes.map(x=>({id:x.id,name:x.name})), false],
+    ['fAdept','adept','All Raise-To Depts', allowedDepts().map(x=>({id:x.id,name:x.name})), false],
+    ['fCat','category','All Categories', allowedCats().map(x=>({id:x.id,name:catLabel(x)})), false],
+    ['fType','type','All Issue Types', allowedTypes().map(x=>({id:x.id,name:x.name})), false],
     ['fAssigned','assignedTo','All Assignees', [{id:'__none__',name:'Unassigned'}, ...uniq(base.map(t=>t.assignedTo)).map(id=>({id,name:getUser(id)}))], true],
     ['fUser','raisedBy','All Raised By', uniq(base.map(t=>t.userId)).map(id=>({id,name:getUser(id)})), true]
   ];
@@ -3613,10 +3632,10 @@ window.rptFilterChanged = function(which){
   const set = (id, arr, first) => { const el = document.getElementById(id), cur = el.value; el.innerHTML = `<option value="">${first}</option>` + arr.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join(''); el.value = arr.some(x=>x.id===cur) ? cur : ''; };
   if(which === 'dept'){
     const d = document.getElementById('rADept').value;
-    set('rCat', (d ? MASTERS.categories.filter(c=>c.deptId===d) : MASTERS.categories).map(c=>({id:c.id,name:catLabel(c)})), 'All Categories');
+    set('rCat', (d ? allowedCats().filter(c=>c.deptId===d) : allowedCats()).map(c=>({id:c.id,name:catLabel(c)})), 'All Categories');
   }
   const c = document.getElementById('rCat').value;
-  set('rIssue', c ? typesForCategory(c) : MASTERS.issueTypes, 'All Issue Types');
+  set('rIssue', c ? typesForCategory(c) : allowedTypes(), 'All Issue Types');
 };
 window.resetReportFilters = function(){
   ['rADept','rCat','rIssue','rPriority','rUser','rDateFrom','rDateTo'].forEach(id=>{ const e = document.getElementById(id); if(e) e.value = ''; });
@@ -3654,6 +3673,7 @@ window.initReportPage = function(){
   const ids = [...new Set(_tickets.filter(canViewTicket).map(t=>t.userId).filter(Boolean))].sort((a,b)=>getUser(a).localeCompare(getUser(b)));
   ru.innerHTML = '<option value="">All Users</option>' + ids.map(id=>`<option value="${id}">${esc(getUser(id))}</option>`).join('');
   ru.value = ids.includes(cur) ? cur : '';
+  { const ad = document.getElementById('rADept'), cv = ad.value; ad.innerHTML = '<option value="">All Departments</option>' + allowedDepts().map(d=>`<option value="${d.id}">${esc(d.name)}</option>`).join(''); ad.value = allowedDepts().some(d=>d.id===cv) ? cv : ''; rptFilterChanged('dept'); }
   showReportList();       // always open on the list — no data until a report is run
 };
 
