@@ -4484,13 +4484,8 @@ window.saveEditTicket = async function(){
 // ── KEYBOARD + MODAL ──────────────────────────────────────────
 document.addEventListener('keydown',e=>{
   if(e.key==='Enter'&&document.getElementById('loginPage').style.display!=='none') doLogin();
-  if(e.key==='Escape'){ closeMM(); closeUM(); closeBulkModal(); closeEditTicketModal(); closeDeptBlockModal(); }
 });
-document.getElementById('masterModal').addEventListener('click',function(e){if(e.target===this)closeMM();});
-document.getElementById('userModal').addEventListener('click',function(e){if(e.target===this)closeUM();});
-document.getElementById('bulkModal').addEventListener('click',function(e){if(e.target===this)closeBulkModal();});
-document.getElementById('editTicketModal').addEventListener('click',function(e){if(e.target===this)closeEditTicketModal();});
-document.getElementById('deptBlockModal').addEventListener('click',function(e){if(e.target===this)closeDeptBlockModal();});
+// Dialogs close only through their own Close / Cancel / ✕ buttons — clicking outside the box does nothing.
 
 // ── START ─────────────────────────────────────────────────────
 startApp();
