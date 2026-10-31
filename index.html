@@ -443,7 +443,7 @@ input[type=checkbox]{accent-color:var(--navy)}
     <div class="cbb">
       <div class="row g-3">
         <input type="hidden" id="ct-userId">
-        <div class="col-md-4"><label class="form-label">Raised By <span style="font-size:11px;color:var(--muted);font-weight:400">(automatic)</span></label><input class="form-control" id="ct-raisedByName" readonly style="background:#F8F9FB"/></div>
+        <div class="col-md-4"><label class="form-label">Raised By</label><div id="raisedByWrap"></div></div>
         <div class="col-md-4"><label class="form-label">Employee ID <span style="font-size:11px;color:var(--muted);font-weight:400">(automatic)</span></label><input class="form-control" id="ct-empId" readonly style="background:#F8F9FB"/></div>
         <div class="col-md-4"><label class="form-label">Your Department</label><select class="form-select" id="ct-dept"></select></div>
 
@@ -2680,7 +2680,14 @@ function initNewTicketForm(){
   // Tickets are always raised by the signed-in user — there is no "Raised By" picker.
   document.getElementById('ct-userId').value = SESSION.user.uid;
   const p = SESSION.profile;
-  document.getElementById('ct-raisedByName').value = p.name;   // frozen — always the signed-in user
+  // Raised By: a picker for Administrators only; everyone else is frozen to their own name.
+  const rbw = document.getElementById('raisedByWrap');
+  if(isAdmin()){
+    rbw.innerHTML = `<select class="form-select" id="ct-raisedBySel" onchange="document.getElementById('ct-userId').value=this.value;syncRaisedByDept()">${_users.filter(u=>u.active!==false).map(u=>`<option value="${u.id}">${esc(u.name)}${u.empId?' ('+esc(u.empId)+')':''}</option>`).join('')}</select>`;
+    document.getElementById('ct-raisedBySel').value = SESSION.user.uid;
+  } else {
+    rbw.innerHTML = `<input class="form-control" id="ct-raisedByName" readonly style="background:#F8F9FB" value="${esc(p.name)}"/>`;
+  }
   document.getElementById('ctInfo').style.display = isAdmin() ? 'none' : 'flex';
   if(!isAdmin()) document.getElementById('ctInfoTxt').textContent = `Submitting as ${p.name} · ${getDept(p.deptId)}`;
   syncRaisedByDept(); // Department always follows the selected person's department
