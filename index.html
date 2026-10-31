@@ -683,6 +683,14 @@ input[type=checkbox]{accent-color:var(--navy)}
       <button class="btn-outline" id="hdBackfillBtn" onclick="runTicketBackfill()"><i class="ti ti-refresh"></i> Update Existing Tickets</button>
     </div>
   </div>
+  <div class="card-box mb-3">
+    <div class="cbh"><h2><i class="ti ti-hash" style="margin-right:6px"></i>3. Change old ticket numbers (TKT-…) to department prefixes</h2></div>
+    <div class="cbb">
+      <p style="font-size:13px;line-height:1.7;margin-bottom:10px">Tickets raised before department-wise numbering are called <strong>TKT-yyyymmdd-nnnn</strong>. This renames each one to its department's prefix (for example <strong>ERP-20261030-0001</strong>), by the ticket's <em>Raise Ticket To</em> department and original creation date, oldest first. The earlier number is kept on the ticket for reference. You see a preview first and nothing changes until you confirm. Tickets with no department are left alone.</p>
+      <button class="btn-outline" id="hdRenumPreviewBtn" onclick="previewRenumber()"><i class="ti ti-eye"></i> Preview</button>
+      <button class="btn-navy" id="hdRenumRunBtn" onclick="runRenumber()" style="display:none;margin-left:8px"><i class="ti ti-check"></i> <span id="hdRenumRunLbl">Rename tickets</span></button>
+    </div>
+  </div>
   <div class="card-box"><div class="cbh"><h2>Result</h2></div><div class="cbb"><pre id="hdSetupLog" style="white-space:pre-wrap;font-size:12px;margin:0;color:var(--muted)">Nothing run yet.</pre></div></div>
 </div>
 
@@ -2262,6 +2270,7 @@ function fillTicketDetail(t){
   const staff = isStaff();
   const txt = (id,v)=>{ const e=$id(id); if(e) e.textContent = v; };
   txt('td-no', t.ticketNo||'—');
+  if(t.legacyTicketNo && $id('td-no')) $id('td-no').insertAdjacentHTML('beforeend', ` <span style="font-size:12px;color:var(--muted);font-weight:400">(earlier no. ${esc(t.legacyTicketNo)})</span>`);
   txt('td-subject', t.subject||'—');
   txt('td-desc', t.description||'');
   txt('td-by', getUser(t.userId));
@@ -3991,6 +4000,74 @@ window.runHelpdeskSetup = async function(){
   } catch(e){
     setSyncStatus('err'); hdLog('❌ Setup failed: '+e.message); toast('Setup failed: '+e.message,'error');
   } finally { btn.disabled = false; }
+};
+
+// ── Rename old TKT-… numbers to the department prefix ──
+window._renumPlan = null;
+async function buildRenumberPlan(){
+  await loadMasters();
+  const docs = (await getDocs(collection(db,'tickets'))).docs.map(d=>({id:d.id, ...d.data()}));
+  const old = docs.filter(t=>/^TKT-/i.test(String(t.ticketNo||'')));
+  const skipped = [], byCode = {};
+  old.forEach(t=>{
+    const dept = MASTERS.departments.find(x=>x.id===t.assignedDeptId);
+    if(!dept){ skipped.push(t); return; }
+    const code = deptCode(dept); (byCode[code] ||= []).push(t);
+  });
+  const plan = [], counters = {};
+  for(const [code, list] of Object.entries(byCode)){
+    // numbers already used under this prefix (new tickets + the counter) so nothing collides
+    let max = 0; const used = new Set();
+    docs.forEach(t=>{ const m = String(t.ticketNo||'').match(new RegExp('^'+code.replace(/[^A-Z0-9]/g,'')+'-\\d{8}-(\\d+)$')); if(m){ max = Math.max(max, +m[1]); used.add(t.ticketNo); } });
+    try{ const c = await getDoc(doc(db,'counters','tkt_'+code)); if(c.exists()) max = Math.max(max, c.data().value||0); }catch(e){}
+    list.sort((a,b)=>(toMs(a.createdAt)-toMs(b.createdAt)) || String(a.ticketNo).localeCompare(String(b.ticketNo)));
+    let n = max;
+    for(const t of list){
+      const ymd = localYmd(new Date(toMs(t.createdAt) || Date.now())).replace(/-/g,'');
+      let no; do{ n++; no = `${code}-${ymd}-${String(n).padStart(4,'0')}`; }while(used.has(no));
+      used.add(no); plan.push({id:t.id, from:t.ticketNo, to:no, code});
+    }
+    counters[code] = n;
+  }
+  return { plan, counters, skipped, total: old.length };
+}
+window.previewRenumber = async function(){
+  if(!isAdmin()) return;
+  const btn = document.getElementById('hdRenumPreviewBtn'), run = document.getElementById('hdRenumRunBtn');
+  btn.disabled = true; run.style.display = 'none';
+  try{
+    hdLog('Reading tickets…');
+    const r = await buildRenumberPlan(); window._renumPlan = r;
+    if(!r.total){ hdLog('No tickets with an old “TKT-…” number were found. Nothing to do.'); return; }
+    const by = {}; r.plan.forEach(x=>{ (by[x.code] ||= []).push(x); });
+    let out = `${r.total} ticket(s) still have an old TKT-… number.\n\n`;
+    Object.entries(by).forEach(([c,l])=>{ out += `• ${l.length} ticket(s) → ${c}-…   e.g. ${l[0].from} → ${l[0].to}   …   ${l[l.length-1].from} → ${l[l.length-1].to}\n`; });
+    if(r.skipped.length) out += `\n⚠ ${r.skipped.length} ticket(s) have no “Raise Ticket To” department and will be left as they are (run step 2 first if they should be linked).`;
+    out += `\n\nNothing has been changed yet. Click “Rename ${r.plan.length} tickets” to apply.`;
+    hdLog(out);
+    if(r.plan.length){ document.getElementById('hdRenumRunLbl').textContent = `Rename ${r.plan.length} tickets`; run.style.display = ''; }
+  }catch(e){ hdLog('Preview failed: '+e.message); }
+  finally{ btn.disabled = false; }
+};
+window.runRenumber = async function(){
+  if(!isAdmin()) return;
+  const r = window._renumPlan; if(!r || !r.plan.length) return;
+  if(!confirm(`Rename ${r.plan.length} tickets to their department prefix?\n\nThis changes the ticket numbers shown everywhere. The earlier TKT number is kept on each ticket.`)) return;
+  const btn = document.getElementById('hdRenumRunBtn'); btn.disabled = true;
+  try{
+    hdLog('Renaming… please wait');
+    const ops = r.plan.map(x=>({kind:'update', ref:doc(db,'tickets',x.id), data:{ticketNo:x.to, legacyTicketNo:x.from}}));
+    Object.entries(r.counters).forEach(([code,v])=>ops.push({kind:'set', ref:doc(db,'counters','tkt_'+code), data:{value:v}, merge:true}));
+    for(let i=0;i<ops.length;i+=400){
+      const batch = writeBatch(db);
+      ops.slice(i,i+400).forEach(o=>{ if(o.kind==='set') batch.set(o.ref,o.data,{merge:true}); else batch.update(o.ref,o.data); });
+      await batch.commit();
+    }
+    hdLog(`Done. ${r.plan.length} ticket(s) renamed.\n` + Object.entries(r.counters).map(([c,v])=>`New ${c} tickets will continue from ${c}-…-${String(v+1).padStart(4,'0')}.`).join('\n'));
+    window._renumPlan = null; btn.style.display = 'none';
+    toast('Ticket numbers updated');
+  }catch(e){ hdLog('Rename failed: '+e.message+'\nNo further changes were made after the error — you can run Preview again.'); }
+  finally{ btn.disabled = false; }
 };
 
 window.runTicketBackfill = async function(){
