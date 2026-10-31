@@ -823,6 +823,20 @@ input[type=checkbox]{accent-color:var(--navy)}
   </div>
 </div>
 
+<!-- SINGLE-SESSION WARNING -->
+<div class="overlay" id="sessionModal" style="z-index:10050">
+  <div class="modal-box" style="max-width:460px">
+    <div class="mh"><h3><i class="ti ti-device-laptop" style="margin-right:8px;color:var(--orange)"></i>Already logged in</h3></div>
+    <div class="mb-p">
+      <p style="margin:0 0 10px;font-size:14px">This account is already logged in on another device or browser.</p>
+      <div id="sessionInfo" style="background:#F3F4FA;border-radius:8px;padding:10px 12px;font-size:12.5px;color:var(--muted);margin-bottom:12px"></div>
+      <p style="margin:0;font-size:14px;font-weight:600;color:var(--navy)">Do you want to end that session and log in here?</p>
+      <p style="margin:6px 0 0;font-size:12px;color:var(--muted)">The other device will be signed out immediately.</p>
+    </div>
+    <div class="mf"><button class="btn-outline" onclick="sessionAnswer(false)">No, cancel</button><button class="btn-teal" onclick="sessionAnswer(true)"><i class="ti ti-check"></i> Yes, end old session</button></div>
+  </div>
+</div>
+
 <!-- USER MODAL -->
 <div class="overlay" id="userModal">
   <div class="modal-box">
@@ -1528,6 +1542,11 @@ function startApp(){
           profile = { id: user.uid, ...profileSnap.data() };
         }
         if(!profile.active){ await signOut(auth); toast('Your account is inactive. Contact admin.','error'); setLoading(false); return; }
+        if(!(await enforceSingleSession(user, profile))){
+          await signOut(auth); setLoading(false);
+          setTimeout(()=>{ document.getElementById('loginErr').style.display='flex'; document.getElementById('loginErrMsg').textContent='Login cancelled — this account is still active on another device.'; }, 50);
+          return;
+        }
         SESSION.user    = user;
         SESSION.profile = profile;
         await loadMasters();
@@ -1538,6 +1557,7 @@ function startApp(){
       } catch(e){ setLoading(false); toast('Error loading profile: '+e.message,'error'); }
     } else {
       SESSION.user=null; SESSION.profile=null;
+      stopSessionWatch();
       stopAutoLogout();
       document.getElementById('loginPage').style.display='flex';
       document.getElementById('sidebar').style.display='none';
@@ -1550,6 +1570,82 @@ function startApp(){
 
 function showSetupIfNeeded(){
   // Setup page disabled — config is hardcoded
+}
+
+// ── ONE SESSION PER USER ──────────────────────────────────────
+// sessions/{uid} holds the id of the one browser that is currently logged in.
+// A second login asks whether to end the old session; the old device notices the
+// change instantly (live listener) and signs itself out. A heartbeat keeps
+// "lastSeen" fresh, so a session abandoned without Sign Out (closed browser, PC
+// off) is treated as free after SESS_STALE_MS and never blocks a new login.
+const SESS_KEY = 'mphd_session_id', SESS_STALE_MS = 3*60*1000, SESS_BEAT_MS = 60*1000;
+let _mySid = null, _sessUnsub = null, _sessBeat = null, _sessAnswer = null, _sessDisabled = false;
+const _memSid = {};   // per-user key, so two accounts used in turn on one browser don't confuse each other
+const sidGet = uid => { try{ return localStorage.getItem(SESS_KEY+'_'+uid) || _memSid[uid] || null; }catch(e){ return _memSid[uid] || null; } };
+const sidSet = (uid,v) => { _memSid[uid] = v; try{ localStorage.setItem(SESS_KEY+'_'+uid, v); }catch(e){} };
+const newSid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,10);
+function deviceLabel(){
+  const ua = navigator.userAgent || '';
+  const br = /Edg\//.test(ua)?'Edge':/OPR\//.test(ua)?'Opera':/Chrome\//.test(ua)?'Chrome':/Firefox\//.test(ua)?'Firefox':/Safari\//.test(ua)?'Safari':'Browser';
+  const os = /Windows/.test(ua)?'Windows':/Android/.test(ua)?'Android':/iPhone|iPad/.test(ua)?'iOS':/Mac OS/.test(ua)?'macOS':/Linux/.test(ua)?'Linux':'device';
+  return br + ' on ' + os;
+}
+window.sessionAnswer = yes => { document.getElementById('sessionModal').classList.remove('show'); if(_sessAnswer){ const f=_sessAnswer; _sessAnswer=null; f(!!yes); } };
+function askTakeover(d){
+  return new Promise(res=>{
+    _sessAnswer = res;
+    const since = d.loginAt ? new Date(toMs(d.loginAt)).toLocaleString('en-IN') : 'recently';
+    document.getElementById('sessionInfo').innerHTML = `<i class="ti ti-device-desktop"></i> ${esc(d.device||'Another device')}<br><i class="ti ti-clock"></i> Logged in since ${esc(since)}`;
+    document.getElementById('sessionModal').classList.add('show');
+  });
+}
+function stopSessionWatch(){
+  if(_sessUnsub){ try{ _sessUnsub(); }catch(e){} _sessUnsub = null; }
+  if(_sessBeat){ clearInterval(_sessBeat); _sessBeat = null; }
+}
+// Returns true when this browser may continue, false when the user chose to keep the other session.
+async function enforceSingleSession(user, profile){
+  stopSessionWatch();
+  try{
+    const ref = doc(db,'sessions',user.uid);
+    const snap = await getDoc(ref), d = snap.exists() ? snap.data() : null;
+    const mine = sidGet(user.uid);
+    const live = d && d.sid && (Date.now() - toMs(d.lastSeen)) < SESS_STALE_MS;
+    if(live && d.sid !== mine){
+      setLoading(false);
+      if(!(await askTakeover(d))) return false;
+      setLoading(true,'Loading your account…');
+    }
+    const resume = !!(d && d.sid && d.sid === mine);
+    _mySid = resume ? mine : newSid(); sidSet(user.uid, _mySid);
+    if(resume) await setDoc(ref, { lastSeen: serverTimestamp() }, { merge:true });
+    else await setDoc(ref, { sid:_mySid, uid:user.uid, name:profile.name||'', device:deviceLabel(), loginAt:serverTimestamp(), lastSeen:serverTimestamp() });
+    _sessUnsub = onSnapshot(ref, s2=>{
+      const x = s2.exists() ? s2.data() : null;
+      if(x && x.sid && x.sid !== _mySid) endedElsewhere();
+    }, ()=>{});
+    _sessBeat = setInterval(()=>{ if(SESSION.user && _mySid) updateDoc(ref, { lastSeen: serverTimestamp() }).catch(()=>{}); }, SESS_BEAT_MS);
+  }catch(e){
+    // Rules not published yet (or offline): never lock people out because of this feature
+    console.warn('Single-session check unavailable:', e.code || e.message);
+    _sessDisabled = true; _mySid = null;
+  }
+  return true;
+}
+async function endedElsewhere(){
+  stopSessionWatch(); _mySid = null; stopAutoLogout();
+  try{ await signOut(auth); }catch(e){}
+  setTimeout(()=>{
+    document.getElementById('loginErr').style.display = 'flex';
+    document.getElementById('loginErrMsg').textContent = 'You were signed out because this account was logged in on another device.';
+  }, 50);
+}
+// Called BEFORE signOut so the rule check still sees a signed-in user
+async function endMySession(){
+  const uid = SESSION.user?.uid, sid = _mySid;
+  stopSessionWatch(); _mySid = null;
+  if(!uid || !sid) return;
+  try{ const r = doc(db,'sessions',uid), sn = await getDoc(r); if(sn.exists() && sn.data().sid === sid) await deleteDoc(r); }catch(e){}
 }
 
 // ── AUTH ──────────────────────────────────────────────────────
@@ -1583,7 +1679,7 @@ window.doLogin=async function(){
   } finally{ btn.innerHTML='<i class="ti ti-login"></i> Sign In'; btn.disabled=false; }
 };
 
-window.doLogout=async function(){ await signOut(auth); };
+window.doLogout=async function(){ await endMySession(); await signOut(auth); };
 
 // ── SET USER PASSWORD PAGE (Admin only, dedicated page) ──
 window.renderSetUserPwd = function(){
@@ -4196,7 +4292,7 @@ function resetAutoLogout(){
   _autoLogoutTimer = setTimeout(async ()=>{
     if(SESSION.user){
       toast('Session expired — logging out automatically', 'error');
-      setTimeout(async ()=>{ await signOut(auth); }, 1500);
+      setTimeout(async ()=>{ await endMySession(); await signOut(auth); }, 1500);
     }
   }, AUTO_LOGOUT_MS);
 }
