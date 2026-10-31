@@ -856,14 +856,19 @@ input[type=checkbox]{accent-color:var(--navy)}
         <div class="col-md-6"><label class="form-label">Email (optional, for notifications)</label><input class="form-control" id="u-email" placeholder="email@company.com"/></div>
         <div class="col-md-6">
           <label class="form-label">Role</label>
-          <select class="form-select" id="u-role">
+          <select class="form-select" id="u-role" onchange="toggleSpocBox()">
             <option value="User">Employee</option>
             <option value="TicketOwner">Ticket Owner (Dept SPOC)</option>
             <option value="Admin">Administrator</option>
           </select>
           <div style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5"><strong>Employee</strong> – raises tickets, sees only their own.<br><strong>Ticket Owner</strong> – sees &amp; processes their own department's tickets (1–2 per department).<br><strong>Administrator</strong> – full access.</div>
         </div>
-        <div class="col-md-6"><label class="form-label">Department</label><select class="form-select" id="u-dept"></select></div>
+        <div class="col-md-6"><label class="form-label">Department <span style="font-size:11px;color:var(--muted);font-weight:400">(the person's own department)</span></label><select class="form-select" id="u-dept"></select></div>
+        <div class="col-12" id="u-spocWrap" style="display:none">
+          <label class="form-label">Handles tickets for these departments (SPOC) <span style="color:var(--red)">*</span></label>
+          <div id="u-spocList" style="border:1px solid var(--border);border-radius:8px;padding:8px 12px;max-height:170px;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:4px 14px"></div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">One person can be the SPOC for several departments. A department's head can be a different person — heads are simply Employees of that department.</div>
+        </div>
         <div class="col-md-6" id="u-passWrap"><label class="form-label">Temporary Password <span style="color:var(--red)">*</span></label><input class="form-control" type="password" id="u-pass" placeholder="Min 6 characters"/></div>
         <div class="col-md-6" style="display:flex;align-items:flex-end"><label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox" id="u-active" checked/> Active</label></div>
         <div class="col-12" id="umEmailNote"><div class="info-panel"><i class="ti ti-mail" style="font-size:15px;flex-shrink:0"></i> A welcome email with login details will be sent to the user automatically.</div></div>
@@ -1179,6 +1184,11 @@ const normRoleVal = r => r==='Admin' ? 'Admin' : (['TicketOwner','DeptManager','
 const roleLabel  = r => ROLE_LABELS[normRoleVal(r)];
 const myRole     = () => normRoleVal(SESSION.profile?.role);
 const myDept     = () => SESSION.profile?.deptId || '';
+// A Ticket Owner (SPOC) may look after several departments: users/{id}.spocDeptIds.
+// Older owners without that list handle just their own department.
+const spocDepts  = u => (Array.isArray(u?.spocDeptIds) && u.spocDeptIds.length) ? u.spocDeptIds : (u?.deptId ? [u.deptId] : []);
+const myDepts    = () => spocDepts(SESSION.profile);
+const handlesDept = (u, deptId) => normRoleVal(u?.role) === 'TicketOwner' && !!deptId && spocDepts(u).includes(deptId);
 const isStaff    = () => myRole() !== 'User';          // Ticket Owner or Administrator
 const isOwner    = () => myRole() === 'TicketOwner';
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1200,19 +1210,20 @@ function canViewTicket(t){
   if(!t || !uid) return false;
   if(isAdmin()) return true;
   if(t.userId === uid) return true;
-  return isOwner() && !!myDept() && t.assignedDeptId === myDept();
+  return isOwner() && !!t.assignedDeptId && myDepts().includes(t.assignedDeptId);
 }
 function canProcess(t){            // change status, remarks, checked/approved by, target date
   if(!t) return false;
   if(isAdmin()) return true;
-  return isOwner() && !!myDept() && t.assignedDeptId === myDept();
+  return isOwner() && !!t.assignedDeptId && myDepts().includes(t.assignedDeptId);
 }
+window.canProcess = canProcess; window.assignableUsers = assignableUsers;
 const canAssign = canProcess;      // change assigned department / assignee
 // People a ticket of a given department can be assigned to: that department's Ticket Owners (and Administrators)
 function assignableUsers(deptId){
   return _users.filter(u => u.active !== false && (
     normRoleVal(u.role) === 'Admin' ||
-    (normRoleVal(u.role) === 'TicketOwner' && (!deptId || u.deptId === deptId))
+    (normRoleVal(u.role) === 'TicketOwner' && (!deptId || spocDepts(u).includes(deptId)))
   ));
 }
 // Issue Types follow the Ticket Category (an Issue Type with no category ticked shows under every category)
@@ -1895,7 +1906,7 @@ function subscribeTickets(){
   if(isAdmin())      qs.push(query(col, orderBy('createdAt','desc')));
   else {
     qs.push(query(col, where('userId','==',uid)));                                   // tickets I raised
-    if(isOwner() && myDept()) qs.push(query(col, where('assignedDeptId','==',myDept())));   // my department's tickets
+    if(isOwner()) myDepts().forEach(d => qs.push(query(col, where('assignedDeptId','==',d))));   // tickets of every department I handle (one query each — keeps Firestore rules simple)
   }
   const buckets = qs.map(()=>[]);
 
@@ -2553,7 +2564,7 @@ window.reopenMyTicket = async function(){
 let _escRunning = false; const _escDone = new Set();
 async function maybeRunEscalation(){
   if(_escRunning || !(isAdmin() || isOwner())) return;
-  const list = _tickets.filter(t => anyOverdue(t) && !t.escalated && !_escDone.has(t.id) && (isAdmin() || t.assignedDeptId === myDept())).slice(0,10);
+  const list = _tickets.filter(t => anyOverdue(t) && !t.escalated && !_escDone.has(t.id) && (isAdmin() || myDepts().includes(t.assignedDeptId))).slice(0,10);
   if(!list.length) return;
   _escRunning = true;
   try{
@@ -2617,7 +2628,7 @@ async function sendEmailNotification(ticketIdOrData, eventType){
   let subjectLine = `MP HelpDesk — ${t.ticketNo}`;
 
   const addRecipient = (u) => { const e=getRealEmail(u); if(e && !recipients.some(r=>r.email===e)) recipients.push({email:e, name:u.name}); };
-  const ticketOwners = t.assignedDeptId ? _users.filter(u=>normRoleVal(u.role)==='TicketOwner' && u.deptId===t.assignedDeptId && u.active!==false) : [];
+  const ticketOwners = t.assignedDeptId ? _users.filter(u=>handlesDept(u, t.assignedDeptId) && u.active!==false) : [];
 
   if(eventType === 'ticket_created'){
     adminUsers.forEach(addRecipient);
@@ -3148,7 +3159,7 @@ window.deleteDept = async function(deptId, deptName){
   const typesInDept = MASTERS.issueTypes.filter(t => t.deptId === deptId);
   const catsInDept = MASTERS.categories.filter(c => c.deptId === deptId);
   // Check if any users belong to this department
-  const usersInDept = _users.filter(u => u.deptId === deptId);
+  const usersInDept = _users.filter(u => u.deptId === deptId || handlesDept(u, deptId));
 
   if(ticketsInDept.length > 0){
     showMasterBlockPopup(deptName, ticketsInDept.length, 'ticket', 'department', 'departments', deptId, 'renderDepts');
@@ -3437,7 +3448,7 @@ window.renderUsers=function(){
     }
   }
 
-  document.getElementById('usersBody').innerHTML=_users.map((u,i)=>`<tr><td>${i+1}</td><td><span style="font-weight:600;font-family:monospace">${u.empId||'—'}</span></td><td><div style="display:flex;align-items:center;gap:8px"><div style="width:28px;height:28px;border-radius:50%;background:${u.role==='Admin'?'var(--navy)':'#5058B8'};color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">${(u.name||'U').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)}</div><div><div style="font-size:13px;font-weight:500">${u.name}</div><div style="font-size:11px;color:var(--muted)">${getDept(u.deptId)}</div></div></div></td><td style="font-size:12px">${u.notifyEmail ? u.notifyEmail : '<span style="color:var(--muted)">—</span>'}</td><td><span class="${u.role==='Admin'?'b-admin':(normRoleVal(u.role)==='User'?'b-user':'b-role')}">${roleLabel(u.role)}</span></td><td>${getDept(u.deptId)}</td><td>${u.active?'<span class="b-resolved">Active</span>':'<span class="b-closed">Inactive</span>'}</td><td><button class="btn-icon" onclick='openUserModal(${JSON.stringify(u)})' title="Edit"><i class="ti ti-edit"></i></button> ${u.notifyEmail ? `<button class="btn-icon" onclick="adminResetPassword('${u.notifyEmail}','${u.name.replace(/'/g,'')}')" title="Send password reset email" style="color:var(--blue)"><i class="ti ti-key"></i></button>` : `<button class="btn-icon" disabled title="Add an email first to enable password reset" style="color:var(--muted);cursor:not-allowed"><i class="ti ti-key"></i></button>`}</td></tr>`).join('');
+  document.getElementById('usersBody').innerHTML=_users.map((u,i)=>`<tr><td>${i+1}</td><td><span style="font-weight:600;font-family:monospace">${u.empId||'—'}</span></td><td><div style="display:flex;align-items:center;gap:8px"><div style="width:28px;height:28px;border-radius:50%;background:${u.role==='Admin'?'var(--navy)':'#5058B8'};color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">${(u.name||'U').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)}</div><div><div style="font-size:13px;font-weight:500">${u.name}</div><div style="font-size:11px;color:var(--muted)">${getDept(u.deptId)}${normRoleVal(u.role)==='TicketOwner' && spocDepts(u).join()!==(u.deptId||'') ? ' · <span style="color:var(--orange-dk);font-weight:600">SPOC: '+spocDepts(u).map(getDept).map(esc).join(', ')+'</span>' : ''}</div></div></div></td><td style="font-size:12px">${u.notifyEmail ? u.notifyEmail : '<span style="color:var(--muted)">—</span>'}</td><td><span class="${u.role==='Admin'?'b-admin':(normRoleVal(u.role)==='User'?'b-user':'b-role')}">${roleLabel(u.role)}</span></td><td>${getDept(u.deptId)}</td><td>${u.active?'<span class="b-resolved">Active</span>':'<span class="b-closed">Inactive</span>'}</td><td><button class="btn-icon" onclick='openUserModal(${JSON.stringify(u)})' title="Edit"><i class="ti ti-edit"></i></button> ${u.notifyEmail ? `<button class="btn-icon" onclick="adminResetPassword('${u.notifyEmail}','${u.name.replace(/'/g,'')}')" title="Send password reset email" style="color:var(--blue)"><i class="ti ti-key"></i></button>` : `<button class="btn-icon" disabled title="Add an email first to enable password reset" style="color:var(--muted);cursor:not-allowed"><i class="ti ti-key"></i></button>`}</td></tr>`).join('');
 };
 
 window.openUserModal=function(user=null){
@@ -3459,6 +3470,9 @@ window.openUserModal=function(user=null){
   document.getElementById('u-pass').value  = '';
   document.getElementById('u-passWrap').style.display = isEdit ? 'none' : 'block';
   document.getElementById('u-dept').innerHTML = MASTERS.departments.map(d=>`<option value="${d.id}" ${user&&user.deptId===d.id?'selected':''}>${d.name}</option>`).join('');
+  const _picked = new Set(user && normRoleVal(user.role)==='TicketOwner' ? spocDepts(user) : []);
+  document.getElementById('u-spocList').innerHTML = MASTERS.departments.map(d=>`<label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer;margin:0"><input type="checkbox" class="u-spoc" value="${d.id}" ${_picked.has(d.id)?'checked':''}/> ${esc(d.name)}</label>`).join('');
+  toggleSpocBox();
 
   // Change Password section — only shown when editing an existing user
   const pwdSection = document.getElementById('umChangePwdSection');
@@ -3480,6 +3494,13 @@ window.openUserModal=function(user=null){
 
   document.getElementById('userModal').classList.add('show');
 };
+window.toggleSpocBox = function(){
+  const on = document.getElementById('u-role').value === 'TicketOwner';
+  document.getElementById('u-spocWrap').style.display = on ? '' : 'none';
+  if(on && !document.querySelector('#u-spocList .u-spoc:checked')){            // first time: tick the person's own department
+    const own = document.getElementById('u-dept').value; const b = document.querySelector(`#u-spocList .u-spoc[value="${own}"]`); if(b) b.checked = true;
+  }
+};
 window.closeUM=function(){ document.getElementById('userModal').classList.remove('show'); window._editUserId=null; };
 
 window.saveUser=async function(){
@@ -3492,9 +3513,13 @@ window.saveUser=async function(){
   const pwd    = document.getElementById('u-pass').value;
   if(!name){toast('Name is required','error');return;}
   if(role==='TicketOwner' && !deptId){toast('Select the department this Ticket Owner looks after','error');return;}
+  const spocDeptIds = role==='TicketOwner' ? [...document.querySelectorAll('#u-spocList .u-spoc:checked')].map(x=>x.value) : [];
+  if(role==='TicketOwner' && !spocDeptIds.length){toast('Tick at least one department this Ticket Owner handles','error');return;}
   if(role==='TicketOwner'){
-    const others = _users.filter(u=>u.id!==window._editUserId && normRoleVal(u.role)==='TicketOwner' && u.deptId===deptId && u.active!==false);
-    if(others.length>=2 && !confirm(getDept(deptId)+' already has '+others.length+' Ticket Owners ('+others.map(u=>u.name).join(', ')+').\n\nA department normally has 1 or 2. Add another?')) return;
+    for(const d of spocDeptIds){
+      const others = _users.filter(u=>u.id!==window._editUserId && handlesDept(u,d) && u.active!==false);
+      if(others.length>=2 && !confirm(getDept(d)+' already has '+others.length+' Ticket Owners ('+others.map(u=>u.name).join(', ')+').\n\nA department normally has 1 or 2. Add another?')) return;
+    }
   }
   if(window._editUserId && window._editUserId===SESSION.user.uid && role!=='Admin'){toast('You cannot remove your own HelpDesk Admin role','error');return;}
   if(!window._editUserId){
@@ -3522,7 +3547,7 @@ window.saveUser=async function(){
   try{
     if(window._editUserId){
       // Edit existing user profile in Firestore
-      const upd = {name,role,deptId,active,notifyEmail};
+      const upd = {name,role,deptId,active,notifyEmail,spocDeptIds};
       if(newEmpIdForEdit) upd.empId = newEmpIdForEdit;
       await updateDoc(doc(db,'users',window._editUserId),upd);
       toast(newEmpIdForEdit ? 'User updated — Employee ID '+newEmpIdForEdit+' added' : 'User details updated successfully');
@@ -3531,7 +3556,7 @@ window.saveUser=async function(){
       if(!pwd||pwd.length<6){toast('Password must be at least 6 characters','error');btn.innerHTML='<i class="ti ti-check"></i> Create User';btn.disabled=false;return;}
       const authEmail = empToEmail(empId);
       const cred=await createUserWithEmailAndPassword(auth,authEmail,pwd);
-      await setDoc(doc(db,'users',cred.user.uid),{empId,name,email:authEmail,notifyEmail,role,deptId,active,createdAt:serverTimestamp()});
+      await setDoc(doc(db,'users',cred.user.uid),{empId,name,email:authEmail,notifyEmail,role,deptId,spocDeptIds,active,createdAt:serverTimestamp()});
       // Send welcome email (to real email if given)
       if(notifyEmail){
         const sent = await sendRealEmail({
