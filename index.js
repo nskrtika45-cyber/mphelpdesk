@@ -18,6 +18,17 @@ admin.initializeApp();
  *    own minimum).
  */
 exports.adminSetUserPassword = functions.https.onCall(async (data, context) => {
+  try {
+    return await doSetPassword(data, context);
+  } catch (err) {
+    // Show the real reason in the app (and in the Firebase logs) instead of a bare "internal"
+    if (err instanceof functions.https.HttpsError) throw err;
+    console.error("adminSetUserPassword failed:", err);
+    throw new functions.https.HttpsError("internal", "Server error: " + ((err && (err.code || err.message)) || String(err)));
+  }
+});
+
+async function doSetPassword(data, context) {
   // 1. Must be logged in
   if (!context.auth) {
     throw new functions.https.HttpsError(
@@ -81,4 +92,4 @@ exports.adminSetUserPassword = functions.https.onCall(async (data, context) => {
       "Failed to update password: " + err.message
     );
   }
-});
+}
