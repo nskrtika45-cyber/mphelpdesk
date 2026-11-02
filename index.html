@@ -1007,16 +1007,12 @@ input[type=checkbox]{accent-color:var(--navy)}
       <!-- STEP 1: Download Template -->
       <div style="background:var(--gray);border-radius:8px;padding:14px 16px;margin-bottom:16px">
         <div style="font-size:13px;font-weight:600;margin-bottom:6px"><i class="ti ti-download" style="margin-right:6px;color:var(--navy)"></i>Step 1 — Get the file</div>
-        <div style="font-size:12.5px;color:var(--muted);margin-bottom:10px">The Excel files have <strong>drop-down lists</strong> for Role, Department and Active, filled with the exact names from your Master Tables, so nothing can be mistyped.</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn-outline" onclick="downloadUserXlsx(false)" style="font-size:12px;padding:6px 14px"><i class="ti ti-file-spreadsheet"></i> Excel template (new users)</button>
-          <button class="btn-outline" onclick="downloadUserXlsx(true)" style="font-size:12px;padding:6px 14px"><i class="ti ti-users"></i> Current users (Excel, to edit)</button>
-          <button class="btn-outline" onclick="downloadTemplate()" style="font-size:12px;padding:6px 14px"><i class="ti ti-file-text"></i> CSV template</button>
-        </div>
+        <div style="font-size:12.5px;color:var(--muted);margin-bottom:10px">The Excel file has <strong>drop-down lists</strong> for Role, Department and Active, filled with the exact names from your Master Tables, so nothing can be mistyped.</div>
+        <button class="btn-outline" onclick="downloadUserXlsx()" style="font-size:12px;padding:6px 14px"><i class="ti ti-file-spreadsheet"></i> Download Excel file</button>
         <div style="margin-top:10px;font-size:12px;color:var(--muted);line-height:1.7">
-          <strong>New Employee ID</strong> → a new user is created (name and password are required).<br/>
-          <strong>Employee ID that already exists</strong> → that user is <u>updated</u>: whatever you fill in is changed (including a new password); cells left blank keep the current value. Use <em>Current users</em> to start from the existing list.<br/>
-          <strong>Password</strong> is only filled for new users or when you want to change it.
+          The file lists <strong>all current users</strong> (password column blank), with empty rows below for new users.<br/>
+          <strong>Change a user:</strong> edit the cells you want to change (fill the password only to change it) — rows you don't touch stay as they are.<br/>
+          <strong>Add a user:</strong> use a free row at the bottom with a new 3-digit Employee ID (name and password required).
         </div>
       </div>
 
@@ -1024,7 +1020,7 @@ input[type=checkbox]{accent-color:var(--navy)}
       <div style="background:var(--gray);border-radius:8px;padding:14px 16px;margin-bottom:16px">
         <div style="font-size:13px;font-weight:600;margin-bottom:8px"><i class="ti ti-upload" style="margin-right:6px;color:var(--blue)"></i>Step 2 — Upload your filled file</div>
         <input type="file" id="bulkFileInput" accept=".xlsx,.csv" class="form-control" onchange="parseBulkCSV()" style="margin-bottom:10px"/>
-        <div style="font-size:12px;color:var(--muted)">Accepts .xlsx (Excel) or .csv · Max 100 rows per upload</div>
+        <div style="font-size:12px;color:var(--muted)">Upload the same Excel file after editing · Max 100 rows per upload</div>
       </div>
 
       <!-- PREVIEW TABLE -->
@@ -4397,8 +4393,9 @@ const SHEETJS_URL = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.ful
 const buPad = v => /^\d{1,2}$/.test(v) ? v.padStart(3,'0') : v;   // Excel drops leading zeros (010 → 10)
 
 // Excel file with drop-downs. withCurrent=true pre-fills every existing user so Admin can edit and re-upload.
-window.downloadUserXlsx = async function(withCurrent){
+window.downloadUserXlsx = async function(){
   if(!isAdmin()) return;
+  const withCurrent = true;
   let EJ; try{ EJ = await loadLib(EXCELJS_URL, ()=>window.ExcelJS); }catch(e){ toast('Excel could not be prepared (no internet access to the library). Use the CSV template instead.','error'); return; }
   const depts = MASTERS.departments.filter(d=>d.active!==false).map(d=>d.name);
   const wb = new EJ.Workbook(), ws = wb.addWorksheet('Users', {views:[{state:'frozen', ySplit:1}]}), ls = wb.addWorksheet('Lists'), ins = wb.addWorksheet('Instructions');
@@ -4420,8 +4417,6 @@ window.downloadUserXlsx = async function(withCurrent){
       const r = normRoleVal(u.role);
       return [String(u.empId), u.name||'', u.notifyEmail||'', '', r==='Admin'?'Administrator':(r==='TicketOwner'?'Ticket Owner':'Employee'), MASTERS.departments.find(d=>d.id===u.deptId)?.name||'', u.active===false?'No':'Yes'];
     });
-  } else {
-    rows = [['101','Example Employee','example@mpdevelopers.com','Welcome@123','Employee', depts[0]||'', 'Yes']];
   }
   rows.forEach(r=>{ const row = ws.addRow(r); row.getCell(1).numFmt='@'; });
   const last = Math.max(rows.length + 150, 200);
@@ -4432,7 +4427,7 @@ window.downloadUserXlsx = async function(withCurrent){
   for(let r=2;r<=last;r++){ ws.getCell(r,1).numFmt='@'; ws.getCell(r,1).dataValidation = {type:'textLength', operator:'equal', allowBlank:true, formulae:[3], showErrorMessage:true, errorStyle:'stop', errorTitle:'Employee ID', error:'Employee ID must be exactly 3 digits, e.g. 101.'}; }
   // Instructions sheet
   [['MP HelpDesk — Bulk user upload'],[''],
-   ['1. Fill the "Users" sheet. Role, Department and Active are drop-down lists — just pick from them.'],
+   ['1. Work in the "Users" sheet. Role, Department and Active are drop-down lists — just pick from them. Existing users are already listed; add new users in the empty rows below.'],
    ['2. New Employee ID → a new user is created (name and password required).'],
    ['3. Existing Employee ID → that user is updated. Anything you fill in is changed; blank cells keep the current value.'],
    ['4. Password: fill it only for new users or when you want to change an existing user\'s password (6 to 25 characters).'],
@@ -4442,9 +4437,9 @@ window.downloadUserXlsx = async function(withCurrent){
   const buf = await wb.xlsx.writeBuffer();
   const blob = new Blob([buf], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-  a.download = withCurrent ? 'MP_HelpDesk_Current_Users.xlsx' : 'MP_HelpDesk_Users_Template.xlsx';
+  a.download = 'MP_HelpDesk_Users.xlsx';
   document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },1500);
-  toast(withCurrent ? 'Current users downloaded — edit and upload' : 'Template downloaded — fill it and upload');
+  toast('Excel file downloaded — edit it and upload');
 };
 
 window.downloadTemplate = function(){
