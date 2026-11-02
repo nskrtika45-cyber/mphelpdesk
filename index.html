@@ -1007,12 +1007,13 @@ input[type=checkbox]{accent-color:var(--navy)}
       <!-- STEP 1: Download Template -->
       <div style="background:var(--gray);border-radius:8px;padding:14px 16px;margin-bottom:16px">
         <div style="font-size:13px;font-weight:600;margin-bottom:6px"><i class="ti ti-download" style="margin-right:6px;color:var(--navy)"></i>Step 1 — Download the template</div>
-        <div style="font-size:12.5px;color:var(--muted);margin-bottom:10px">Fill in this CSV template with your users. Do not change the column headers.</div>
+        <div style="font-size:12.5px;color:var(--muted);margin-bottom:10px">Fill in this CSV template. Do not change the column headers.</div>
         <button class="btn-outline" onclick="downloadTemplate()" style="font-size:12px;padding:6px 14px"><i class="ti ti-file-spreadsheet"></i> Download CSV Template</button>
-        <div style="margin-top:10px;font-size:12px;color:var(--muted)">
-          <strong>Required columns:</strong> empid (3 digits), name, password, role, department · email optional<br/>
-          <strong>Role values:</strong> Admin or User<br/>
-          <strong>Department values:</strong> Accounts, HR, Projects, ERP, IT
+        <div style="margin-top:10px;font-size:12px;color:var(--muted);line-height:1.7">
+          <strong>Columns:</strong> empid, name, email, password, role, department, active<br/>
+          <strong>New Employee ID</strong> → a new user is created (name and password are required).<br/>
+          <strong>Employee ID that already exists</strong> → that user is <u>updated</u>: whatever you fill in is changed (including a new password); cells left blank keep the current value.<br/>
+          <strong>Role:</strong> Employee, Ticket Owner or Administrator · <strong>Department:</strong> exactly as in Master Tables · <strong>Active:</strong> Yes or No
         </div>
       </div>
 
@@ -1020,7 +1021,7 @@ input[type=checkbox]{accent-color:var(--navy)}
       <div style="background:var(--gray);border-radius:8px;padding:14px 16px;margin-bottom:16px">
         <div style="font-size:13px;font-weight:600;margin-bottom:8px"><i class="ti ti-upload" style="margin-right:6px;color:var(--blue)"></i>Step 2 — Upload your filled CSV</div>
         <input type="file" id="bulkFileInput" accept=".csv" class="form-control" onchange="parseBulkCSV()" style="margin-bottom:10px"/>
-        <div style="font-size:12px;color:var(--muted)">Accepts .csv files only · Max 100 users per upload</div>
+        <div style="font-size:12px;color:var(--muted)">Accepts .csv files only · Max 100 rows per upload</div>
       </div>
 
       <!-- PREVIEW TABLE -->
@@ -1039,7 +1040,7 @@ input[type=checkbox]{accent-color:var(--navy)}
                 <th>Email</th>
                 <th>Role</th>
                 <th>Department</th>
-                <th>Status</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody id="bulkPreviewBody"></tbody>
@@ -1050,7 +1051,7 @@ input[type=checkbox]{accent-color:var(--navy)}
 
       <!-- PROGRESS -->
       <div id="bulkProgressSection" style="display:none;margin-top:14px">
-        <div style="font-size:13px;font-weight:600;margin-bottom:8px">Creating users…</div>
+        <div style="font-size:13px;font-weight:600;margin-bottom:8px">Creating / updating users…</div>
         <div style="background:var(--border);border-radius:4px;height:8px;overflow:hidden;margin-bottom:8px">
           <div id="bulkProgressBar" style="height:100%;background:var(--navy);border-radius:4px;width:0%;transition:width .3s"></div>
         </div>
@@ -1061,7 +1062,7 @@ input[type=checkbox]{accent-color:var(--navy)}
     </div>
     <div class="mf">
       <button class="btn-outline" onclick="closeBulkModal()">Close</button>
-      <button class="btn-teal" id="bulkUploadBtn" onclick="startBulkUpload()" style="display:none"><i class="ti ti-users"></i> Create All Users</button>
+      <button class="btn-teal" id="bulkUploadBtn" onclick="startBulkUpload()" style="display:none"><i class="ti ti-users"></i> Apply</button>
     </div>
   </div>
 </div>
@@ -4387,199 +4388,205 @@ window.closeBulkModal = function(){
 };
 
 window.downloadTemplate = function(){
-  const csv = [
-    'empid,name,email,password,role,department',
-    '101,Saravanan K,saravanan@mpdevelopers.com,Welcome@123,User,ERP',
-    '102,Priya R,priya@mpdevelopers.com,Welcome@123,User,Accounts',
-    '103,Ravi M,ravi@mpdevelopers.com,Welcome@123,User,HR',
-    '104,Deepa S,deepa@mpdevelopers.com,Welcome@123,Admin,IT',
-    '106,Anand P,anand@mpdevelopers.com,Welcome@123,Ticket Owner,Accounts',
-    '105,Karthik V,,Welcome@123,User,Projects'
-  ].join('\n');
+  const q = v => /[",\n]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v;
+  const rows = [
+    ['empid','name','email','password','role','department','active'],
+    ['101','Saravanan K','saravanan@mpdevelopers.com','Welcome@123','Employee','Accounts','Yes'],
+    ['102','Priya R','priya@mpdevelopers.com','Welcome@123','Ticket Owner','HR','Yes'],
+    ['103','Ravi M','','Welcome@123','Employee','Sales',''],
+    ['# existing user: only the password changes (blank cells keep current values)','','','','','',''],
+    ['458','','','NewPass@123','','',''],
+    ['# existing user: details change, password stays the same','','','','','',''],
+    ['576','Sandra Shaji','sandra@mpdevelopers.com','','Ticket Owner','Admin','Yes']
+  ];
+  const csv = rows.map(r=>r.map(q).join(',')).join('\r\n');
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+  a.href = URL.createObjectURL(new Blob(['﻿'+csv], { type: 'text/csv;charset=utf-8' }));
   a.download = 'MP_HelpDesk_Users_Template.csv';
-  a.click();
+  document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },1500);
   toast('Template downloaded — fill it and upload');
 };
+
+const BU_COLS = { empid:['empid','employeeid','loginid','id'], name:['name','fullname','employeename'], email:['email','notifyemail','emailid'], password:['password','pwd','newpassword'], role:['role'], department:['department','dept'], active:['active','status'] };
+const buBool = v => { const t = String(v).trim().toLowerCase(); if(['yes','y','true','1','active'].includes(t)) return true; if(['no','n','false','0','inactive'].includes(t)) return false; return null; };
 
 window.parseBulkCSV = function(){
   const file = document.getElementById('bulkFileInput').files[0];
   if(!file){ return; }
-  if(!file.name.endsWith('.csv')){ toast('Please upload a .csv file only','error'); return; }
-
+  if(!/\.csv$/i.test(file.name)){ toast('Please upload a .csv file only','error'); return; }
   const reader = new FileReader();
   reader.onload = function(e){
-    const text = e.target.result;
-    const lines = text.split('\n').map(l => l.trim()).filter(l => l);
-    if(lines.length < 2){ toast('CSV is empty or has no data rows','error'); return; }
-
-    // Parse header
-    const headers = lines[0].toLowerCase().split(',').map(h => h.trim().replace(/"/g,''));
-    const empIdx   = headers.indexOf('empid');
-    const nameIdx  = headers.indexOf('name');
-    const emailIdx = headers.indexOf('email');
-    const passIdx  = headers.indexOf('password');
-    const roleIdx  = headers.indexOf('role');
-    const deptIdx  = headers.indexOf('department');
-
-    if(empIdx<0||nameIdx<0||passIdx<0){
-      toast('CSV must have columns: empid, name, password','error'); return;
-    }
-
+    const all = mbParseCsv(e.target.result).filter(r => !String(r[0]||'').trim().startsWith('#'));
+    if(all.length < 2){ toast('CSV is empty or has no data rows','error'); return; }
+    const head = all[0].map(mbKey);
+    const ix = {}; Object.keys(BU_COLS).forEach(k => ix[k] = head.findIndex(h => BU_COLS[k].includes(h)));
+    if(ix.empid < 0){ toast('CSV must have an "empid" column — use the template','error'); return; }
+    const cell = (r,k) => ix[k] >= 0 ? String(r[ix[k]]||'').trim() : '';
+    const deptMap = {}; MASTERS.departments.forEach(d => deptMap[d.name.toLowerCase()] = d.id);
+    const seen = new Set();
     _bulkUsers = [];
-    const deptMap = {};
-    MASTERS.departments.forEach(d => deptMap[d.name.toLowerCase()] = d.id);
 
-    for(let i=1; i<lines.length; i++){
-      const cols = lines[i].split(',').map(c => c.trim().replace(/^"|"$/g,''));
-      const empId = empIdx>=0 ? (cols[empIdx]||'') : '';
-      const name  = cols[nameIdx]  || '';
-      const email = emailIdx>=0 ? (cols[emailIdx]||'') : '';
-      const pass  = cols[passIdx]  || '';
-      const role  = cols[roleIdx]  || 'User';
-      const dept  = cols[deptIdx]  || '';
-
-      let status = 'Ready';
-      let statusClass = 'b-resolved';
-      let errors = [];
-
+    all.slice(1, 101).forEach(r => {
+      const empId = cell(r,'empid'), name = cell(r,'name'), email = cell(r,'email'), pass = cell(r,'password'),
+            roleTxt = cell(r,'role'), deptTxt = cell(r,'department'), actTxt = cell(r,'active');
+      const errors = [];
+      const cur = /^\d{3}$/.test(empId) ? _users.find(u => u.empId === empId) : null;
       if(!/^\d{3}$/.test(empId)) errors.push('Emp ID must be 3 digits');
-      else if(_users.find(u=>u.empId===empId)) errors.push('Emp ID exists');
-      if(!name)  errors.push('Name missing');
+      else if(seen.has(empId)) errors.push('Emp ID repeated in this file');
+      seen.add(empId);
       if(email && !email.includes('@')) errors.push('Invalid email');
-      if(!pass || pass.length < 6) errors.push('Password min 6 chars');
-      const roleKey = normRole(role);
-      if(!roleKey) errors.push('Role not recognised (use Employee, Ticket Owner or Administrator)');
-      if(roleKey==='TicketOwner' && !deptMap[dept.toLowerCase()]) errors.push('Department required for this role');
+      if(pass && pass.length < 6) errors.push('Password min 6 chars');
+      const roleKey = roleTxt ? normRole(roleTxt) : null;
+      if(roleTxt && !roleKey) errors.push('Role not recognised');
+      const deptId = deptTxt ? (deptMap[deptTxt.toLowerCase()] || null) : null;
+      if(deptTxt && !deptId) errors.push('Department not found');
+      const act = actTxt ? buBool(actTxt) : null;
+      if(actTxt && act === null) errors.push('Active must be Yes or No');
 
-      const deptId = deptMap[dept.toLowerCase()] || MASTERS.departments[0]?.id || 'd1';
-      const deptName = MASTERS.departments.find(d=>d.id===deptId)?.name || dept;
-
-      if(errors.length > 0){
-        status = errors.join(', ');
-        statusClass = 'b-critical';
+      const u = { empId, name, email, pass, mode: cur ? 'update' : 'create', curId: cur?.id || null, valid:false, action:'', actionClass:'b-resolved', roleShown: roleKey || '', deptShown: deptId ? getDept(deptId) : '' };
+      if(cur){
+        const upd = {}, what = [];
+        if(name && name !== cur.name){ upd.name = name; what.push('name'); }
+        if(email && email !== (cur.notifyEmail||'')){ upd.notifyEmail = email; what.push('email'); }
+        const finalRole = roleKey || normRoleVal(cur.role);
+        if(roleKey && roleKey !== normRoleVal(cur.role)){ upd.role = roleKey; what.push('role'); }
+        if(deptId && deptId !== cur.deptId){ upd.deptId = deptId; what.push('department'); }
+        if(act !== null && act !== (cur.active !== false)){ upd.active = act; what.push(act ? 'activate' : 'deactivate'); }
+        if(finalRole === 'TicketOwner'){
+          const have = Array.isArray(cur.spocDeptIds) ? cur.spocDeptIds.filter(Boolean) : [];
+          const dep = deptId || cur.deptId;
+          let ids = normRoleVal(cur.role) === 'TicketOwner' ? have.slice() : [];
+          if(dep && !ids.includes(dep)) ids.push(dep);
+          if(!ids.length) errors.push('Department required for Ticket Owner');
+          if(JSON.stringify(ids) !== JSON.stringify(have)) upd.spocDeptIds = ids;
+        } else if((roleKey && roleKey !== normRoleVal(cur.role)) && Array.isArray(cur.spocDeptIds) && cur.spocDeptIds.length){
+          upd.spocDeptIds = [];
+        }
+        if(cur.id === SESSION.user?.uid){
+          if(upd.role && upd.role !== 'Admin') errors.push('You cannot remove your own Admin role');
+          if(upd.active === false) errors.push('You cannot deactivate yourself');
+        }
+        if(pass) what.push('password');
+        u.upd = upd; u.setPwd = !!pass; u.name = name || cur.name; u.email = email || cur.notifyEmail || '';
+        u.roleShown = roleKey || normRoleVal(cur.role); u.deptShown = getDept(deptId || cur.deptId) || '';
+        if(!errors.length){
+          if(!what.length){ u.action = 'No change'; u.actionClass = 'b-user'; }
+          else { u.valid = true; u.action = 'Update: ' + what.join(', '); u.actionClass = 'b-open'; }
+        }
+      } else {
+        if(!name) errors.push('Name missing');
+        if(!pass) errors.push('Password missing');
+        const finalRole = roleKey || 'User';
+        if(finalRole === 'TicketOwner' && !deptId) errors.push('Department required for Ticket Owner');
+        u.role = finalRole; u.deptId = deptId || MASTERS.departments[0]?.id || 'd1'; u.roleShown = finalRole; u.deptShown = getDept(u.deptId) || '';
+        u.active = act !== false;
+        if(!errors.length){ u.valid = true; u.action = 'New user'; u.actionClass = 'b-resolved'; }
       }
+      if(errors.length){ u.action = errors.join(', '); u.actionClass = 'b-critical'; u.valid = false; }
+      _bulkUsers.push(u);
+    });
 
-      _bulkUsers.push({ empId, name, email, pass, role: (roleKey||'User'), deptId, deptName, status, statusClass, valid: errors.length===0 });
-    }
-
-    // Render preview
-    const validCount   = _bulkUsers.filter(u=>u.valid).length;
-    const invalidCount = _bulkUsers.length - validCount;
-    document.getElementById('bulkCount').textContent = `${_bulkUsers.length} users found · ${validCount} valid · ${invalidCount} with errors`;
-
+    const nNew = _bulkUsers.filter(u=>u.valid && u.mode==='create').length;
+    const nUpd = _bulkUsers.filter(u=>u.valid && u.mode==='update').length;
+    const nErr = _bulkUsers.filter(u=>!u.valid && u.actionClass==='b-critical').length;
+    const nSame = _bulkUsers.length - nNew - nUpd - nErr;
+    document.getElementById('bulkCount').textContent = `${_bulkUsers.length} rows · ${nNew} new · ${nUpd} to update · ${nSame} unchanged · ${nErr} with errors`;
     document.getElementById('bulkPreviewBody').innerHTML = _bulkUsers.map((u,i) => `
       <tr>
         <td>${i+1}</td>
-        <td style="font-family:monospace;font-weight:600">${u.empId||'—'}</td>
-        <td><strong>${u.name||'—'}</strong></td>
-        <td style="font-size:12px">${u.email||'—'}</td>
-        <td><span class="${u.role==='Admin'?'b-admin':(u.role==='User'?'b-user':'b-role')}">${roleLabel(u.role)}</span></td>
-        <td>${u.deptName||'—'}</td>
-        <td><span class="${u.statusClass}" style="font-size:11px">${u.status}</span></td>
+        <td style="font-family:monospace;font-weight:600">${esc(u.empId)||'—'}</td>
+        <td><strong>${esc(u.name)||'—'}</strong></td>
+        <td style="font-size:12px">${esc(u.email)||'—'}</td>
+        <td>${u.roleShown ? `<span class="${u.roleShown==='Admin'?'b-admin':(u.roleShown==='User'?'b-user':'b-role')}">${roleLabel(u.roleShown)}</span>` : '—'}</td>
+        <td>${esc(u.deptShown)||'—'}</td>
+        <td><span class="${u.actionClass}" style="font-size:11px">${esc(u.action)}</span></td>
       </tr>`).join('');
-
     document.getElementById('bulkPreviewSection').style.display = 'block';
-
-    if(validCount > 0){
-      document.getElementById('bulkUploadBtn').style.display = 'inline-flex';
-      document.getElementById('bulkValidationMsg').innerHTML = `<span style="color:var(--teal)"><i class="ti ti-check"></i> ${validCount} users ready to create.</span>${invalidCount>0?` <span style="color:var(--red)">${invalidCount} rows have errors and will be skipped.</span>`:''}`;
+    const ready = nNew + nUpd;
+    const btn = document.getElementById('bulkUploadBtn'); btn.disabled = false;
+    if(ready > 0){
+      btn.style.display = 'inline-flex';
+      btn.innerHTML = `<i class="ti ti-users"></i> Apply (${nNew} create, ${nUpd} update)`;
+      document.getElementById('bulkValidationMsg').innerHTML = `<span style="color:var(--teal)"><i class="ti ti-check"></i> ${ready} row(s) ready.</span>${nErr>0?` <span style="color:var(--red)">${nErr} row(s) have errors and will be skipped.</span>`:''}`;
     } else {
-      document.getElementById('bulkUploadBtn').style.display = 'none';
-      document.getElementById('bulkValidationMsg').innerHTML = `<span style="color:var(--red)"><i class="ti ti-alert-circle"></i> No valid users found. Fix the errors and re-upload.</span>`;
+      btn.style.display = 'none';
+      document.getElementById('bulkValidationMsg').innerHTML = `<span style="color:var(--red)"><i class="ti ti-alert-circle"></i> Nothing to create or update. Fix the errors (or the rows have no changes) and re-upload.</span>`;
     }
   };
   reader.readAsText(file);
 };
 
 window.startBulkUpload = async function(){
-  const validUsers = _bulkUsers.filter(u => u.valid);
-  if(validUsers.length === 0){ toast('No valid users to create','error'); return; }
+  if(!isAdmin()) return;
+  const todo = _bulkUsers.filter(u => u.valid);
+  if(todo.length === 0){ toast('Nothing to apply','error'); return; }
+  // Existing users first, so the signed-in Admin session is never disturbed before updates (password changes need Admin).
+  const jobs = [...todo.filter(u=>u.mode==='update'), ...todo.filter(u=>u.mode==='create')];
 
   const btn = document.getElementById('bulkUploadBtn');
-  btn.innerHTML = '<span class="spinner"></span> Creating…'; btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Working…'; btn.disabled = true;
   document.getElementById('bulkProgressSection').style.display = 'block';
-  document.getElementById('bulkProgressBar').style.width = '0%';
+  const log = document.getElementById('bulkLog'), pBar = document.getElementById('bulkProgressBar'), pLabel = document.getElementById('bulkProgressLabel');
+  log.innerHTML = ''; pBar.style.width = '0%'; pBar.style.background = 'var(--navy)';
+  const line = (ok, txt) => { log.innerHTML += `<div style="color:${ok?'#1D9E75':'#E24B4A'}">${ok?'✅':'❌'} ${esc(txt)}</div>`; log.scrollTop = log.scrollHeight; };
 
-  const log    = document.getElementById('bulkLog');
-  const pBar   = document.getElementById('bulkProgressBar');
-  const pLabel = document.getElementById('bulkProgressLabel');
-  log.innerHTML = '';
+  // New users are created through a second, separate sign-in so the Admin stays signed in.
+  let secAuth = null;
+  const getSec = () => { if(!secAuth){ secAuth = getAuth(initializeApp(getFirebaseConfig(), 'bulk'+Date.now())); } return secAuth; };
 
-  let created = 0, failed = 0;
-
-  for(let i = 0; i < validUsers.length; i++){
-    const u = validUsers[i];
-    const pct = Math.round(((i+1)/validUsers.length)*100);
-    pLabel.textContent = `${i+1} / ${validUsers.length} users processed`;
-    pBar.style.width = pct + '%';
-
+  let created = 0, updated = 0, failed = 0;
+  for(let i = 0; i < jobs.length; i++){
+    const u = jobs[i];
+    pLabel.textContent = `${i+1} / ${jobs.length} rows processed`;
+    pBar.style.width = Math.round(((i+1)/jobs.length)*100) + '%';
     try{
-      // Create Firebase Auth user from Employee ID
-      const authEmail = empToEmail(u.empId);
-      const cred = await createUserWithEmailAndPassword(auth, authEmail, u.pass);
-
-      // Create Firestore profile
-      await setDoc(doc(db, 'users', cred.user.uid), {
-        empId:       u.empId,
-        name:        u.name,
-        email:       authEmail,
-        notifyEmail: u.email || '',
-        role:        u.role,
-        deptId:      u.deptId,
-        active:      true,
-        createdAt:   serverTimestamp(),
-        createdBy:   SESSION.user.uid
-      });
-
-      // Send welcome email (only if a real email was provided)
-      if(u.email){
-        const sent = await sendRealEmail({
-          toEmail: u.email, toName: u.name,
-          subject: 'Welcome to MP HelpDesk',
-          message: `Your MP HelpDesk account has been created.\n\nLogin ID: ${u.empId}\nTemporary Password: ${u.pass}\n\nLogin at: ${window.location.href}`
+      if(u.mode === 'update'){
+        let done = [];
+        if(Object.keys(u.upd).length){ await updateDoc(doc(db,'users',u.curId), u.upd); done.push('details'); }
+        if(u.setPwd){
+          try{
+            await httpsCallable(functions, 'adminSetUserPassword')({ targetUid: u.curId, newPassword: u.pass });
+            done.push('password');
+          } catch(e){
+            failed++;
+            line(false, `${u.name} (ID: ${u.empId}) — ${done.length?'details updated, but ':''}password not changed: ${e.message || e.code}`);
+            continue;
+          }
+        }
+        updated++; line(true, `${u.name} (ID: ${u.empId}) — updated ${done.join(' + ')}`);
+      } else {
+        const authEmail = empToEmail(u.empId);
+        const sa = getSec();
+        const cred = await createUserWithEmailAndPassword(sa, authEmail, u.pass);
+        try{ await signOut(sa); }catch(_){}
+        await setDoc(doc(db, 'users', cred.user.uid), {
+          empId: u.empId, name: u.name, email: authEmail, notifyEmail: u.email || '',
+          role: u.role, deptId: u.deptId, spocDeptIds: u.role==='TicketOwner' ? [u.deptId] : [],
+          active: u.active, createdAt: serverTimestamp(), createdBy: SESSION.user.uid
         });
-        await addDoc(collection(db,'emailQueue'),{
-          eventType:   'user_created',
-          toEmail:     u.email,
-          userName:    u.name,
-          empId:       u.empId,
-          role:        u.role,
-          tempPassword:u.pass,
-          appUrl:      window.location.href,
-          createdAt:   serverTimestamp(),
-          sent:        sent
-        });
+        if(u.email){
+          const sent = await sendRealEmail({
+            toEmail: u.email, toName: u.name, subject: 'Welcome to MP HelpDesk',
+            message: `Your MP HelpDesk account has been created.\n\nLogin ID: ${u.empId}\nTemporary Password: ${u.pass}\n\nLogin at: ${window.location.href}`
+          });
+          await addDoc(collection(db,'emailQueue'),{ eventType:'user_created', toEmail:u.email, userName:u.name, empId:u.empId, role:u.role, tempPassword:u.pass, appUrl:window.location.href, createdAt:serverTimestamp(), sent });
+        }
+        created++; line(true, `${u.name} (ID: ${u.empId}) — created`);
       }
-
-      created++;
-      log.innerHTML += `<div style="color:#1D9E75">✅ ${u.name} (ID: ${u.empId}) — created</div>`;
     } catch(e){
       failed++;
-      const msg = e.code === 'auth/email-already-in-use'
-        ? 'Employee ID already registered'
-        : e.message;
-      log.innerHTML += `<div style="color:#E24B4A">❌ ${u.name} (ID: ${u.empId}) — ${msg}</div>`;
+      line(false, `${u.name} (ID: ${u.empId}) — ${e.code === 'auth/email-already-in-use' ? 'Employee ID already registered' : (e.message || e.code)}`);
     }
-    log.scrollTop = log.scrollHeight;
-
-    // Small delay to avoid Firebase rate limits
-    await new Promise(r => setTimeout(r, 300));
+    await new Promise(r => setTimeout(r, 250));
   }
+  try{ if(secAuth) await signOut(secAuth); }catch(_){}
 
-  // Refresh user list
-  await loadUsers();
-  renderUsers();
-
-  pBar.style.width = '100%';
-  pBar.style.background = failed === 0 ? 'var(--navy)' : 'var(--orange)';
-  pLabel.textContent = `Done — ${created} created, ${failed} failed`;
-  log.innerHTML += `<div style="margin-top:6px;font-weight:600;color:var(--navy)">── Upload complete: ${created} succeeded, ${failed} failed ──</div>`;
-
-  btn.innerHTML = '<i class="ti ti-check"></i> Done';
-  btn.disabled = false;
-  toast(`${created} users created successfully!`);
+  await loadUsers(); renderUsers();
+  pBar.style.width = '100%'; pBar.style.background = failed === 0 ? 'var(--navy)' : 'var(--orange)';
+  pLabel.textContent = `Done — ${created} created, ${updated} updated, ${failed} failed`;
+  log.innerHTML += `<div style="margin-top:6px;font-weight:600;color:var(--navy)">── Finished: ${created} created, ${updated} updated, ${failed} failed ──</div>`;
+  btn.innerHTML = '<i class="ti ti-check"></i> Done'; btn.disabled = false;
+  toast(`${created} created, ${updated} updated${failed?`, ${failed} failed`:''}`, failed ? 'error' : undefined);
 };
 
 
