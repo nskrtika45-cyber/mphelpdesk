@@ -454,7 +454,7 @@ input[type=checkbox]{accent-color:var(--navy)}
           <select class="form-select" id="ct-type" onchange="onTypeChange()"></select>
         </div>
         <div class="col-md-4" id="ct-subtypeWrap">
-          <label class="form-label">Issue Sub-Type <span data-req="subtype" style="color:var(--red)">*</span></label>
+          <label class="form-label">Issue Sub-Type</label>
           <select class="form-select" id="ct-subtype"></select>
         </div>
         <div class="col-md-4"><label class="form-label">Priority <span style="color:var(--red)">*</span></label><select class="form-select" id="ct-priority"></select></div>
@@ -1298,7 +1298,7 @@ const FIELD_DEFS = [
   {id:'adept',       label:'Raise Ticket To (Department)', vis:'fixed', man:'fixed', fil:'opt', d:{filter:true}},
   {id:'category',    label:'Ticket Category',              vis:'opt',   man:'opt',   fil:'opt', d:{visible:true,mandatory:true,filter:false}},
   {id:'type',        label:'Issue Type',                   vis:'fixed', man:'opt',   fil:'opt', d:{mandatory:true,filter:false}},
-  {id:'subtype',     label:'Issue Sub-Type',               vis:'opt',   man:'opt',   fil:'na',  d:{visible:true,mandatory:true}},
+  {id:'subtype',     label:'Issue Sub-Type',               vis:'opt',   man:'na',    fil:'na',  d:{visible:true}},
   {id:'priority',    label:'Priority',                     vis:'fixed', man:'fixed', fil:'fixed'},
   {id:'status',      label:'Status',                       vis:'na',    man:'na',    fil:'fixed'},
   {id:'assignedTo',  label:'Assigned To',                  vis:'na',    man:'na',    fil:'opt', d:{filter:false}},
@@ -2888,7 +2888,6 @@ window.submitTicket=async function(){
   const catsAvail = fieldVisible('category') && categoriesForDept(adept).length > 0;
   if(catsAvail && fieldMandatory('category') && !catId){toast('Please select a Ticket Category','error');return;}
   if(fieldMandatory('type') && !typeId){toast('Please select an Issue Type','error');return;}
-  if(fieldVisible('subtype') && fieldMandatory('subtype') && typeId && MASTERS.subTypes.some(x=>x.typeId===typeId && x.active!==false) && !subTypeId){toast('Please select an Issue Sub-Type','error');return;}
   if(!subject){toast('Subject is required','error');return;}
   if(fieldVisible('refNo') && fieldMandatory('refNo') && !$v('ct-ref')){toast('Reference Number is required','error');return;}
   if(fieldVisible('description') && fieldMandatory('description') && !$v('ct-desc')){toast('Description is required','error');return;}
