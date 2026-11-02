@@ -842,7 +842,7 @@ input[type=checkbox]{accent-color:var(--navy)}
         <button class="btn-outline" onclick="downloadMtTemplate()" style="font-size:12px;padding:6px 14px"><i class="ti ti-file-spreadsheet"></i> Download CSV Template</button>
       </div>
       <div style="background:var(--gray);border-radius:8px;padding:14px 16px;margin-bottom:14px">
-        <div style="font-size:13px;font-weight:600;margin-bottom:8px"><i class="ti ti-upload" style="margin-right:6px;color:var(--blue)"></i>Step 2 — Upload your filled CSV</div>
+        <div style="font-size:13px;font-weight:600;margin-bottom:8px"><i class="ti ti-upload" style="margin-right:6px;color:var(--blue)"></i>Step 2 — Upload your filled file</div>
         <input type="file" id="mbFile" accept=".csv" class="form-control" onchange="parseMtBulk()" style="margin-bottom:8px"/>
         <div style="font-size:12px;color:var(--muted)">.csv only (in Excel use File → Save As → CSV) · up to 500 rows · rows that already exist are skipped, so it is safe to upload again</div>
       </div>
@@ -1006,22 +1006,25 @@ input[type=checkbox]{accent-color:var(--navy)}
 
       <!-- STEP 1: Download Template -->
       <div style="background:var(--gray);border-radius:8px;padding:14px 16px;margin-bottom:16px">
-        <div style="font-size:13px;font-weight:600;margin-bottom:6px"><i class="ti ti-download" style="margin-right:6px;color:var(--navy)"></i>Step 1 — Download the template</div>
-        <div style="font-size:12.5px;color:var(--muted);margin-bottom:10px">Fill in this CSV template. Do not change the column headers.</div>
-        <button class="btn-outline" onclick="downloadTemplate()" style="font-size:12px;padding:6px 14px"><i class="ti ti-file-spreadsheet"></i> Download CSV Template</button>
+        <div style="font-size:13px;font-weight:600;margin-bottom:6px"><i class="ti ti-download" style="margin-right:6px;color:var(--navy)"></i>Step 1 — Get the file</div>
+        <div style="font-size:12.5px;color:var(--muted);margin-bottom:10px">The Excel files have <strong>drop-down lists</strong> for Role, Department and Active, filled with the exact names from your Master Tables, so nothing can be mistyped.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn-outline" onclick="downloadUserXlsx(false)" style="font-size:12px;padding:6px 14px"><i class="ti ti-file-spreadsheet"></i> Excel template (new users)</button>
+          <button class="btn-outline" onclick="downloadUserXlsx(true)" style="font-size:12px;padding:6px 14px"><i class="ti ti-users"></i> Current users (Excel, to edit)</button>
+          <button class="btn-outline" onclick="downloadTemplate()" style="font-size:12px;padding:6px 14px"><i class="ti ti-file-text"></i> CSV template</button>
+        </div>
         <div style="margin-top:10px;font-size:12px;color:var(--muted);line-height:1.7">
-          <strong>Columns:</strong> empid, name, email, password, role, department, active<br/>
           <strong>New Employee ID</strong> → a new user is created (name and password are required).<br/>
-          <strong>Employee ID that already exists</strong> → that user is <u>updated</u>: whatever you fill in is changed (including a new password); cells left blank keep the current value.<br/>
-          <strong>Role:</strong> Employee, Ticket Owner or Administrator · <strong>Department:</strong> exactly as in Master Tables · <strong>Active:</strong> Yes or No
+          <strong>Employee ID that already exists</strong> → that user is <u>updated</u>: whatever you fill in is changed (including a new password); cells left blank keep the current value. Use <em>Current users</em> to start from the existing list.<br/>
+          <strong>Password</strong> is only filled for new users or when you want to change it.
         </div>
       </div>
 
       <!-- STEP 2: Upload -->
       <div style="background:var(--gray);border-radius:8px;padding:14px 16px;margin-bottom:16px">
-        <div style="font-size:13px;font-weight:600;margin-bottom:8px"><i class="ti ti-upload" style="margin-right:6px;color:var(--blue)"></i>Step 2 — Upload your filled CSV</div>
-        <input type="file" id="bulkFileInput" accept=".csv" class="form-control" onchange="parseBulkCSV()" style="margin-bottom:10px"/>
-        <div style="font-size:12px;color:var(--muted)">Accepts .csv files only · Max 100 rows per upload</div>
+        <div style="font-size:13px;font-weight:600;margin-bottom:8px"><i class="ti ti-upload" style="margin-right:6px;color:var(--blue)"></i>Step 2 — Upload your filled file</div>
+        <input type="file" id="bulkFileInput" accept=".xlsx,.csv" class="form-control" onchange="parseBulkCSV()" style="margin-bottom:10px"/>
+        <div style="font-size:12px;color:var(--muted)">Accepts .xlsx (Excel) or .csv · Max 100 rows per upload</div>
       </div>
 
       <!-- PREVIEW TABLE -->
@@ -4387,17 +4390,75 @@ window.closeBulkModal = function(){
   document.getElementById('bulkModal').classList.remove('show');
 };
 
+const BU_ROLE_NAMES = ['Employee','Ticket Owner','Administrator'];
+const loadLib = (src, get) => new Promise((res,rej)=>{ if(get()) return res(get()); const t=document.createElement('script'); t.src=src; t.onload=()=>get()?res(get()):rej(new Error('lib')); t.onerror=()=>rej(new Error('net')); document.head.appendChild(t); });
+const EXCELJS_URL = 'https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js';
+const SHEETJS_URL = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+const buPad = v => /^\d{1,2}$/.test(v) ? v.padStart(3,'0') : v;   // Excel drops leading zeros (010 → 10)
+
+// Excel file with drop-downs. withCurrent=true pre-fills every existing user so Admin can edit and re-upload.
+window.downloadUserXlsx = async function(withCurrent){
+  if(!isAdmin()) return;
+  let EJ; try{ EJ = await loadLib(EXCELJS_URL, ()=>window.ExcelJS); }catch(e){ toast('Excel could not be prepared (no internet access to the library). Use the CSV template instead.','error'); return; }
+  const depts = MASTERS.departments.filter(d=>d.active!==false).map(d=>d.name);
+  const wb = new EJ.Workbook(), ws = wb.addWorksheet('Users', {views:[{state:'frozen', ySplit:1}]}), ls = wb.addWorksheet('Lists'), ins = wb.addWorksheet('Instructions');
+  // Lists sheet (source of the drop-downs)
+  ls.addRow(['Role','Department','Active']);
+  const n = Math.max(BU_ROLE_NAMES.length, depts.length, 2);
+  for(let i=0;i<n;i++) ls.addRow([BU_ROLE_NAMES[i]||'', depts[i]||'', ['Yes','No'][i]||'']);
+  ls.getRow(1).font = {bold:true}; ls.columns = [{width:18},{width:30},{width:10}];
+  // Users sheet
+  const head = ['empid','name','email','password','role','department','active'];
+  ws.addRow(head);
+  const hr = ws.getRow(1); hr.height = 22;
+  hr.eachCell(c=>{ c.font={bold:true,color:{argb:'FFFFFFFF'}}; c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF2E3192'}}; c.alignment={vertical:'middle'}; });
+  [10,28,32,18,18,28,10].forEach((w,i)=>ws.getColumn(i+1).width = w);
+  ws.getColumn(1).numFmt = '@';
+  let rows = [];
+  if(withCurrent){
+    rows = [..._users].sort((x,y)=>String(x.empId||'').localeCompare(String(y.empId||''))).filter(u=>u.empId).map(u=>{
+      const r = normRoleVal(u.role);
+      return [String(u.empId), u.name||'', u.notifyEmail||'', '', r==='Admin'?'Administrator':(r==='TicketOwner'?'Ticket Owner':'Employee'), MASTERS.departments.find(d=>d.id===u.deptId)?.name||'', u.active===false?'No':'Yes'];
+    });
+  } else {
+    rows = [['101','Example Employee','example@mpdevelopers.com','Welcome@123','Employee', depts[0]||'', 'Yes']];
+  }
+  rows.forEach(r=>{ const row = ws.addRow(r); row.getCell(1).numFmt='@'; });
+  const last = Math.max(rows.length + 150, 200);
+  const dv = (col, f, msg) => { for(let r=2;r<=last;r++) ws.getCell(r,col).dataValidation = {type:'list', allowBlank:true, formulae:[f], showErrorMessage:true, errorStyle:'stop', errorTitle:'Pick from the list', error: msg}; };
+  dv(5, 'Lists!$A$2:$A$'+(BU_ROLE_NAMES.length+1), 'Choose Employee, Ticket Owner or Administrator from the list.');
+  dv(6, 'Lists!$B$2:$B$'+(depts.length+1), 'Choose a department from the list (names come from Master Tables).');
+  dv(7, 'Lists!$C$2:$C$3', 'Choose Yes or No.');
+  for(let r=2;r<=last;r++){ ws.getCell(r,1).numFmt='@'; ws.getCell(r,1).dataValidation = {type:'textLength', operator:'equal', allowBlank:true, formulae:[3], showErrorMessage:true, errorStyle:'stop', errorTitle:'Employee ID', error:'Employee ID must be exactly 3 digits, e.g. 101.'}; }
+  // Instructions sheet
+  [['MP HelpDesk — Bulk user upload'],[''],
+   ['1. Fill the "Users" sheet. Role, Department and Active are drop-down lists — just pick from them.'],
+   ['2. New Employee ID → a new user is created (name and password required).'],
+   ['3. Existing Employee ID → that user is updated. Anything you fill in is changed; blank cells keep the current value.'],
+   ['4. Password: fill it only for new users or when you want to change an existing user\'s password (6 to 25 characters).'],
+   ['5. Save the file and upload it in Users → Bulk Upload (up to 100 rows).'],
+   ['Do not rename the columns or the "Users" sheet.']].forEach(r=>ins.addRow(r));
+  ins.getRow(1).font = {bold:true,size:14}; ins.getColumn(1).width = 110;
+  const buf = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buf], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = withCurrent ? 'MP_HelpDesk_Current_Users.xlsx' : 'MP_HelpDesk_Users_Template.xlsx';
+  document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },1500);
+  toast(withCurrent ? 'Current users downloaded — edit and upload' : 'Template downloaded — fill it and upload');
+};
+
 window.downloadTemplate = function(){
   const q = v => /[",\n]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v;
+  const dn = MASTERS.departments.filter(d=>d.active!==false).map(d=>d.name), D = i => dn.length ? dn[i % dn.length] : '';
   const rows = [
     ['empid','name','email','password','role','department','active'],
-    ['101','Saravanan K','saravanan@mpdevelopers.com','Welcome@123','Employee','Accounts','Yes'],
-    ['102','Priya R','priya@mpdevelopers.com','Welcome@123','Ticket Owner','HR','Yes'],
-    ['103','Ravi M','','Welcome@123','Employee','Sales',''],
+    ['101','Saravanan K','saravanan@mpdevelopers.com','Welcome@123','Employee',D(0),'Yes'],
+    ['102','Priya R','priya@mpdevelopers.com','Welcome@123','Ticket Owner',D(1),'Yes'],
+    ['103','Ravi M','','Welcome@123','Employee',D(2),''],
     ['# existing user: only the password changes (blank cells keep current values)','','','','','',''],
     ['458','','','NewPass@123','','',''],
     ['# existing user: details change, password stays the same','','','','','',''],
-    ['576','Sandra Shaji','sandra@mpdevelopers.com','','Ticket Owner','Admin','Yes']
+    ['576','Sandra Shaji','sandra@mpdevelopers.com','','Ticket Owner',D(1),'Yes']
   ];
   const csv = rows.map(r=>r.map(q).join(',')).join('\r\n');
   const a = document.createElement('a');
@@ -4413,10 +4474,19 @@ const buBool = v => { const t = String(v).trim().toLowerCase(); if(['yes','y','t
 window.parseBulkCSV = function(){
   const file = document.getElementById('bulkFileInput').files[0];
   if(!file){ return; }
-  if(!/\.csv$/i.test(file.name)){ toast('Please upload a .csv file only','error'); return; }
+  const isX = /\.xlsx$/i.test(file.name);
+  if(!isX && !/\.csv$/i.test(file.name)){ toast('Please upload an .xlsx (Excel) or .csv file','error'); return; }
   const reader = new FileReader();
-  reader.onload = function(e){
-    const all = mbParseCsv(e.target.result).filter(r => !String(r[0]||'').trim().startsWith('#'));
+  reader.onload = async function(e){
+    let rowsIn;
+    if(isX){
+      try{
+        const X = await loadLib(SHEETJS_URL, ()=>window.XLSX);
+        const wbk = X.read(e.target.result, {type:'array'}), sh = wbk.Sheets['Users'] || wbk.Sheets[wbk.SheetNames[0]];
+        rowsIn = X.utils.sheet_to_json(sh, {header:1, raw:false, defval:''});
+      }catch(err){ toast('Could not read the Excel file. Save it as CSV and upload that instead.','error'); return; }
+    } else rowsIn = mbParseCsv(e.target.result);
+    const all = rowsIn.filter(r => r.some(x=>String(x).trim()!=='') && !String(r[0]||'').trim().startsWith('#'));
     if(all.length < 2){ toast('CSV is empty or has no data rows','error'); return; }
     const head = all[0].map(mbKey);
     const ix = {}; Object.keys(BU_COLS).forEach(k => ix[k] = head.findIndex(h => BU_COLS[k].includes(h)));
@@ -4427,7 +4497,7 @@ window.parseBulkCSV = function(){
     _bulkUsers = [];
 
     all.slice(1, 101).forEach(r => {
-      const empId = cell(r,'empid'), name = cell(r,'name'), email = cell(r,'email'), pass = cell(r,'password'),
+      const empId = buPad(cell(r,'empid')), name = cell(r,'name'), email = cell(r,'email'), pass = cell(r,'password'),
             roleTxt = cell(r,'role'), deptTxt = cell(r,'department'), actTxt = cell(r,'active');
       const errors = [];
       const cur = /^\d{3}$/.test(empId) ? _users.find(u => u.empId === empId) : null;
@@ -4513,7 +4583,7 @@ window.parseBulkCSV = function(){
       document.getElementById('bulkValidationMsg').innerHTML = `<span style="color:var(--red)"><i class="ti ti-alert-circle"></i> Nothing to create or update. Fix the errors (or the rows have no changes) and re-upload.</span>`;
     }
   };
-  reader.readAsText(file);
+  if(isX) reader.readAsArrayBuffer(file); else reader.readAsText(file);
 };
 
 window.startBulkUpload = async function(){
