@@ -1789,8 +1789,8 @@ window.submitSetUserPassword = async function(){
   btn.innerHTML = '<span class="spinner"></span> Submitting…'; btn.disabled = true;
   try{
     const call = httpsCallable(functions, 'adminSetUserPassword');
-    await call({ targetUid, newPassword: pwd });
-    showMsg('Password updated successfully!', true);
+    const res = await call({ targetUid, newPassword: pwd });
+    showMsg('Password updated successfully!' + (res && res.data && res.data.loginEmail ? ' They sign in with Employee ID ' + emailToEmp(res.data.loginEmail) + '.' : ''), true);
     document.getElementById('sup-pwd').value = '';
     document.getElementById('sup-pwd2').value = '';
     document.getElementById('supPwdBar').style.width = '0';
