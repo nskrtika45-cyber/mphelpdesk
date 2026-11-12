@@ -306,7 +306,7 @@ input[type=checkbox]{accent-color:var(--navy)}
     <div class="mb-3">
       <label class="form-label">Employee ID</label>
       <input class="form-control" id="loginEmail" type="text" placeholder="e.g. 101" autocomplete="username" maxlength="60"/>
-      <div style="font-size:11px;color:var(--muted);margin-top:4px">Enter your 3-digit Employee ID (admins may use email)</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">Enter your Employee ID (admins may use email)</div>
     </div>
     <div class="mb-3">
       <label class="form-label">Password</label>
@@ -877,7 +877,7 @@ input[type=checkbox]{accent-color:var(--navy)}
     <div class="mh"><h3 id="umTitle">Add User</h3><button class="btn-x" onclick="closeUM()">✕</button></div>
     <div class="mb-p">
       <div class="row g-3">
-        <div class="col-md-6"><label class="form-label">Employee ID <span style="color:var(--red)">*</span></label><input class="form-control" id="u-empid" placeholder="e.g. 101" maxlength="3" oninput="this.value=this.value.replace(/[^0-9]/g,'')"/></div>
+        <div class="col-md-6"><label class="form-label">Employee ID <span style="color:var(--red)">*</span></label><input class="form-control" id="u-empid" placeholder="e.g. 1001 (4 digits)" maxlength="4" oninput="this.value=this.value.replace(/[^0-9]/g,'')"/></div>
         <div class="col-md-6"><label class="form-label">Full Name <span style="color:var(--red)">*</span></label><input class="form-control" id="u-name" placeholder="Full name"/></div>
         <div class="col-md-6"><label class="form-label">Email (optional, for notifications)</label><input class="form-control" id="u-email" placeholder="email@company.com"/></div>
         <div class="col-md-6">
@@ -1012,7 +1012,7 @@ input[type=checkbox]{accent-color:var(--navy)}
         <div style="margin-top:10px;font-size:12px;color:var(--muted);line-height:1.7">
           The file lists <strong>all current users</strong> (password column blank), with empty rows below for new users.<br/>
           <strong>Change a user:</strong> edit the cells you want to change (fill the password only to change it) — rows you don't touch stay as they are.<br/>
-          <strong>Add a user:</strong> use a free row at the bottom with a new 3-digit Employee ID (name and password required).
+          <strong>Add a user:</strong> use a free row at the bottom with a new 4-digit Employee ID (name and password required).
         </div>
       </div>
 
@@ -1592,7 +1592,7 @@ function startApp(){
           const newProfile = {
             name: user.displayName || user.email.split('@')[0] || 'Admin',
             email: user.email,
-            empId: emailToEmp(user.email).match(/^\d{3}$/) ? emailToEmp(user.email) : '',
+            empId: emailToEmp(user.email).match(/^\d{3,4}$/) ? emailToEmp(user.email) : '',
             role: isFirstUser ? 'Admin' : 'User',
             deptId: 'd4',
             active: true,
@@ -3734,18 +3734,18 @@ window.saveUser=async function(){
   }
   if(window._editUserId && window._editUserId===SESSION.user.uid && role!=='Admin'){toast('You cannot remove your own HelpDesk Admin role','error');return;}
   if(!window._editUserId){
-    if(!/^\d{3}$/.test(empId)){toast('Employee ID must be exactly 3 digits (e.g. 101)','error');return;}
+    if(!/^\d{4}$/.test(empId)){toast('Employee ID must be exactly 4 digits (e.g. 1001)','error');return;}
     if(_users.find(u=>u.empId===empId)){toast('Employee ID '+empId+' already exists','error');return;}
   }
   if(notifyEmail && !notifyEmail.includes('@')){toast('Notification email is invalid','error');return;}
 
-  // Editing a user who has no Emp ID yet: Admin may add one (3 digits, unique)
+  // Editing a user who has no Emp ID yet: Admin may add one (4 digits, unique)
   let newEmpIdForEdit = null;
   if(window._editUserId){
     const cur = _users.find(u=>u.id===window._editUserId);
     if(cur && !cur.empId && empId){
       if(!isAdmin()){toast('Only an Admin can add an Employee ID','error');return;}
-      if(!/^\d{3}$/.test(empId)){toast('Employee ID must be exactly 3 digits (e.g. 101)','error');return;}
+      if(!/^\d{4}$/.test(empId)){toast('Employee ID must be exactly 4 digits (e.g. 1001)','error');return;}
       if(_users.find(u=>u.empId===empId)){toast('Employee ID '+empId+' already exists','error');return;}
       newEmpIdForEdit = empId;
     }
@@ -4390,7 +4390,8 @@ const BU_ROLE_NAMES = ['Employee','Ticket Owner','Administrator'];
 const loadLib = (src, get) => new Promise((res,rej)=>{ if(get()) return res(get()); const t=document.createElement('script'); t.src=src; t.onload=()=>get()?res(get()):rej(new Error('lib')); t.onerror=()=>rej(new Error('net')); document.head.appendChild(t); });
 const EXCELJS_URL = 'https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js';
 const SHEETJS_URL = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
-const buPad = v => /^\d{1,2}$/.test(v) ? v.padStart(3,'0') : v;   // Excel drops leading zeros (010 → 10)
+const buPad = v => /^\d{1,3}$/.test(v) ? v.padStart(4,'0') : v;   // Excel drops leading zeros (0458 → 458)
+const buEmpId = v => _users.some(u=>u.empId===v) ? v : buPad(v);   // an existing ID (even an old 3-digit one) is matched exactly
 
 // Excel file with drop-downs. withCurrent=true pre-fills every existing user so Admin can edit and re-upload.
 window.downloadUserXlsx = async function(){
@@ -4424,7 +4425,7 @@ window.downloadUserXlsx = async function(){
   dv(5, 'Lists!$A$2:$A$'+(BU_ROLE_NAMES.length+1), 'Choose Employee, Ticket Owner or Administrator from the list.');
   dv(6, 'Lists!$B$2:$B$'+(depts.length+1), 'Choose a department from the list (names come from Master Tables).');
   dv(7, 'Lists!$C$2:$C$3', 'Choose Yes or No.');
-  for(let r=2;r<=last;r++){ ws.getCell(r,1).numFmt='@'; ws.getCell(r,1).dataValidation = {type:'textLength', operator:'equal', allowBlank:true, formulae:[3], showErrorMessage:true, errorStyle:'stop', errorTitle:'Employee ID', error:'Employee ID must be exactly 3 digits, e.g. 101.'}; }
+  for(let r=2;r<=last;r++){ ws.getCell(r,1).numFmt='@'; ws.getCell(r,1).dataValidation = {type:'textLength', operator:'between', allowBlank:true, formulae:[3,4], showErrorMessage:true, errorStyle:'stop', errorTitle:'Employee ID', error:'Employee ID must be a 4-digit number, e.g. 1001.'}; }
   // Instructions sheet
   [['MP HelpDesk — Bulk user upload'],[''],
    ['1. Work in the "Users" sheet. Role, Department and Active are drop-down lists — just pick from them. Existing users are already listed; add new users in the empty rows below.'],
@@ -4492,11 +4493,11 @@ window.parseBulkCSV = function(){
     _bulkUsers = [];
 
     all.slice(1, 101).forEach(r => {
-      const empId = buPad(cell(r,'empid')), name = cell(r,'name'), email = cell(r,'email'), pass = cell(r,'password'),
+      const empId = buEmpId(cell(r,'empid')), name = cell(r,'name'), email = cell(r,'email'), pass = cell(r,'password'),
             roleTxt = cell(r,'role'), deptTxt = cell(r,'department'), actTxt = cell(r,'active');
       const errors = [];
-      const cur = /^\d{3}$/.test(empId) ? _users.find(u => u.empId === empId) : null;
-      if(!/^\d{3}$/.test(empId)) errors.push('Emp ID must be 3 digits');
+      const cur = _users.find(u => u.empId === empId) || null;
+      if(!cur && !/^\d{4}$/.test(empId)) errors.push('Emp ID must be 4 digits');
       else if(seen.has(empId)) errors.push('Emp ID repeated in this file');
       seen.add(empId);
       if(email && !email.includes('@')) errors.push('Invalid email');
