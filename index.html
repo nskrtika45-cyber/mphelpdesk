@@ -1066,16 +1066,6 @@ input[type=checkbox]{accent-color:var(--navy)}
   </div>
 </div>
 
-<!-- AUTO LOGOUT WARNING BANNER -->
-<div id="logoutWarnBanner" style="display:none;position:fixed;bottom:80px;right:22px;background:#fff;border:1.5px solid var(--amber);border-radius:10px;padding:14px 18px;z-index:9998;box-shadow:0 8px 24px rgba(0,0,0,.15);max-width:320px;align-items:center;gap:12px">
-  <i class="ti ti-clock" style="font-size:20px;color:var(--amber);flex-shrink:0"></i>
-  <div style="flex:1">
-    <div style="font-size:13px;font-weight:600;color:var(--text)">Session expiring soon</div>
-    <div style="font-size:12px;color:var(--muted);margin-top:2px">You will be logged out in 1 minute due to inactivity.</div>
-  </div>
-  <button onclick="resetAutoLogout()" style="background:var(--navy);color:#fff;border:none;border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;flex-shrink:0">Stay logged in</button>
-</div>
-
 <!-- TOAST -->
 <div id="toast"><i id="toastIcon" class="ti ti-check" style="color:var(--teal);font-size:16px;flex-shrink:0"></i><span id="toastMsg"></span></div>
 
@@ -1622,7 +1612,6 @@ function startApp(){
     } else {
       SESSION.user=null; SESSION.profile=null;
       stopSessionWatch();
-      stopAutoLogout();
       document.getElementById('loginPage').style.display='flex';
       document.getElementById('sidebar').style.display='none';
       document.getElementById('topbar').style.display='none';
@@ -1697,7 +1686,7 @@ async function enforceSingleSession(user, profile){
   return true;
 }
 async function endedElsewhere(){
-  stopSessionWatch(); _mySid = null; stopAutoLogout();
+  stopSessionWatch(); _mySid = null;
   try{ await signOut(auth); }catch(e){}
   setTimeout(()=>{
     document.getElementById('loginErr').style.display = 'flex';
@@ -1933,7 +1922,6 @@ function initAppUI(){
 
   populateFilters();
   subscribeTickets();
-  startAutoLogout();
   // Set base history state so browser back doesn't leave the app
   history.replaceState({ page:'dashboard', ticketId:null }, '', '#dashboard');
   showPage('dashboard', document.querySelector(staff?'#nav-admin .nav-item':'#nav-user .nav-item'), true);
@@ -4654,58 +4642,6 @@ window.startBulkUpload = async function(){
   btn.innerHTML = '<i class="ti ti-check"></i> Done'; btn.disabled = false;
   toast(`${created} created, ${updated} updated${failed?`, ${failed} failed`:''}`, failed ? 'error' : undefined);
 };
-
-
-// ═══════════════════════════════════════════════════════
-// AUTO LOGOUT — 20 minutes inactivity
-// ═══════════════════════════════════════════════════════
-const AUTO_LOGOUT_MS   = 20 * 60 * 1000; // 20 minutes
-const WARN_BEFORE_MS   = 60 * 1000;       // warn 1 min before
-let   _autoLogoutTimer = null;
-let   _warnTimer       = null;
-let   _warnShown       = false;
-
-function resetAutoLogout(){
-  clearTimeout(_autoLogoutTimer);
-  clearTimeout(_warnTimer);
-  _warnShown = false;
-  // Hide warning if visible
-  const wb = document.getElementById('logoutWarnBanner');
-  if(wb) wb.style.display = 'none';
-
-  if(!SESSION.user) return; // not logged in
-
-  // Warn 1 minute before logout
-  _warnTimer = setTimeout(()=>{
-    _warnShown = true;
-    const wb2 = document.getElementById('logoutWarnBanner');
-    if(wb2) wb2.style.display = 'flex';
-  }, AUTO_LOGOUT_MS - WARN_BEFORE_MS);
-
-  // Auto logout
-  _autoLogoutTimer = setTimeout(async ()=>{
-    if(SESSION.user){
-      toast('Session expired — logging out automatically', 'error');
-      setTimeout(async ()=>{ await endMySession(); await signOut(auth); }, 1500);
-    }
-  }, AUTO_LOGOUT_MS);
-}
-
-function startAutoLogout(){
-  // Reset on any mouse/keyboard/touch activity
-  ['mousemove','mousedown','keydown','touchstart','click','scroll'].forEach(ev=>{
-    document.addEventListener(ev, resetAutoLogout, { passive:true });
-  });
-  resetAutoLogout();
-}
-
-function stopAutoLogout(){
-  clearTimeout(_autoLogoutTimer);
-  clearTimeout(_warnTimer);
-  ['mousemove','mousedown','keydown','touchstart','click','scroll'].forEach(ev=>{
-    document.removeEventListener(ev, resetAutoLogout);
-  });
-}
 
 
 // ═══════════════════════════════════════════════════════
